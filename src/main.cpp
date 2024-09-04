@@ -40,13 +40,29 @@ int main(int argc, char* argv[]) {
                 quit = true;
             }
         }
+        
+        const Uint8* state = SDL_GetKeyboardState(nullptr);
+        int moveSpeed = 5;
+
+        if(state[SDL_SCANCODE_UP]){
+            controllableEntity.move(0, -moveSpeed);
+        }
+        if(state[SDL_SCANCODE_DOWN]){
+            controllableEntity.move(0, moveSpeed);
+        }
+        if(state[SDL_SCANCODE_LEFT]){
+            controllableEntity.move(-moveSpeed,0);
+        }
+        if(state[SDL_SCANCODE_RIGHT]){
+            controllableEntity.move(moveSpeed, 0);
+        }
+
 
         // Move the controllable shape 
-
-        controllableEntity.move(0,2);
-        if(controllableEntity.getRect().y>1080){
-            controllableEntity.move(0,-1080);
-        }
+        // controllableEntity.move(0,2);
+        // if(controllableEntity.getRect().y>1080){
+        //     controllableEntity.move(0,-1080);
+        // }
         
         //Apply Gravity to this object
         physics.applyGravity(fallingEntity,deltaTime);
