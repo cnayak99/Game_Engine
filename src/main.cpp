@@ -5,6 +5,7 @@
 #include "Entity.h"
 #include "Rectangle.h"
 #include "Physics.h"
+#include "Intersect.h"
 
 int main(int argc, char* argv[]) {
     SDL_Window* window = nullptr;
@@ -67,6 +68,28 @@ int main(int argc, char* argv[]) {
         movingEntity.move(speed, 0);
         if (movingEntity.getRect().x > 1820 || movingEntity.getRect().x < 100) {
             speed = -speed;
+        }
+
+        Rectangle c = controllableEntity.getRect();
+        Rectangle m = movingEntity.getRect();
+        Rectangle s = staticEntity.getRect();
+        Rectangle * result;
+
+        // Attempt to sense other shapes for collision. (Test! May or may not work.)
+        if (hasIntersection(&c, &m) == true) {
+            if (intersect(&c, &m, result) == 1) {
+                deltaTime = 0;
+                verticalVel = 0;
+            }
+            // Add more sides for this one if successful.
+        }
+
+        // Attempt to sense other shapes for collision. (Test! May or may not work.)
+        if (hasIntersection(&c, &s) == true) {
+            if (intersect(&c, &s, result) == 1) {
+                deltaTime = 0;
+                verticalVel = 0;
+            }
         }
 
         // Set the background color to blue and clear the screen
