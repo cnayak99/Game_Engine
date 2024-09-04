@@ -70,26 +70,35 @@ int main(int argc, char* argv[]) {
             speed = -speed;
         }
 
+        // Keeps track of the controllable rectangle.
         Rectangle c = controllableEntity.getRect();
+        // Keeps track of the moving rectangle.
         Rectangle m = movingEntity.getRect();
+        // Keeps track of the static rectangle.
         Rectangle s = staticEntity.getRect();
+        // Stores the address of a Rectangle entity.
         Rectangle * result;
 
-        // Attempt to sense other shapes for collision. (Test! May or may not work.)
+        // Senses other shapes for collision.
         if (hasIntersection(&c, &m) == true) {
+            // If there was an intersection on the top of the terrain rectangle,
+            // the controllable rectangle lands on the terrain rectangle.
             if (intersect(&c, &m, result) == 1) {
                 deltaTime = 0;
                 verticalVel = 0;
             }
-            // Add more sides for this one if successful.
+            // More sides will be added in the future.
         }
 
-        // Attempt to sense other shapes for collision. (Test! May or may not work.)
+        // Senses other shapes for collision.
         if (hasIntersection(&c, &s) == true) {
+            // If there was an intersection on the top of the terrain rectangle,
+            // the controllable rectangle lands on the terrain rectangle.
             if (intersect(&c, &s, result) == 1) {
                 deltaTime = 0;
                 verticalVel = 0;
             }
+            // More sides will be added in the future.
         }
 
         // Set the background color to blue and clear the screen

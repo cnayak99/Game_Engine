@@ -12,11 +12,14 @@
  * \returns bool that is true if the Rectangles intersect, and false
  * if they do not
  * 
+ * Most of the work has been completed by Lillie Sharpe, but Robbie Martin
+ * helped with the logic.
+ * 
  * @author Lillie Sharpe (lssharpe)
- * @author Robbie Martin (rdmarti5)
  */
 extern bool hasIntersection(const Rectangle * player, const Rectangle * terrain) {
-    // Checks the left bounds of the player rectangle
+    // Checks all four bounds of the player rectangle in comparison to the bounds
+    // of a terrain rectangle. Currently, they check the horizontal middle of a rectangle.
     if ((player->x >= terrain->x) && (player->x < (terrain->x + terrain->width - 1))) {
         if ((player->y >= terrain->y) && (player->y < (terrain->y + terrain->height - 1))) {
             return true;
@@ -30,6 +33,7 @@ extern bool hasIntersection(const Rectangle * player, const Rectangle * terrain)
             return true;
         }
     }
+    // Returns false if no boundaries intersected.
     return false;
 }
 
@@ -45,10 +49,15 @@ extern bool hasIntersection(const Rectangle * player, const Rectangle * terrain)
  * \returns bool that is true if the Rectangles intersect, and false
  * if they do not
  * 
+ * Heavily inspired by the 'hasIntersection()' function in this same
+ * file.
+ * 
  * @author Lillie Sharpe (lssharpe)
  */
 extern int intersect(const Rectangle * player, const Rectangle * terrain, Rectangle * result) {
-    // Add result later.
+    // Checks all four bounds of the player rectangle in comparison to the bounds
+    // of a terrain rectangle. Currently, they check the horizontal middle of a rectangle.
+    // Functionality for the 'result' variable will be added at a later time.
     if ((player->x >= terrain->x) && (player->x < (terrain->x + terrain->width - 1))) {
         if ((player->y >= terrain->y) && (player->y < (terrain->y + terrain->height - 1))) {
             return 1;
@@ -62,5 +71,6 @@ extern int intersect(const Rectangle * player, const Rectangle * terrain, Rectan
             return 4;
         }
     }
+    // Returns -1 if no boundaries intersected.
     return -1;
 }
