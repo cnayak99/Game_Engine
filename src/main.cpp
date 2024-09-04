@@ -4,6 +4,7 @@
 #include "sdl_setup.h"
 #include "Entity.h"
 #include "Rectangle.h"
+#include "Physics.h"
 
 int main(int argc, char* argv[]) {
     SDL_Window* window = nullptr;
@@ -14,39 +15,43 @@ int main(int argc, char* argv[]) {
     }
 
     bool quit = false;
-    SDL_Event e;
 
-    // Define rectangles for the three shapes
-    // SDL_Rect staticRect = { 100, 100, 100, 100 };       // Static shape
-    // SDL_Rect controllableRect = { 300, 300, 50, 50 };   // Controllable shape
-    // SDL_Rect movingRect = { 500, 100, 75, 75 };         // Moving shape
+    SDL_Event e;
 
     Entity staticEntity(Rectangle(100,100,100,100),{255,0,0,255});//Static Red Shape
     Entity controllableEntity(Rectangle(300,300,50,50),{0,255,0,255});//Controllable Green Shape 
     Entity movingEntity(Rectangle(100,100,100,100),{0,0,0,255});//Black Moving Shape
 
+    //New entity affected by gravity
+    Entity fallingEntity(Rectangle(500, 100, 50, 50), {255, 255, 0, 255});//Yellow color
+
+    Physics physics(9.8f);
 
     int speed = 5; // Speed for the moving shape
+    Uint32 lastTime = SDL_GetTicks();
 
     while (!quit) {
+        Uint32 currentTime = SDL_GetTicks();
+        float deltaTime = (currentTime - lastTime) / 1000.0f;
+        lastTime = currentTime;
+
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT) {
                 quit = true;
             }
         }
 
-        // Move the controllable shape (placeholder logic, will be controlled later)
-        // controllableRect.y += 2;
-        // if (controllableRect.y > 1080) controllableRect.y = 0;
+        // Move the controllable shape 
 
         controllableEntity.move(0,2);
         if(controllableEntity.getRect().y>1080){
             controllableEntity.move(0,-1080);
         }
+        
+        //Apply Gravity to this object
+        physics.applyGravity(fallingEntity,deltaTime);
 
-        // Move the shape in a continuous pattern (horizontal oscillation)
-        // movingRect.x += speed;
-        // if (movingRect.x > 1820 || movingRect.x < 100) speed = -speed;
+        // Move the shape in a continuous pattern (horizontal)
         movingEntity.move(speed, 0);
         if (movingEntity.getRect().x > 1820 || movingEntity.getRect().x < 100) {
             speed = -speed;
@@ -56,27 +61,18 @@ int main(int argc, char* argv[]) {
         SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
         SDL_RenderClear(renderer);
 
-        // // Render the static shape (red)
-        // SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        // SDL_RenderFillRect(renderer, &staticRect);
-
-        // // Render the controllable shape (green)
-        // SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-        // SDL_RenderFillRect(renderer, &controllableRect);
-
-        // // Render the moving shape (blue)
-        // SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Black color
-        // SDL_RenderFillRect(renderer, &movingRect);
-
+        // Render the shapes
+        fallingEntity.render(renderer);
         staticEntity.render(renderer);
         controllableEntity.render(renderer);
         movingEntity.render(renderer);
         
+
         // Present the rendered content
         SDL_RenderPresent(renderer);
 
-        // Delay to control frame rate (optional)
-        SDL_Delay(16); // ~60 frames per second
+        // ~60 frames per second
+        SDL_Delay(16); 
     }
 
     // Clean up and shut down SDL

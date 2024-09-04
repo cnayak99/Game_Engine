@@ -6,14 +6,22 @@
 
 class Entity {
 public:
-    Entity(const Rectangle& rect, SDL_Color color);
-    void move(int dx, int dy);
+    Entity(Rectangle rect, SDL_Color color);
+
     void render(SDL_Renderer* renderer);
-    SDL_Rect getRect() const;
+    void move(int dx, int dy);
+    void setVelocity(float vx, float vy);
+    Rectangle getRect() const;
+    SDL_Color getColor() const;
+
+    struct {
+        float x;
+        float y;
+    } velocity;
 
 private:
     Rectangle rect;
     SDL_Color color;
 };
 
-#endif
+#endif // ENTITY_H
