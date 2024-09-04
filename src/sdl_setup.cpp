@@ -14,7 +14,7 @@ bool initializeSDL(SDL_Window** window, SDL_Renderer** renderer) {
         SDL_Quit();
         return false;
     }
-
+    
     *renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED);
     if (*renderer == nullptr) {
         std::cerr << "SDL_CreateRenderer Error: " << SDL_GetError() << std::endl;
@@ -22,6 +22,5 @@ bool initializeSDL(SDL_Window** window, SDL_Renderer** renderer) {
         SDL_Quit();
         return false;
     }
-
     return true;
 }

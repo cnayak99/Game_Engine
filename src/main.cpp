@@ -22,7 +22,8 @@ int main(int argc, char* argv[]) {
     Entity staticEntity(Rectangle(100,100,100,100),{255,0,0,255});//Static Red Shape
     Entity controllableEntity(Rectangle(300,300,50,50),{0,255,0,255});//Controllable Green Shape 
     Entity movingEntity(Rectangle(100,100,100,100),{0,0,0,255});//Black Moving Shape
-
+    bool scaling = false;
+    bool held = false;
     float gravity = 9.8f;
     Physics physics(gravity);
 
@@ -55,6 +56,22 @@ int main(int argc, char* argv[]) {
         }
         if(state[SDL_SCANCODE_RIGHT]){//Move Right
             controllableEntity.move(moveSpeed, 0);
+        }
+        if (state[SDL_SCANCODE_C]) {
+            if (!held) {
+                held = true;
+                if (!scaling) {
+                    SDL_RenderSetLogicalSize(renderer, 1920, 1080);
+                    scaling = true;
+                }
+                else {
+                    SDL_RenderSetLogicalSize(renderer, 0, 0);
+                    scaling = false;
+                }
+            }
+        }
+        else {
+            held = false;
         }
         if (state[SDL_SCANCODE_ESCAPE]) {// Exit the game
             quit = true; 
