@@ -2,17 +2,20 @@
 CXX = g++
 
 # Compiler flags
-CXXFLAGS = -std=c++17 -Wall
+CXXFLAGS = -std=c++17 -Wall -Iinclude -I/usr/include/SDL2 -MMD -MP
 
-# Include and library paths for SDL2
-INCLUDES = -I/usr/include/SDL2
+# Library paths for SDL2
 LIBS = -lSDL2
 
 # Source files
-SRC = main.cpp sdl_setup.cpp
+SRC = $(wildcard src/*.cpp)
+
+# Header files
+HEADERS = $(wildcard include/*.h)
 
 # Object files
 OBJ = $(SRC:.cpp=.o)
+DEP = $(SRC:.cpp=.d)
 
 # Output executable
 TARGET = game_engine_app
@@ -25,9 +28,12 @@ $(TARGET): $(OBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
 
 # Rule to create object files
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+%.o: src/%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Include dependency files
+-include $(DEP)
 
 # Clean up build files
 clean:
-	rm -f $(OBJ) $(TARGET)
+	rm -f $(OBJ) $(DEP) $(TARGET)
