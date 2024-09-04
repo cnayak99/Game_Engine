@@ -22,12 +22,12 @@ int main(int argc, char* argv[]) {
     Entity controllableEntity(Rectangle(300,300,50,50),{0,255,0,255});//Controllable Green Shape 
     Entity movingEntity(Rectangle(100,100,100,100),{0,0,0,255});//Black Moving Shape
 
-    //New entity affected by gravity
-    Entity fallingEntity(Rectangle(500, 100, 50, 50), {255, 255, 0, 255});//Yellow color
+    float gravity = 9.8f;
+    Physics physics(gravity);
 
-    Physics physics(9.8f);
-
-    int speed = 5; // Speed for the moving shape
+    int speed = 5; // Speed of the Entity
+    float verticalVel =0.0f;
+    float thrust = -9.8f;
     Uint32 lastTime = SDL_GetTicks();
 
     while (!quit) {
@@ -45,27 +45,23 @@ int main(int argc, char* argv[]) {
         int moveSpeed = 5;
 
         if(state[SDL_SCANCODE_UP]){
-            controllableEntity.move(0, -moveSpeed);
+            // controllableEntity.move(0, -moveSpeed);
+            verticalVel = thrust;
         }
-        if(state[SDL_SCANCODE_DOWN]){
-            controllableEntity.move(0, moveSpeed);
-        }
-        if(state[SDL_SCANCODE_LEFT]){
+
+        if(state[SDL_SCANCODE_LEFT]){//Move Right
             controllableEntity.move(-moveSpeed,0);
         }
-        if(state[SDL_SCANCODE_RIGHT]){
+        if(state[SDL_SCANCODE_RIGHT]){//Move Right
             controllableEntity.move(moveSpeed, 0);
         }
+        if (state[SDL_SCANCODE_ESCAPE]) {// Exit the game
+            quit = true; 
+        }
 
-
-        // Move the controllable shape 
-        // controllableEntity.move(0,2);
-        // if(controllableEntity.getRect().y>1080){
-        //     controllableEntity.move(0,-1080);
-        // }
-        
+        verticalVel += gravity * deltaTime;
+        controllableEntity.move(0, static_cast<int>(verticalVel));
         //Apply Gravity to this object
-        physics.applyGravity(fallingEntity,deltaTime);
 
         // Move the shape in a continuous pattern (horizontal)
         movingEntity.move(speed, 0);
@@ -78,7 +74,6 @@ int main(int argc, char* argv[]) {
         SDL_RenderClear(renderer);
 
         // Render the shapes
-        fallingEntity.render(renderer);
         staticEntity.render(renderer);
         controllableEntity.render(renderer);
         movingEntity.render(renderer);
@@ -88,7 +83,7 @@ int main(int argc, char* argv[]) {
         SDL_RenderPresent(renderer);
 
         // ~60 frames per second
-        SDL_Delay(16); 
+        SDL_Delay(16);
     }
 
     // Clean up and shut down SDL
