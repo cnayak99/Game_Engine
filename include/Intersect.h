@@ -23,10 +23,10 @@ extern bool hasIntersection(const Rectangle * first, const Rectangle * second);
  * 
  * \param first the first Rectangle to check
  * \param second the second Rectangle to check
- * \param result the result of the check
+ * \param result the result of the check (removed for now due to redundancy)
  * \returns bool that is true if the Rectangles intersect, and false
  * if they do not
  * 
  * @author Lillie Sharpe (lssharpe)
  */
-extern int intersect(const Rectangle * first, const Rectangle * second, Rectangle * result);
+extern int intersect(const Rectangle * first, const Rectangle * second);

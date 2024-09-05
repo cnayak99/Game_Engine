@@ -94,15 +94,22 @@ int main(int argc, char* argv[]) {
         // Keeps track of the static rectangle.
         Rectangle s = staticEntity.getRect();
         // Stores the address of a Rectangle entity.
-        Rectangle * result;
+        // Due to redundancy, for now, 'result' has been removed.
+        // Rectangle * result;
 
         // Senses other shapes for collision.
         if (hasIntersection(&c, &m) == true) {
             // If there was an intersection on the top of the terrain rectangle,
             // the controllable rectangle lands on the terrain rectangle.
-            if (intersect(&c, &m, result) == 1) {
+            if (intersect(&c, &m) == 2) {
+                // Causes vertical collision.
                 deltaTime = 0;
                 verticalVel = 0;
+                // Enables player movement mimicking the moving entity.
+                controllableEntity.move(speed, static_cast<int>(verticalVel));
+                if (controllableEntity.getRect().x > 1820 || controllableEntity.getRect().x < 100) {
+                    speed = -speed;
+                }
             }
             // More sides will be added in the future.
         }
@@ -111,7 +118,8 @@ int main(int argc, char* argv[]) {
         if (hasIntersection(&c, &s) == true) {
             // If there was an intersection on the top of the terrain rectangle,
             // the controllable rectangle lands on the terrain rectangle.
-            if (intersect(&c, &s, result) == 1) {
+            if (intersect(&c, &s) == 2) {
+                // Causes vertical collision.
                 deltaTime = 0;
                 verticalVel = 0;
             }
