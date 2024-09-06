@@ -1,7 +1,15 @@
 #include "Physics.h"
 
+/**
+ * Creates a physics entity.
+ */
 Physics::Physics(float gravity) : gravity(gravity) {}
 
+/**
+ * Applies gravity.
+ * 
+ * Based on physics knowledge.
+ */
 void Physics::applyGravity(Entity& entity, float deltaTime) {
     // Apply gravity to the entity's vertical speed
     float acceleration = gravity * deltaTime;

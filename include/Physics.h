@@ -3,6 +3,11 @@
 
 #include "Entity.h"
 
+/**
+ * Creates a Physics struct.
+ * 
+ * Based on physics knowledge.
+ */
 class Physics {
 public:
     Physics(float gravity = 9.8f);

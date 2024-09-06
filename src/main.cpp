@@ -7,6 +7,23 @@
 #include "Physics.h"
 #include "Intersect.h"
 
+/**
+ * Runs the game.
+ * 
+ * References resources and tutorials provided by Professor Card through
+ * the "CSC 481-581 HW 1-4.pdf" located beneath the "Homework 1" title in
+ * the "CSC 481/581 (001) Fall 2024 Game Engine Foundations" course
+ * Moodle page. These resources can be found in the
+ * https://wiki.libsdl.org/SDL2/FrontPage website.
+ * 
+ * \param argc the count argument
+ * \param argv the string argument
+ * \returns int 0 if successful, else, unsuccessful
+ * 
+ * @author Lillie Sharpe
+ * @author Chinmay Nayak
+ * @author Robbie Martin
+ */
 int main(int argc, char* argv[]) {
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
