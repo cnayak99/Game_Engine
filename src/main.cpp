@@ -24,6 +24,7 @@
  * @author Chinmay Nayak
  * @author Robbie Martin
  */
+
 int main(int argc, char* argv[]) {
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
@@ -36,17 +37,20 @@ int main(int argc, char* argv[]) {
 
     SDL_Event e;
 
-    Entity staticEntity(Rectangle(100,100,100,100),{255,0,0,255});//Static Red Shape
-    Entity controllableEntity(Rectangle(300,300,50,50),{0,255,0,255});//Controllable Green Shape 
-    Entity movingEntity(Rectangle(100,100,100,100),{0,0,0,255});//Black Moving Shape
-    bool scaling = false;
+    // Create static entities and moving entity
+    int windowWidth = 1920;
+    int windowHeight = 1080;
+    Entity staticEntity(Rectangle(0, windowHeight-500, 300, 100), {255, 0, 0, 255}); // Static Red Shape (left)
+    Entity staticEntityRight(Rectangle(windowWidth - 300, windowHeight - 500, 300, 100), {255, 0, 0, 255}); // Static Red Shape (right)
+    Entity controllableEntity(Rectangle(300, 300, 50, 50), {0, 255, 0, 255}); // Controllable Green Shape
+    Entity movingEntity(Rectangle(300, windowHeight - 500, 300, 10), {0, 0, 0, 255}); // Black Moving Shape, matches the height    bool scaling = false;
     bool held = false;
-    float gravity = 9.8f;
+    float gravity = 9.888f;
     Physics physics(gravity);
 
-    int speed = 5; // Speed of the Entity
-    float verticalVel =0.0f;
-    float thrust = -9.8f;
+    int speed = 5; // Speed of the moving entity
+    float verticalVel = 0.0f;
+    float thrust = -9.888f;
     Uint32 lastTime = SDL_GetTicks();
 
     while (!quit) {
@@ -59,21 +63,21 @@ int main(int argc, char* argv[]) {
                 quit = true;
             }
         }
-        
+
         const Uint8* state = SDL_GetKeyboardState(nullptr);
         int moveSpeed = 5;
 
-        if(state[SDL_SCANCODE_UP]){
-            // controllableEntity.move(0, -moveSpeed);
+        if (state[SDL_SCANCODE_UP]) {
             verticalVel = thrust;
         }
 
-        if(state[SDL_SCANCODE_LEFT]){//Move Right
-            controllableEntity.move(-moveSpeed,0);
+        if (state[SDL_SCANCODE_LEFT]) { // Move left
+            controllableEntity.move(-moveSpeed, 0);
         }
-        if(state[SDL_SCANCODE_RIGHT]){//Move Right
+        if (state[SDL_SCANCODE_RIGHT]) { // Move right
             controllableEntity.move(moveSpeed, 0);
         }
+        bool scaling = false;
         if (state[SDL_SCANCODE_C]) {
             if (!held) {
                 held = true;
@@ -90,57 +94,59 @@ int main(int argc, char* argv[]) {
         else {
             held = false;
         }
-        if (state[SDL_SCANCODE_ESCAPE]) {// Exit the game
-            quit = true; 
+        if (state[SDL_SCANCODE_ESCAPE]) { // Exit the game
+            quit = true;
         }
 
+        // Apply gravity to the controllable entity
         verticalVel += gravity * deltaTime;
         controllableEntity.move(0, static_cast<int>(verticalVel));
-        //Apply Gravity to this object
 
-        // Move the shape in a continuous pattern (horizontal)
+        // Move the moving entity and check for oscillation
         movingEntity.move(speed, 0);
-        if (movingEntity.getRect().x > 1820 || movingEntity.getRect().x < 100) {
-            speed = -speed;
+
+        // Keeps track of the rectangles
+        Rectangle c = controllableEntity.getRect(); // Controllable entity
+        Rectangle m = movingEntity.getRect();       // Moving entity
+        Rectangle s = staticEntity.getRect();       // Left static entity
+        Rectangle sr = staticEntityRight.getRect(); // Right static entity
+
+        // Check for collision with staticEntity (left)
+        if (hasIntersection(&m, &s) == true) {
+            speed = -speed; // Reverse direction if collision detected
         }
 
-        // Keeps track of the controllable rectangle.
-        Rectangle c = controllableEntity.getRect();
-        // Keeps track of the moving rectangle.
-        Rectangle m = movingEntity.getRect();
-        // Keeps track of the static rectangle.
-        Rectangle s = staticEntity.getRect();
-        // Stores the address of a Rectangle entity.
-        // Due to redundancy, for now, 'result' has been removed.
-        // Rectangle * result;
+        // Check for collision with staticEntityRight (right)
+        if (hasIntersection(&m, &sr) == true) {
+            speed = -speed; // Reverse direction if collision detected
+        }
 
-        // Senses other shapes for collision.
+        // Check for collision between controllableEntity and movingEntity
         if (hasIntersection(&c, &m) == true) {
-            // If there was an intersection on the top of the terrain rectangle,
-            // the controllable rectangle lands on the terrain rectangle.
-            if (intersect(&c, &m) == 2) {
-                // Causes vertical collision.
+            if (intersect(&c, &m) == 2) { // Collision on top
                 deltaTime = 0;
                 verticalVel = 0;
-                // Enables player movement mimicking the moving entity.
                 controllableEntity.move(speed, static_cast<int>(verticalVel));
                 if (controllableEntity.getRect().x > 1820 || controllableEntity.getRect().x < 100) {
                     speed = -speed;
                 }
             }
-            // More sides will be added in the future.
         }
 
-        // Senses other shapes for collision.
+        // Check for collision between controllableEntity and staticEntity (left)
         if (hasIntersection(&c, &s) == true) {
-            // If there was an intersection on the top of the terrain rectangle,
-            // the controllable rectangle lands on the terrain rectangle.
-            if (intersect(&c, &s) == 2) {
-                // Causes vertical collision.
+            if (intersect(&c, &s) == 2) { // Collision on top
                 deltaTime = 0;
                 verticalVel = 0;
             }
-            // More sides will be added in the future.
+        }
+
+        // Check for collision between controllableEntity and staticEntityRight (right)
+        if (hasIntersection(&c, &sr) == true) {
+            if (intersect(&c, &sr) == 2) { // Collision on top
+                deltaTime = 0;
+                verticalVel = 0;
+            }
         }
 
         // Set the background color to blue and clear the screen
@@ -149,9 +155,9 @@ int main(int argc, char* argv[]) {
 
         // Render the shapes
         staticEntity.render(renderer);
+        staticEntityRight.render(renderer);
         controllableEntity.render(renderer);
         movingEntity.render(renderer);
-        
 
         // Present the rendered content
         SDL_RenderPresent(renderer);
