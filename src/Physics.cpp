@@ -2,7 +2,7 @@
 #include "defs.h"
 
 void applyGravity(Entity entity, float deltaTime) {
-    if (!entity.weightless) {
+    if (entity.weighted) {
         // Apply gravity to the entity's vertical speed
         float acceleration = GRAVITY * deltaTime;
         entity.velocity.y += acceleration;

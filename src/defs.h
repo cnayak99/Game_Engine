@@ -6,6 +6,6 @@
 
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
-#define GRAVITY -9.8f
+#define GRAVITY 9.8f
 
 #endif // DEFS_H
