@@ -21,6 +21,7 @@ public:
     void render(SDL_Renderer* renderer);
     void move(int dx, int dy);
     void setVelocity(float vx, float vy);
+    void setWeight(bool w);
     Rectangle getRect() const;
     SDL_Color getColor() const;
 
