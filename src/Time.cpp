@@ -29,7 +29,7 @@ int64_t Time::getTime() {
     // Locks mutex and automatically unlocks itself.
     std::lock_guard<std::mutex> guard(m);
     // Returns the elapsed time of this Time object.
-    return ((anchor->start - start) - pauseElapsed) / tic;
+    return ((anchor->getTime() - start) / tic) - pauseElapsed;
 }
 
 /**
@@ -62,6 +62,6 @@ void Time::unpause() {
     // Locks mutex and automatically unlocks itself.
     std::lock_guard<std::mutex> guard(m);
     // Unpauses the game.
-    pauseElapsed = anchor->start - pauseLast;
+    pauseElapsed = anchor->getTime() - pauseLast;
     isPaused = false;
 }
