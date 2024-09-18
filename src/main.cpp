@@ -6,7 +6,24 @@
 #include "Rectangle.h"
 #include "Physics.h"
 #include "Intersect.h"
+#include "Time.h"
 #include "../../CSC481_Team13_P1/include/Physics.h"
+
+/** Constructs the Time object. Tics can be 1, half, or double.*/
+Time timeline = Time(Time.anchor, 1); // How to construct anchor address?
+
+/**
+ * Creates a Time struct, which keeps track of and monitors a
+ * timeline within the game.
+ * 
+ * This statement is heavily inspired from the example delta time
+ * calculation displayed by Professor Card on page 17 in the
+ * "S24 05 Timelines.pptx" PowerPoint that is available on the
+ * "CSC 481/581 (001) Fall 2024 Game Engine Foundations" course
+ * Moodle page through the "Lecture Notes" link beneath the
+ * "General Information and Discussions" subtitle.
+ */
+int64_t lastT = timeline.getTime();
 
 /**
  * Runs the game.
@@ -26,6 +43,21 @@
  * @author Robbie Martin
  */
 int main(int argc, char* argv[]) {
+    /**
+     * This code section is heavily inspired from the example delta time
+     * calculation displayed by Professor Card on page 17 in the
+     * "S24 05 Timelines.pptx" PowerPoint that is available on the
+     * "CSC 481/581 (001) Fall 2024 Game Engine Foundations" course
+     * Moodle page through the "Lecture Notes" link beneath the
+     * "General Information and Discussions" subtitle.
+     * 
+     * Start of inspired code.
+     */
+    int64_t currentT = timeline.getTime();
+    int64_t deltaF = currentT - lastT;
+    lastT = currentT;
+    /** End of inspired code. */
+
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
 
