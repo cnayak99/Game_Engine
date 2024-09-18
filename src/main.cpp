@@ -6,24 +6,7 @@
 #include "Rectangle.h"
 #include "Physics.h"
 #include "Intersect.h"
-#include "Time.h"
-#include "../../CSC481_Team13_P1/include/Physics.h"
-
-/** Constructs the Time object. Tics can be 1, half, or double.*/
-Time timeline = Time(Time.anchor, 1); // How to construct anchor address?
-
-/**
- * Creates a Time struct, which keeps track of and monitors a
- * timeline within the game.
- * 
- * This statement is heavily inspired from the example delta time
- * calculation displayed by Professor Card on page 17 in the
- * "S24 05 Timelines.pptx" PowerPoint that is available on the
- * "CSC 481/581 (001) Fall 2024 Game Engine Foundations" course
- * Moodle page through the "Lecture Notes" link beneath the
- * "General Information and Discussions" subtitle.
- */
-int64_t lastT = timeline.getTime();
+#include "Timeline.h"
 
 /**
  * Runs the game.
@@ -43,21 +26,6 @@ int64_t lastT = timeline.getTime();
  * @author Robbie Martin
  */
 int main(int argc, char* argv[]) {
-    /**
-     * This code section is heavily inspired from the example delta time
-     * calculation displayed by Professor Card on page 17 in the
-     * "S24 05 Timelines.pptx" PowerPoint that is available on the
-     * "CSC 481/581 (001) Fall 2024 Game Engine Foundations" course
-     * Moodle page through the "Lecture Notes" link beneath the
-     * "General Information and Discussions" subtitle.
-     * 
-     * Start of inspired code.
-     */
-    int64_t currentT = timeline.getTime();
-    int64_t deltaF = currentT - lastT;
-    lastT = currentT;
-    /** End of inspired code. */
-
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
 
@@ -69,13 +37,14 @@ int main(int argc, char* argv[]) {
 
     SDL_Event e;
 
+    Timeline anchor(nullptr, 1);
+
     Entity staticEntity(Rectangle(100,100,100,100),{255,0,0,255}, false);//Static Red Shape
     Entity controllableEntity(Rectangle(300,300,50,50),{0,255,0,255}, true);//Controllable Green Shape 
-    Entity movingEntity(Rectangle(100,100,100,100),{0,0,0,255}, true);//Black Moving Shape
+    Entity movingEntity(Rectangle(100,100,100,100),{0,0,0,255}, false);//Black Moving Shape
     bool scaling = false;
     bool held = false;
     float gravity = 9.8f;
-    // Physics physics(gravity);
 
     int speed = 5; // Speed of the Entity
     float verticalVel =0.0f;
@@ -86,6 +55,7 @@ int main(int argc, char* argv[]) {
         Uint32 currentTime = SDL_GetTicks();
         float deltaTime = (currentTime - lastTime) / 1000.0f;
         lastTime = currentTime;
+        printf("Old: %d\nNew: %ld\n", currentTime, anchor.getTimeline());
 
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT) {

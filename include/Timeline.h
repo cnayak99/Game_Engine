@@ -1,10 +1,10 @@
-#ifndef TIME_H
-#define TIME_H
+#ifndef TIMELINE_H
+#define TIMELINE_H
 
 #include <mutex>
 
 /**
- * Creates a Time struct, which keeps track of and monitors a
+ * Creates a Timeline struct, which keeps track of and monitors a
  * timeline within the game.
  * 
  * This class is heavily inspired from the example Timeline class
@@ -16,19 +16,19 @@
  * 
  * @author Lillie Sharpe (lssharpe)
  */
-class Time {
+class Timeline {
     private:
         std::mutex m; // For multithreading threads of different sizes.
-        int64_t start; // The start time of the anchor.
-        int64_t pauseElapsed; // Elapsed pause time.
-        int64_t pauseLast; // Last pause time.
+        Timeline *anchor; // For the base time.
+        int64_t start = 0; // The start time of the anchor.
+        int64_t pauseElapsed = 0; // Elapsed pause time.
+        int64_t pauseLast = 0; // Last pause time.
         int64_t tic; // Units of anchor time for each step.
         bool isPaused; // Keeps track of pause status.
-        Time *anchor; // For the base time.
     public:
-        Time(Time *anchor, int64_t tic); // Constructs Time struct.
+        Timeline(Timeline *anchor, int64_t tic); // Constructs Timeline struct.
         // All three following functions must use a mutex.
-        int64_t getTime(); // Returns Time.
+        int64_t getTimeline(); // Returns Timeline.
         void pause(); // Pauses the game.
         void unpause(); // Unpauses the game.
 };

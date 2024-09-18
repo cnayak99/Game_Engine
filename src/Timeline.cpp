@@ -1,8 +1,8 @@
-#include "Time.h"
+#include "Timeline.h"
 #include <mutex>
 
 /**
- * Creates a Time struct, which keeps track of and monitors a
+ * Creates a Timeline struct, which keeps track of and monitors a
  * timeline within the game.
  * 
  * This struct is heavily inspired from the example Timeline class
@@ -14,10 +14,11 @@
  * 
  * @author Lillie Sharpe (lssharpe)
  */
-Time::Time(Time *anchor, int64_t tic): anchor(anchor), tic(tic){}
+
+Timeline::Timeline(Timeline *anchor, int64_t tic): anchor(anchor), tic(tic){}
 
 /**
- * Returns Time.
+ * Returns Timeline.
  * 
  * Utilizes mutex.
  * 
@@ -25,11 +26,11 @@ Time::Time(Time *anchor, int64_t tic): anchor(anchor), tic(tic){}
  * mutex as a lock in C++:
  * https://en.cppreference.com/w/cpp/thread/mutex
  */
-int64_t Time::getTime() {
+int64_t Timeline::getTimeline() {
     // Locks mutex and automatically unlocks itself.
     std::lock_guard<std::mutex> guard(m);
-    // Returns the elapsed time of this Time object.
-    return ((anchor->getTime() - start) / tic) - pauseElapsed;
+    // Returns the elapsed time of this Timeline object.
+    return ((anchor->getTimeline() - start) / tic) - pauseElapsed;
 }
 
 /**
@@ -41,11 +42,11 @@ int64_t Time::getTime() {
  * mutex as a lock in C++:
  * https://en.cppreference.com/w/cpp/thread/mutex
  */
-void Time::pause() {
+void Timeline::pause() {
     // Locks mutex and automatically unlocks itself.
     std::lock_guard<std::mutex> guard(m);
     // Pauses the game.
-    pauseLast = getTime();
+    pauseLast = getTimeline();
     isPaused = true;
 }
 
@@ -58,10 +59,10 @@ void Time::pause() {
  * mutex as a lock in C++:
  * https://en.cppreference.com/w/cpp/thread/mutex
  */
-void Time::unpause() {
+void Timeline::unpause() {
     // Locks mutex and automatically unlocks itself.
     std::lock_guard<std::mutex> guard(m);
     // Unpauses the game.
-    pauseElapsed = anchor->getTime() - pauseLast;
+    pauseElapsed = anchor->getTimeline() - pauseLast;
     isPaused = false;
 }
