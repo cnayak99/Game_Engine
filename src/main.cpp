@@ -49,13 +49,12 @@ int main(int argc, char* argv[]) {
     int speed = 5; // Speed of the Entity
     float verticalVel =0.0f;
     float thrust = -9.8f;
-    Uint32 lastTime = SDL_GetTicks();
+    int64_t lastTime = anchor.getTimeline();
 
     while (!quit) {
-        Uint32 currentTime = SDL_GetTicks();
+        int64_t currentTime = anchor.getTimeline();
         float deltaTime = (currentTime - lastTime) / 1000.0f;
-        lastTime = currentTime;
-        printf("Old: %d\nNew: %ld\n", currentTime, anchor.getTimeline());
+        printf("Time: %ld\nLast Time: %ld\nDelta: %f\n", currentTime, lastTime, deltaTime);
 
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT) {
@@ -97,7 +96,7 @@ int main(int argc, char* argv[]) {
             quit = true; 
         }
 
-        verticalVel += gravity * deltaTime;
+        verticalVel += gravity * deltaTime * 60;
         controllableEntity.move(0, static_cast<int>(verticalVel));
         //Apply Gravity to this object
 
@@ -161,6 +160,7 @@ int main(int argc, char* argv[]) {
 
         // ~60 frames per second
         SDL_Delay(16);
+        lastTime = currentTime;
     }
 
     // Clean up and shut down SDL

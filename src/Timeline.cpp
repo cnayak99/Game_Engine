@@ -30,7 +30,12 @@ int64_t Timeline::getTimeline() {
     // Locks mutex and automatically unlocks itself.
     std::lock_guard<std::mutex> guard(m);
     // Returns the elapsed time of this Timeline object.
-    return ((anchor->getTimeline() - start) / tic) - pauseElapsed;
+    if (anchor == nullptr) {
+        count++;
+        return count - pauseElapsed;
+    }
+    count = anchor->getTimeline() / tic;
+    return count - pauseElapsed;
 }
 
 /**
