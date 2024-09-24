@@ -4,8 +4,8 @@ CXX = g++
 # Compiler flags
 CXXFLAGS = -std=c++17 -Wall -Iinclude -I/usr/include/SDL2 -MMD -MP
 
-# Library paths for SDL2
-LIBS = -lSDL2
+# Library paths for SDL2, SDL_ttf, and ZeroMQ
+LIBS = -lSDL2 -lSDL2_ttf -lzmq
 
 # Source files
 SRC = $(wildcard src/*.cpp)

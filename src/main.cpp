@@ -7,10 +7,13 @@
 #include "Physics.h"
 #include "Intersect.h"
 #include "Time.h"
-#include "../../CSC481_Team13_P1/include/Physics.h"
+#include "Physics.h"
+#include <zmq.hpp> 
+#include <SDL2/SDL_ttf.h>
+using namespace std; 
 
 /** Constructs the Time object. Tics can be 1, half, or double.*/
-Time timeline = Time(Time.anchor, 1); // How to construct anchor address?
+// Time timeline = Time(Time.anchor, 1); // How to construct anchor address?
 
 /**
  * Creates a Time struct, which keeps track of and monitors a
@@ -23,7 +26,7 @@ Time timeline = Time(Time.anchor, 1); // How to construct anchor address?
  * Moodle page through the "Lecture Notes" link beneath the
  * "General Information and Discussions" subtitle.
  */
-int64_t lastT = timeline.getTime();
+// int64_t lastT = timeline.getTime();
 
 /**
  * Runs the game.
@@ -42,6 +45,70 @@ int64_t lastT = timeline.getTime();
  * @author Chinmay Nayak
  * @author Robbie Martin
  */
+vector<tuple<string, int, int>> parseUpdatedPositions(const string& updatedPositions) {
+    vector<tuple<string, int, int>> positions;
+    istringstream stream(updatedPositions);
+    string line;
+
+    while (getline(stream, line)) {
+        if (!line.empty()) {
+            size_t colonPos = line.find(':');
+            if (colonPos != string::npos) {
+                string clientId = line.substr(0, colonPos);
+                string coordinates = line.substr(colonPos + 2); // Skip ": "
+                size_t commaPos = coordinates.find(',');
+                if (commaPos != string::npos) {
+                    int x = stoi(coordinates.substr(1, commaPos - 1)); // Skip "("
+                    int y = stoi(coordinates.substr(commaPos + 2)); // Skip ", "
+                    positions.emplace_back(clientId, x, y);
+                }
+            }
+        }
+    }
+    return positions;
+}
+
+// Function to print extracted positions
+// void printPositions(const vector<tuple<string, int, int>>& positions) {
+//     for (const auto& [clientId, x, y] : positions) {
+//         cout << clientId << " is at position (" << x << ", " << y << ")" << endl;
+//     }
+// }
+
+void printPositions(SDL_Renderer* renderer, TTF_Font* font, const std::vector<std::tuple<std::string, int, int>>& positions) {
+    SDL_Color textColor = {255, 255, 255}; // White color for the text
+    int yOffset = 20; // Starting Y position for text rendering
+
+    for (const auto& [clientId, x, y] : positions) {
+        std::string positionText = clientId + " is at position (" + std::to_string(x) + ", " + std::to_string(y) + ")";
+
+        // Create an SDL_Surface with the text
+        SDL_Surface* textSurface = TTF_RenderText_Solid(font, positionText.c_str(), textColor);
+        if (textSurface == nullptr) {
+            std::cerr << "Failed to create text surface: " << TTF_GetError() << std::endl;
+            continue;
+        }
+
+        // Create a texture from the surface
+        SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+        SDL_FreeSurface(textSurface); // Free the surface once the texture is created
+
+        if (textTexture == nullptr) {
+            std::cerr << "Failed to create texture: " << SDL_GetError() << std::endl;
+            continue;
+        }
+
+        // Set the position and size for rendering the text
+        SDL_Rect textRect = {20, yOffset, textSurface->w, textSurface->h}; // x = 20, y = yOffset
+        yOffset += textSurface->h + 10; // Increment yOffset for next line of text
+
+        // Render the text on the screen
+        SDL_RenderCopy(renderer, textTexture, nullptr, &textRect);
+
+        // Clean up the texture
+        SDL_DestroyTexture(textTexture);
+    }
+}
 int main(int argc, char* argv[]) {
     /**
      * This code section is heavily inspired from the example delta time
@@ -53,21 +120,47 @@ int main(int argc, char* argv[]) {
      * 
      * Start of inspired code.
      */
-    int64_t currentT = timeline.getTime();
-    int64_t deltaF = currentT - lastT;
-    lastT = currentT;
+    // int64_t currentT = timeline.getTime();
+    // int64_t deltaF = currentT - lastT;
+    // lastT = currentT;
     /** End of inspired code. */
 
+    srand(static_cast<unsigned int>(time(0)));
+    int randomNum = rand() % 10000; // Generate a random number between 0 and 9999
+    std::string clientId = "client" + std::to_string(randomNum);  // Random client ID
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
 
     if (!initializeSDL(&window, &renderer)) {
         return 1; // Initialization failed
     }
+    if (TTF_Init() == -1) {
+        std::cerr << "Error initializing SDL_ttf: " << TTF_GetError() << std::endl;
+        return -1;
+    }
+
+    TTF_Font* font = TTF_OpenFont("/usr/share/fonts/truetype/msttcorefonts/Arial.ttf", 24);
+    if (font == nullptr) {
+        std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return -1;
+    }
+
+    // Initialize ZeroMQ context and sockets
+    zmq::context_t context(1);
+    zmq::socket_t receiver(context, ZMQ_REQ);
+    receiver.connect("tcp://localhost:5555"); // For sending position updates
+
+    zmq::socket_t subscriber(context, ZMQ_SUB);
+    subscriber.connect("tcp://localhost:5556"); // For receiving position updates
+    subscriber.setsockopt(ZMQ_SUBSCRIBE, "", 0); // Subscribe to all messages
+    
 
     bool quit = false;
-
     SDL_Event e;
+    
 
     Entity staticEntity(Rectangle(100,100,100,100),{255,0,0,255}, false);//Static Red Shape
     Entity controllableEntity(Rectangle(300,300,50,50),{0,255,0,255}, true);//Controllable Green Shape 
@@ -81,6 +174,8 @@ int main(int argc, char* argv[]) {
     float verticalVel =0.0f;
     float thrust = -9.8f;
     Uint32 lastTime = SDL_GetTicks();
+
+
 
     while (!quit) {
         Uint32 currentTime = SDL_GetTicks();
@@ -176,6 +271,26 @@ int main(int argc, char* argv[]) {
             // More sides will be added in the future.
         }
 
+        // Send the position of the controllable entity to the server
+        string positionData = clientId + ":" + to_string(controllableEntity.getRect().x) + "," +
+                              to_string(controllableEntity.getRect().y);
+        zmq::message_t message(positionData.size());
+        memcpy(message.data(), positionData.c_str(), positionData.size());
+        receiver.send(message, zmq::send_flags::none);
+
+        // Receive updated positions from the server
+        zmq::message_t reply;
+        receiver.recv(reply, zmq::recv_flags::none);
+
+        // Parse and update positions of other entities based on received data
+        string updatedPositions(reply.to_string());
+
+        auto parsedPositions = parseUpdatedPositions(updatedPositions);
+        // printPositions(parsedPositions);
+
+
+
+
         // Set the background color to blue and clear the screen
         SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
         SDL_RenderClear(renderer);
@@ -184,7 +299,8 @@ int main(int argc, char* argv[]) {
         staticEntity.render(renderer);
         controllableEntity.render(renderer);
         movingEntity.render(renderer);
-        
+        printPositions(renderer, font, parsedPositions);
+
 
         // Present the rendered content
         SDL_RenderPresent(renderer);
