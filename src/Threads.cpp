@@ -27,9 +27,10 @@ class Threads
     std::mutex *_mutex; // the object for mutual exclusion of execution
     std::condition_variable *_cv_s; // For thread communication regarding the static entity.
     std::condition_variable *_cv_m; // For thread communication regarding the moving entity.
+    Timeline *time_Threads;
 
     public:
-        Threads(int i, Threads *other, std::mutex *_mutex, std::condition_variable *_cv_s, std::condition_variable *_cv_m)
+        Threads(int i, Threads *other, std::mutex *_mutex, std::condition_variable *_cv_s, std::condition_variable *_cv_m, Timeline *time_Threads)
         {
             this->i = i; // set the id of this thread
             if(i==0) { busy = true; }
@@ -37,6 +38,7 @@ class Threads
             this->_mutex = _mutex;
             this->_cv_s = _cv_s;
             this->_cv_m = _cv_m;
+            this->time_Threads = time_Threads;
         }
 
         bool isBusy()
@@ -45,12 +47,8 @@ class Threads
             return busy;
         }
 
-        void run(Timeline *anchor, int64_t tic)
+        void run()
         {
-            // Initial timeline for this series of threads.
-            // Changeable tic for whatever speed the player prefers.
-            Timeline time(anchor, tic);
-
             // Keeps track of one thread, which I will refer to as Thread 1.
             if(i==0)
             {
@@ -134,9 +132,9 @@ class Threads
  * the "Homework 2" subtitle on the "CSC 481/581 (001) Fall 2024
  * Game Engine Foundations" course Moodle page.
  */
-void run_wrapper(Threads *th, Timeline *anchor, int64_t tic)
+void run_wrapper(Threads *th)
 {
-    th->run(anchor, tic);
+    th->run();
 }
 
 /**
@@ -153,15 +151,15 @@ void run_wrapper(Threads *th, Timeline *anchor, int64_t tic)
  * the "Homework 2" subtitle on the "CSC 481/581 (001) Fall 2024
  * Game Engine Foundations" course Moodle page.
  */
-int main()
+int main(Timeline *time_Threads)
 {    // Mutex to handle locking, condition variables to handle notifications between threads
     std::mutex m;
     std::condition_variable cv_s;
     std::condition_variable cv_m;
 
     // Create thread objects
-    Threads t1(0, NULL, &m, &cv_s, &cv_m);
-    Threads t2(1, &t1, &m, &cv_s, &cv_m);
+    Threads t1(0, NULL, &m, &cv_s, &cv_m, time_Threads);
+    Threads t2(1, &t1, &m, &cv_s, &cv_m, time_Threads);
 
     // Start threads
     std::thread first(run_wrapper, &t1);
