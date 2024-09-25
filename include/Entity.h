@@ -22,6 +22,8 @@ public:
     void move(int dx, int dy);
     void setVelocity(float vx, float vy);
     void setWeight(bool w);
+    void setPosition(int x, int y);
+
     Rectangle getRect() const;
     SDL_Color getColor() const;
 

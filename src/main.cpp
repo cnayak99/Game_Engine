@@ -69,11 +69,11 @@ vector<tuple<string, int, int>> parseUpdatedPositions(const string& updatedPosit
 }
 
 // Function to print extracted positions
-// void printPositions(const vector<tuple<string, int, int>>& positions) {
-//     for (const auto& [clientId, x, y] : positions) {
-//         cout << clientId << " is at position (" << x << ", " << y << ")" << endl;
-//     }
-// }
+void printPositions(const vector<tuple<string, int, int>>& positions) {
+    for (const auto& [clientId, x, y] : positions) {
+        cout << clientId << " is at position (" << x << ", " << y << ")" << endl;
+    }
+}
 
 void printPositions(SDL_Renderer* renderer, TTF_Font* font, const std::vector<std::tuple<std::string, int, int>>& positions) {
     SDL_Color textColor = {255, 255, 255}; // White color for the text
@@ -128,6 +128,7 @@ int main(int argc, char* argv[]) {
     srand(static_cast<unsigned int>(time(0)));
     int randomNum = rand() % 10000; // Generate a random number between 0 and 9999
     std::string clientId = "client" + std::to_string(randomNum);  // Random client ID
+    // std::string clientId = "Admin";
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
 
@@ -272,8 +273,8 @@ int main(int argc, char* argv[]) {
         }
 
         // Send the position of the controllable entity to the server
-        string positionData = clientId + ":" + to_string(controllableEntity.getRect().x) + "," +
-                              to_string(controllableEntity.getRect().y);
+        string positionData = clientId + ":" + to_string(movingEntity.getRect().x) + "," +
+                              to_string(movingEntity.getRect().y);
         zmq::message_t message(positionData.size());
         memcpy(message.data(), positionData.c_str(), positionData.size());
         receiver.send(message, zmq::send_flags::none);
@@ -286,11 +287,14 @@ int main(int argc, char* argv[]) {
         string updatedPositions(reply.to_string());
 
         auto parsedPositions = parseUpdatedPositions(updatedPositions);
-        // printPositions(parsedPositions);
+        printPositions(parsedPositions);
 
-
-
-
+        for (const auto& [clientId, x, y] : parsedPositions) {
+            // Update movingEntity's position based on the server data for the controlling client
+            if (clientId != "Admin") {
+                movingEntity.setPosition(x, y); // Implement setPosition method in Entity class
+            }
+        }
         // Set the background color to blue and clear the screen
         SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
         SDL_RenderClear(renderer);
@@ -299,7 +303,7 @@ int main(int argc, char* argv[]) {
         staticEntity.render(renderer);
         controllableEntity.render(renderer);
         movingEntity.render(renderer);
-        printPositions(renderer, font, parsedPositions);
+        // printPositions(renderer, font, parsedPositions);
 
 
         // Present the rendered content

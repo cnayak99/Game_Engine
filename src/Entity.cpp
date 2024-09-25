@@ -26,6 +26,10 @@ void Entity::setWeight(bool w) {
     weighted = w;
 }
 
+void Entity::setPosition(int x, int y) {
+    rect.x = x;
+    rect.y = y;  
+}
 
 Rectangle Entity::getRect() const {
     return rect;
