@@ -10,7 +10,9 @@
 #include "Physics.h"
 #include <zmq.hpp> 
 #include <SDL2/SDL_ttf.h>
+#include "json.hpp"
 using namespace std; 
+using json = nlohmann::json;
 
 /** Constructs the Time object. Tics can be 1, half, or double.*/
 // Time timeline = Time(Time.anchor, 1); // How to construct anchor address?
@@ -45,36 +47,19 @@ using namespace std;
  * @author Chinmay Nayak
  * @author Robbie Martin
  */
-vector<tuple<string, int, int>> parseUpdatedPositions(const string& updatedPositions) {
-    vector<tuple<string, int, int>> positions;
-    istringstream stream(updatedPositions);
-    string line;
 
-    while (getline(stream, line)) {
-        if (!line.empty()) {
-            size_t colonPos = line.find(':');
-            if (colonPos != string::npos) {
-                string clientId = line.substr(0, colonPos);
-                string coordinates = line.substr(colonPos + 2); // Skip ": "
-                size_t commaPos = coordinates.find(',');
-                if (commaPos != string::npos) {
-                    int x = stoi(coordinates.substr(1, commaPos - 1)); // Skip "("
-                    int y = stoi(coordinates.substr(commaPos + 2)); // Skip ", "
-                    positions.emplace_back(clientId, x, y);
-                }
-            }
-        }
-    }
-    return positions;
+json parseUpdatedPositions(const std::string& updatedPositions) {
+    return json::parse(updatedPositions); // Parse the JSON string into a JSON object
 }
 
-// Function to print extracted positions
-void printPositions(const vector<tuple<string, int, int>>& positions) {
-    for (const auto& [clientId, x, y] : positions) {
-        cout << clientId << " is at position (" << x << ", " << y << ")" << endl;
+void printPositions(const json& positions) {
+    for (const auto& position : positions) {
+        std::string clientId = position["clientId"];
+        int x = position["position"]["x"];
+        int y = position["position"]["y"];
+        std::cout << "Client ID: " << clientId << ", Position: (" << x << ", " << y << ")" << std::endl;
     }
 }
-
 void printPositions(SDL_Renderer* renderer, TTF_Font* font, const std::vector<std::tuple<std::string, int, int>>& positions) {
     SDL_Color textColor = {255, 255, 255}; // White color for the text
     int yOffset = 20; // Starting Y position for text rendering
@@ -273,8 +258,15 @@ int main(int argc, char* argv[]) {
         }
 
         // Send the position of the controllable entity to the server
-        string positionData = clientId + ":" + to_string(movingEntity.getRect().x) + "," +
-                              to_string(movingEntity.getRect().y);
+        // string positionData = clientId + ":" + to_string(movingEntity.getRect().x) + "," +
+        //                       to_string(movingEntity.getRect().y);
+        json jsonString = {
+            {"clientId", clientId},
+            {"x", movingEntity.getRect().x},
+            {"y", movingEntity.getRect().y}
+        };
+
+        std::string positionData  = jsonString.dump();
         zmq::message_t message(positionData.size());
         memcpy(message.data(), positionData.c_str(), positionData.size());
         receiver.send(message, zmq::send_flags::none);
@@ -289,12 +281,17 @@ int main(int argc, char* argv[]) {
         auto parsedPositions = parseUpdatedPositions(updatedPositions);
         printPositions(parsedPositions);
 
-        for (const auto& [clientId, x, y] : parsedPositions) {
+        for (const auto& position : parsedPositions) {
+            std::string clientId = position["clientId"]; // Get the clientId from the JSON object
+            int x = position["position"]["x"]; // Get the x coordinate from the nested "position" object
+            int y = position["position"]["y"]; // Get the y coordinate from the nested "position" object
+
             // Update movingEntity's position based on the server data for the controlling client
             if (clientId != "Admin") {
                 movingEntity.setPosition(x, y); // Implement setPosition method in Entity class
             }
         }
+
         // Set the background color to blue and clear the screen
         SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
         SDL_RenderClear(renderer);
