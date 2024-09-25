@@ -1,4 +1,5 @@
-src/draw.o: src/draw.cpp include/sdl_setup.h src/draw.h src/structs.h
+src/draw.o: src/draw.cpp include/sdl_setup.h include/draw.h \
+ include/structs.h
 include/sdl_setup.h:
-src/draw.h:
-src/structs.h:
+include/draw.h:
+include/structs.h:

@@ -1,6 +1,6 @@
 src/Physics.o: src/Physics.cpp src/Physics.h src/Entity.h \
- include/Rectangle.h src/defs.h
+ include/Rectangle.h include/defs.h
 src/Physics.h:
 src/Entity.h:
 include/Rectangle.h:
-src/defs.h:
+include/defs.h:

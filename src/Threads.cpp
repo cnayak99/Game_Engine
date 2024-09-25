@@ -159,7 +159,7 @@ void run_wrapper(Threads *th)
  * the "Homework 2" subtitle on the "CSC 481/581 (001) Fall 2024
  * Game Engine Foundations" course Moodle page.
  */
-int main(Timeline *time_Threads, Entity *staticE, Entity *controllableE, Entity *movingE)
+int start(Timeline *time_Threads, Entity *staticE, Entity *controllableE, Entity *movingE)
 {    // Mutex to handle locking, condition variables to handle notifications between threads
     std::mutex m;
     std::condition_variable cv_s;
@@ -176,4 +176,6 @@ int main(Timeline *time_Threads, Entity *staticE, Entity *controllableE, Entity 
     // Make sure both threads are complete before stopping main thread
     first.join();
     second.join();
+
+    return 0;
 }
