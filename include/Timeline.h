@@ -2,6 +2,7 @@
 #define TIMELINE_H
 
 #include <mutex>
+#include <chrono>
 
 /**
  * Creates a Timeline struct, which keeps track of and monitors a
@@ -20,7 +21,7 @@ class Timeline {
     private:
         std::mutex m; // For multithreading threads of different sizes.
         Timeline *anchor; // For the base time.
-        int64_t start = 0; // The start time of the anchor.
+        std::chrono::time_point<std::chrono::system_clock> start; // The start time of the anchor.
         int64_t pauseElapsed = 0; // Elapsed pause time.
         int64_t pauseLast = 0; // Last pause time.
         int64_t tic; // Units of anchor time for each step.

@@ -1,5 +1,7 @@
 #include "Timeline.h"
 #include <mutex>
+#include <cmath>
+#include <chrono>
 
 /**
  * Creates a Timeline struct, which keeps track of and monitors a
@@ -27,12 +29,15 @@ Timeline::Timeline(Timeline *anchor, int64_t tic): anchor(anchor), tic(tic){}
  * https://en.cppreference.com/w/cpp/thread/mutex
  */
 int64_t Timeline::getTimeline() {
+    using namespace std::chrono;
     // Locks mutex and automatically unlocks itself.
     std::lock_guard<std::mutex> guard(m);
     // Returns the elapsed time of this Timeline object.
+    std::chrono::time_point<std::chrono::system_clock> curr = std::chrono::system_clock::now();
     if (anchor == nullptr) {
-        count++;
-        return count - pauseElapsed;
+        std::chrono::duration elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(curr - start);
+        count = elapsed.count() / tic;
+        return count;
     }
     count = anchor->getTimeline() / tic;
     return count - pauseElapsed;
