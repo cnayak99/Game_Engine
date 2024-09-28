@@ -1,12 +1,14 @@
 // main.cpp
 #include <SDL2/SDL.h>
 #include <iostream>
+
 #include "sdl_setup.h"
 #include "Entity.h"
 #include "Rectangle.h"
 #include "Physics.h"
 #include "Intersect.h"
 #include "Timeline.h"
+#include "structs.h"
 
 /**
  * Runs the game.
@@ -26,39 +28,64 @@
  * @author Robbie Martin
  */
 int main(int argc, char* argv[]) {
-    SDL_Window* window = nullptr;
-    SDL_Renderer* renderer = nullptr;
+    // Create the Game object.
+    Game game;
+    // Set the window up.
+    game.window = nullptr;
+    // Set the renderer up.
+    game.renderer = nullptr;
 
-    if (!initializeSDL(&window, &renderer)) {
-        return 1; // Initialization failed
+    // Attempt to initialize the game.
+    if (!initializeSDL(&game.window, &game.renderer)) {
+        return 1; // If unsuccessful, initialization failed.
     }
 
-    bool quit = false;
+    // Create the Concepts object.
+    Concepts concepts;
 
+    // Initialize quit to false.
+    concepts.quit = false;
+
+    // Create an event object.
     SDL_Event e;
 
+    // Construct the anchor timeline.
     Timeline anchor(nullptr, 1);
 
-    Entity staticEntity(Rectangle(100,100,100,100),{255,0,0,255}, false);//Static Red Shape
-    Entity controllableEntity(Rectangle(300,300,50,50),{0,255,0,255}, true);//Controllable Green Shape 
-    Entity movingEntity(Rectangle(100,100,100,100),{0,0,0,255}, false);//Black Moving Shape
-    bool scaling = false;
-    bool held = false;
-    float gravity = 9.8f;
+    // Creates the static red shape and connects its address to concepts.
+    Entity staticEntity(Rectangle(100,100,100,100),{255,0,0,255}, false); // Static red shape.
+    concepts.s = &staticEntity;
 
-    int speed = 5; // Speed of the Entity
-    float verticalVel =0.0f;
-    float thrust = -9.8f;
+    // Creates the controllable green shape and connects its address to concepts.
+    Entity controllableEntity(Rectangle(300,300,50,50),{0,255,0,255}, true); // Controllable green shape.
+    concepts.c = &controllableEntity;
+
+    // Creates the moving black shape and connects its address to concepts.
+    Entity movingEntity(Rectangle(100,100,100,100),{0,0,0,255}, false); // Black moving shape.
+    concepts.m = &movingEntity;
+
+    // Initializes scaling and held through concepts.
+    concepts.scaling = false;
+    concepts.held = false;
+
+    // Initializes physics variables.
+    concepts.gravity = 9.8f;
+    concepts.speed = 5; // Speed of the Entity.
+    concepts.verticalVel = 0.0f;
+    concepts.thrust = -9.8f;
+
+    // Sets the last time.
     int64_t lastTime = anchor.getTimeline();
 
-    while (!quit) {
+    // Runs the game.
+    while (!concepts.quit) {
         int64_t currentTime = anchor.getTimeline();
         float deltaTime = (currentTime - lastTime) / 1000.0f;
         printf("Time: %ld\nLast Time: %ld\nDelta: %f\n", currentTime, lastTime, deltaTime);
 
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT) {
-                quit = true;
+                concepts.quit = true;
             }
         }
         
@@ -66,44 +93,43 @@ int main(int argc, char* argv[]) {
         int moveSpeed = 5;
 
         if(state[SDL_SCANCODE_UP]){
-            // controllableEntity.move(0, -moveSpeed);
-            verticalVel = thrust;
+            concepts.verticalVel = concepts.thrust;
         }
 
-        if(state[SDL_SCANCODE_LEFT]){//Move Right
+        if(state[SDL_SCANCODE_LEFT]){ // Move left.
             controllableEntity.move(-moveSpeed,0);
         }
-        if(state[SDL_SCANCODE_RIGHT]){//Move Right
+        if(state[SDL_SCANCODE_RIGHT]){// Move right.
             controllableEntity.move(moveSpeed, 0);
         }
         if (state[SDL_SCANCODE_C]) {
-            if (!held) {
-                held = true;
-                if (!scaling) {
-                    SDL_RenderSetLogicalSize(renderer, 1920, 1080);
-                    scaling = true;
+            if (!concepts.held) {
+                concepts.held = true;
+                if (!concepts.scaling) {
+                    SDL_RenderSetLogicalSize(game.renderer, 1920, 1080);
+                    concepts.scaling = true;
                 }
                 else {
-                    SDL_RenderSetLogicalSize(renderer, 0, 0);
-                    scaling = false;
+                    SDL_RenderSetLogicalSize(game.renderer, 0, 0);
+                    concepts.scaling = false;
                 }
             }
         }
         else {
-            held = false;
+            concepts.held = false;
         }
         if (state[SDL_SCANCODE_ESCAPE]) {// Exit the game
-            quit = true; 
+            concepts.quit = true; 
         }
 
-        verticalVel += gravity * deltaTime * 60;
-        controllableEntity.move(0, static_cast<int>(verticalVel));
+        concepts.verticalVel += concepts.gravity * deltaTime * 60;
+        controllableEntity.move(0, static_cast<int>(concepts.verticalVel));
         //Apply Gravity to this object
 
         // Move the shape in a continuous pattern (horizontal)
-        movingEntity.move(speed, 0);
+        movingEntity.move(concepts.speed, 0);
         if (movingEntity.getRect().x > 1820 || movingEntity.getRect().x < 100) {
-            speed = -speed;
+            concepts.speed = -concepts.speed;
         }
 
         // Keeps track of the controllable rectangle.
@@ -123,11 +149,11 @@ int main(int argc, char* argv[]) {
             if (intersect(&c, &m) == 2) {
                 // Causes vertical collision.
                 deltaTime = 0;
-                verticalVel = 0;
+                concepts.verticalVel = 0;
                 // Enables player movement mimicking the moving entity.
-                controllableEntity.move(speed, static_cast<int>(verticalVel));
+                controllableEntity.move(concepts.speed, static_cast<int>(concepts.verticalVel));
                 if (controllableEntity.getRect().x > 1820 || controllableEntity.getRect().x < 100) {
-                    speed = -speed;
+                    concepts.speed = -concepts.speed;
                 }
             }
             // More sides will be added in the future.
@@ -140,23 +166,23 @@ int main(int argc, char* argv[]) {
             if (intersect(&c, &s) == 2) {
                 // Causes vertical collision.
                 deltaTime = 0;
-                verticalVel = 0;
+                concepts.verticalVel = 0;
             }
             // More sides will be added in the future.
         }
 
         // Set the background color to blue and clear the screen
-        SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-        SDL_RenderClear(renderer);
+        SDL_SetRenderDrawColor(game.renderer, 0, 0, 255, 255);
+        SDL_RenderClear(game.renderer);
 
         // Render the shapes
-        staticEntity.render(renderer);
-        controllableEntity.render(renderer);
-        movingEntity.render(renderer);
+        staticEntity.render(game.renderer);
+        controllableEntity.render(game.renderer);
+        movingEntity.render(game.renderer);
         
 
         // Present the rendered content
-        SDL_RenderPresent(renderer);
+        SDL_RenderPresent(game.renderer);
 
         // ~60 frames per second
         SDL_Delay(16);
@@ -164,8 +190,8 @@ int main(int argc, char* argv[]) {
     }
 
     // Clean up and shut down SDL
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
+    SDL_DestroyRenderer(game.renderer);
+    SDL_DestroyWindow(game.window);
     SDL_Quit();
 
     return 0;
