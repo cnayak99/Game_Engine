@@ -18,45 +18,62 @@ int main() {
     zmq::socket_t receiver(context, ZMQ_REP);
     receiver.bind("tcp://*:5555");
 
-    // Map to store client positions. Key is a string (clientId), value is a pair of integers (x, y positions)
-    std::unordered_map<std::string, std::pair<int, int>> clientPositions;
+    // Create a single broadcaster socket for publishing updates
+    zmq::socket_t broadcaster(context, ZMQ_PUB);
+    broadcaster.bind("tcp://*:5556");
 
-    // Print message indicating the server has started
+    // Map to store client positions and addresses
+    std::unordered_map<std::string, std::tuple<int, int, std::string>> clientData;
+    std::unordered_map<std::string, std::string> clientAddresses;
+
     std::cout << "Server has started and is listening on port 5555." << std::endl;
 
     while (true) {
         zmq::message_t request;
         receiver.recv(request, zmq::recv_flags::none);
-        std::string clientData = request.to_string();
+        std::string clientDataString = request.to_string();
 
         // Parse the received JSON data
         json jsonData;
         try {
-            jsonData = json::parse(clientData); // Parse the incoming JSON
+            jsonData = json::parse(clientDataString);
 
-            // Extract client ID and position from the JSON
+            // Extract client ID, address, and position from the JSON
             std::string clientId = jsonData["clientId"];
+            std::string clientAddr = jsonData["clientAddr"];
             int x = jsonData["x"];
             int y = jsonData["y"];
 
             // Check if this client ID is unique
-            if (clientPositions.find(clientId) == clientPositions.end()) {
-                std::cout << "New client connected with ID: " << clientId << std::endl;
+            if (clientData.find(clientId) == clientData.end()) {
+                std::cout << "New client connected with ID: " << clientId 
+                          << " and Address: " << clientAddr << std::endl;
+                clientAddresses[clientId] = clientAddr;
+
+                // Convert the updated addresses map to JSON
+                json addressesJson = clientAddresses;
+                std::string addressesString = addressesJson.dump();
+
+                // Send the updated addresses to all clients
+                zmq::message_t addressUpdate(addressesString.size());
+                memcpy(addressUpdate.data(), addressesString.c_str(), addressesString.size());
+                broadcaster.send(addressUpdate, zmq::send_flags::none);
             }
 
-            // Update the client's position in the map
-            clientPositions[clientId] = {x, y}; // Use clientId as the map key
+            // Update the client's position and address in the map
+            clientData[clientId] = std::make_tuple(x, y, clientAddr);
         } catch (const json::parse_error& e) {
             std::cerr << "Parse error: " << e.what() << std::endl;
-            continue; // Skip to the next iteration if parsing fails
+            continue;
         }
 
         // Prepare the JSON response
         json positionUpdates = json::array();
-        for (const auto& [id, pos] : clientPositions) {
+        for (const auto& [id, data] : clientData) {
             positionUpdates.push_back({
                 {"clientId", id},
-                {"position", {{"x", pos.first}, {"y", pos.second}}}
+                {"clientAddr", std::get<2>(data)},
+                {"position", {{"x", std::get<0>(data)}, {"y", std::get<1>(data)}}}
             });
         }
 
