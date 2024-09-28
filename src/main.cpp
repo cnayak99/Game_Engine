@@ -79,30 +79,46 @@ int main(int argc, char* argv[]) {
 
     // Runs the game.
     while (!concepts.quit) {
+        // Gets the current time.
         int64_t currentTime = anchor.getTimeline();
+        // Calculates delta time.
         float deltaTime = (currentTime - lastTime) / 1000.0f;
+        // Stores delta time in concepts.
+        concepts.delta = deltaTime;
+        // TEMPORARY: prints calculated time variables.
         printf("Time: %ld\nLast Time: %ld\nDelta: %f\n", currentTime, lastTime, deltaTime);
 
+        // Checks if the user is quitting.
         while (SDL_PollEvent(&e) != 0) {
+            // If the user is quitting, quit the game.
             if (e.type == SDL_QUIT) {
                 concepts.quit = true;
             }
         }
         
-        const Uint8* state = SDL_GetKeyboardState(nullptr);
-        int moveSpeed = 5;
+        // Stores the keyboard state in concepts.
+        concepts.state = SDL_GetKeyboardState(nullptr);
 
-        if(state[SDL_SCANCODE_UP]){
+        // Stores the move speed in concepts.
+        concepts.moveSpeed = 5;
+
+        // If the player is pressing up.
+        if(concepts.state[SDL_SCANCODE_UP]){ // Move up.
             concepts.verticalVel = concepts.thrust;
         }
 
-        if(state[SDL_SCANCODE_LEFT]){ // Move left.
-            controllableEntity.move(-moveSpeed,0);
+        // If the player is pressing left.
+        if(concepts.state[SDL_SCANCODE_LEFT]){ // Move left.
+            controllableEntity.move(-concepts.moveSpeed,0);
         }
-        if(state[SDL_SCANCODE_RIGHT]){// Move right.
-            controllableEntity.move(moveSpeed, 0);
+
+        // If the player is pressing right.
+        if(concepts.state[SDL_SCANCODE_RIGHT]){// Move right.
+            controllableEntity.move(concepts.moveSpeed, 0);
         }
-        if (state[SDL_SCANCODE_C]) {
+        
+        // If the player is pressing 'C'.
+        if (concepts.state[SDL_SCANCODE_C]) { // Change window size.
             if (!concepts.held) {
                 concepts.held = true;
                 if (!concepts.scaling) {
@@ -118,7 +134,9 @@ int main(int argc, char* argv[]) {
         else {
             concepts.held = false;
         }
-        if (state[SDL_SCANCODE_ESCAPE]) {// Exit the game
+
+        // If the player is pressing 'ESC'.
+        if (concepts.state[SDL_SCANCODE_ESCAPE]) {// Exit the game.
             concepts.quit = true; 
         }
 

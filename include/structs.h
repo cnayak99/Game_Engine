@@ -18,6 +18,11 @@ typedef struct {
     int speed;
     float verticalVel;
     float thrust;
+    int moveSpeed;
+
+    float delta;
+
+    const Uint8* state;
 
     Entity *s;
     Entity *c;

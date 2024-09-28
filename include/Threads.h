@@ -9,6 +9,7 @@
 #include "Timeline.h"
 #include "Entity.h"
 #include "Rectangle.h"
+#include "structs.h"
 
 /**
  * Initializes the threads for our program.
@@ -34,10 +35,10 @@ class Threads
     std::condition_variable *_cv_m; // For messaging between threads regarding the moving entity.
 
     public:
-        Threads(int i, Threads *other, std::mutex *_mutex, std::condition_variable *_cv_s, std::condition_variable *_cv_m, Timeline *time_Threads, Entity *staticE, Entity *controllableE, Entity *movingE); // Compiles the Threads object.
+        Threads(int i, Threads *other, std::mutex *_mutex, std::condition_variable *_cv_s, std::condition_variable *_cv_m, Timeline *time_Threads); // Compiles the Threads object.
         bool isBusy(); // Alerts a thread if the other is busy.
         void run(); // Runs both threads.
-        int main(Timeline *time_Threads, Entity *staticE, Entity *controllableE, Entity *movingE); // Begins running both threads.
+        int main(Timeline *time_Threads); // Begins running both threads.
 };
 
 #endif

@@ -6,6 +6,7 @@
 #include "Timeline.h"
 #include "Entity.h"
 #include "Rectangle.h"
+#include "structs.h"
 
 /**
  * Initializes the threads for our program.
@@ -30,12 +31,9 @@ class Threads
     std::condition_variable *_cv_s; // For thread communication regarding the static entity.
     std::condition_variable *_cv_m; // For thread communication regarding the moving entity.
     Timeline *time_Threads;
-    Entity *staticE;
-    Entity *controllableE;
-    Entity *movingE;
 
     public:
-        Threads(int i, Threads *other, std::mutex *_mutex, std::condition_variable *_cv_s, std::condition_variable *_cv_m, Timeline *time_Threads, Entity *staticE, Entity *controllableE, Entity *movingE)
+        Threads(int i, Threads *other, std::mutex *_mutex, std::condition_variable *_cv_s, std::condition_variable *_cv_m, Timeline *time_Threads)
         {
             this->i = i; // set the id of this thread
             if(i==0) { busy = true; }
@@ -44,9 +42,6 @@ class Threads
             this->_cv_s = _cv_s;
             this->_cv_m = _cv_m;
             this->time_Threads = time_Threads;
-            this->staticE = staticE;
-            this->controllableE = controllableE;
-            this->movingE = movingE;
         }
 
         bool isBusy()
@@ -159,15 +154,15 @@ void run_wrapper(Threads *th)
  * the "Homework 2" subtitle on the "CSC 481/581 (001) Fall 2024
  * Game Engine Foundations" course Moodle page.
  */
-int start(Timeline *time_Threads, Entity *staticE, Entity *controllableE, Entity *movingE)
+int start(Timeline *time_Threads)
 {    // Mutex to handle locking, condition variables to handle notifications between threads
     std::mutex m;
     std::condition_variable cv_s;
     std::condition_variable cv_m;
 
     // Create thread objects
-    Threads t1(0, NULL, &m, &cv_s, &cv_m, time_Threads, staticE, controllableE, movingE);
-    Threads t2(1, &t1, &m, &cv_s, &cv_m, time_Threads, staticE, controllableE, movingE);
+    Threads t1(0, NULL, &m, &cv_s, &cv_m, time_Threads);
+    Threads t2(1, &t1, &m, &cv_s, &cv_m, time_Threads);
 
     // Start threads
     std::thread first(run_wrapper, &t1);
