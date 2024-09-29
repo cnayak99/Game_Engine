@@ -66,70 +66,21 @@ void printPositions(const json& positions) {
 }
 
 
-// Function to listen for peer messages and send acknowledgments
-void listenForPeers(zmq::socket_t& pairSocket) {
-    while (true) {
-        zmq::message_t message;
-        pairSocket.recv(message, zmq::recv_flags::none);
-        std::string msgStr(static_cast<char*>(message.data()), message.size());
-
-        if (msgStr == "CONNECT") {
-            std::cout << "Received connection request from peer" << std::endl;
-
-            // Send acknowledgment back
-            zmq::message_t ackMsg("ACK");
-            pairSocket.send(ackMsg, zmq::send_flags::none);
-        } else if (msgStr == "ACK") {
-            std::cout << "Received acknowledgment from peer" << std::endl;
-        }
-    }
-}
-void listenForUpdatessss(zmq::socket_t& subscriberSocket, std::vector<std::string>& knownAddresses, zmq::context_t& context) {
-    while (true) {
-        zmq::message_t update;
-        subscriberSocket.recv(update, zmq::recv_flags::none);
-        std::string updateStr(static_cast<char*>(update.data()), update.size());
-
-        try {
-            auto updatedClientAddresses = json::parse(updateStr);
-            std::cout << "Received updated client addresses:" << std::endl;
-            for (auto& [id, addr] : updatedClientAddresses.items()) {
-                std::cout << id << ": " << addr << std::endl;
-
-                if (std::find(knownAddresses.begin(), knownAddresses.end(), addr) == knownAddresses.end()) {
-                    
-                    knownAddresses.push_back(addr);
-
-                    for (const auto& addr : knownAddresses) {
-                        zmq::socket_t dealerSocket(context, ZMQ_DEALER);
-                        dealerSocket.connect(addr);
-
-                        // Send a connect message
-                        zmq::message_t connectMsg("CONNECT");
-                        dealerSocket.send(connectMsg, zmq::send_flags::none);
-
-                        // Wait for acknowledgment
-                        zmq::message_t ack;
-                        dealerSocket.recv(ack, zmq::recv_flags::none);
-                        std::string ackStr(static_cast<char*>(ack.data()), ack.size());
-                        if (ackStr == "ACK") {
-                            std::cout << "Received acknowledgment from peer at " << addr << std::endl;
-                        }
-                    }
-                    
-                }
-            }
-        } catch (const json::parse_error& e) {
-            std::cerr << "Parse error: " << e.what() << std::endl;
-        }
-    }
-}
-
-
 std::mutex knownAddressesMutex;
 
 
-// Listen for client updates from the server and establish P2P connections with other clients
+void broadcastPosition(std::unordered_map<std::string, zmq::socket_t>& dealerSockets, const std::string& positionData) {
+    std::lock_guard<std::mutex> lock(knownAddressesMutex); // Lock for thread safety
+    for (auto& [addr, socket] : dealerSockets) {
+        zmq::message_t msg(positionData.size());
+        memcpy(msg.data(), positionData.c_str(), positionData.size());
+
+        // Send the message
+        socket.send(std::move(msg), zmq::send_flags::none);
+    }
+}
+
+// Function to listen for updates and establish connections
 void listenForUpdates(zmq::socket_t& subscriberSocket, std::unordered_map<std::string, zmq::socket_t>& dealerSockets, zmq::context_t& context, const std::string& clientAddress) {
     while (true) {
         zmq::message_t update;
@@ -161,7 +112,7 @@ void listenForUpdates(zmq::socket_t& subscriberSocket, std::unordered_map<std::s
                     std::string connectMessage = "CONNECT:" + clientAddress;
                     zmq::message_t connectMsg(connectMessage.size());
                     memcpy(connectMsg.data(), connectMessage.c_str(), connectMessage.size());
-                    dealerSockets[addrStr].send(connectMsg, zmq::send_flags::none);
+                    dealerSockets[addrStr].send(std::move(connectMsg), zmq::send_flags::none);
 
                     // Wait for acknowledgment
                     zmq::message_t ack;
@@ -178,6 +129,7 @@ void listenForUpdates(zmq::socket_t& subscriberSocket, std::unordered_map<std::s
     }
 }
 
+// Function to handle incoming messages from peers
 void handleIncomingMessages(zmq::socket_t& routerSocket, std::unordered_map<std::string, std::string>& identityToAddressMap) {
     while (true) {
         zmq::message_t identity;
@@ -205,16 +157,26 @@ void handleIncomingMessages(zmq::socket_t& routerSocket, std::unordered_map<std:
         } else {
             auto it = identityToAddressMap.find(identityStr);
             if (it != identityToAddressMap.end()) {
-                std::cout << "Received message from " << it->second << ": " << msgStr << std::endl;
+                // std::cout << "Received message from " << it->second << ": " << msgStr << std::endl;
+
+                // Process received position data here
+                try {
+                    auto positionData = json::parse(msgStr);
+                    string clientId = positionData["clientId"];
+                    float x = positionData["x"];
+                    float y = positionData["y"];
+                    std::cout << "Position Coordinates of "<<clientId<< " are"<<" - X: " << x << ", Y: " << y << std::endl;
+                } catch (const json::parse_error& e) {
+                    std::cerr << "Error parsing JSON: " << e.what() << std::endl;
+                } catch (const std::exception& e) {
+                    std::cerr << "Error accessing coordinates: " << e.what() << std::endl;
+                }
             } else {
                 std::cout << "Received message from Unknown: " << msgStr << std::endl;
             }
         }
     }
 }
-
-
-
 
 void printPositions(SDL_Renderer* renderer, TTF_Font* font, const std::vector<std::tuple<std::string, int, int>>& positions) {
     SDL_Color textColor = {255, 255, 255}; // White color for the text
@@ -465,7 +427,19 @@ std::thread updateListener(listenForUpdates, std::ref(subscriber), std::ref(deal
                 movingEntity.setPosition(x, y); // Implement setPosition method in Entity class
             }
         }
-        
+
+        nlohmann::json controllableEntityDetails = {
+            {"clientId", clientId},
+            {"clientAddr", clientAddress},
+            {"x", controllableEntity.getRect().x},
+            {"y", controllableEntity.getRect().y}
+        };
+        std::string controllablePositionData = controllableEntityDetails.dump();
+
+        broadcastPosition(dealerSockets, controllablePositionData);
+
+              
+
         SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
         SDL_RenderClear(renderer);
 
