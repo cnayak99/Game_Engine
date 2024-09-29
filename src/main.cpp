@@ -64,165 +64,7 @@ void printPositions(const json& positions) {
         // std::cout << "Client ID: " << clientId << "Client Addr: "<< clientAddr <<" Position: (" << x << ", " << y << ")" << std::endl;
     }
 }
-// void listenForPeers(zmq::socket_t& pullSocket) {
-//     while (true) {
-//         zmq::message_t message;
-//         pullSocket.recv(message, zmq::recv_flags::none);
-//         std::string peerMessage = message.to_string();
-//         std::cout << "Received message from peer: " << peerMessage << std::endl;
-//     }
-// }
-// Function to listen for updates from the server
-// void listenForUpdates(zmq::socket_t& subscriberSocket) {
-//     while (true) {
-//         zmq::message_t update;
-//         subscriberSocket.recv(update, zmq::recv_flags::none);
-//         std::string updateStr(static_cast<char*>(update.data()), update.size());
 
-//         // Parse the received JSON data
-//         try {
-//             auto updatedClientAddresses = json::parse(updateStr);
-//             std::cout << "Received updated client addresses:" << std::endl;
-//             for (auto& [id, addr] : updatedClientAddresses.items()) {
-//                 std::cout << id << ": " << addr << std::endl;
-//             }
-//         } catch (const json::parse_error& e) {
-//             std::cerr << "Parse error: " << e.what() << std::endl;
-//         }
-//     }
-// }
-
-// void listenForPeers(zmq::socket_t& pullSocket) {
-//     while (true) {
-//         zmq::message_t message;
-//         pullSocket.recv(message, zmq::recv_flags::none);
-        
-//         std::string msgStr(static_cast<char*>(message.data()), message.size());
-//         json receivedData = json::parse(msgStr);
-
-//         std::string peerId = receivedData["clientId"];
-//         int x = receivedData["x"];
-//         int y = receivedData["y"];
-
-//         // Print the ID of the connected peer along with their coordinates
-//         std::cout << "Peer ID: " << peerId << ", X: " << x << ", Y: " << y << std::endl;
-//     }
-// }
-// void listenForPeers(zmq::socket_t& pullSocket) {
-//     while (true) {
-//         zmq::message_t message;
-//         pullSocket.recv(message, zmq::recv_flags::none);
-        
-//         // Parse the received JSON data
-//         std::string messageData = message.to_string();
-//         try {
-//             json jsonData = json::parse(messageData);
-//             std::string clientId = jsonData["clientId"];
-//             int x = jsonData["x"];
-//             int y = jsonData["y"];
-            
-//             // Print the coordinates received from each peer
-//             std::cout << "Received from " << clientId << ": x = " << x << ", y = " << y << std::endl;
-//         } catch (const json::parse_error& e) {
-//             std::cerr << "Failed to parse message: " << e.what() << std::endl;
-//         }
-//     }
-// }
-// void listenForUpdates2(zmq::socket_t& subscriberSocket, std::vector<zmq::socket_t>& pushSockets, zmq::context_t& context) {
-//     while (true) {
-//         zmq::message_t update;
-//         subscriberSocket.recv(update, zmq::recv_flags::none);
-//         std::string updateStr(static_cast<char*>(update.data()), update.size());
-
-//         // Parse the received JSON data
-//         try {
-//             auto updatedClientAddresses = json::parse(updateStr);
-//             std::cout << "Received updated client addresses:" << std::endl;
-//             for (auto& [id, addr] : updatedClientAddresses.items()) {
-//                 std::cout << id << ": " << addr << std::endl;
-
-//                 // Connect to new peers
-//                 zmq::socket_t pushSocket(context, ZMQ_PUSH);
-//                 pushSocket.connect(addr);
-//                 pushSockets.push_back(std::move(pushSocket));
-//             }
-//         } catch (const json::parse_error& e) {
-//             std::cerr << "Parse error: " << e.what() << std::endl;
-//         }
-//     }
-// }
-// void listenForUpdates(zmq::socket_t& subscriberSocket, std::vector<zmq::socket_t>& pushSockets, zmq::context_t& context, zmq::socket_t& pullSocket) {
-//     while (true) {
-//         zmq::message_t update;
-//         subscriberSocket.recv(update, zmq::recv_flags::none);
-//         std::string updateStr(static_cast<char*>(update.data()), update.size());
-
-//         // Parse the received JSON data
-//         try {
-//             auto updatedClientAddresses = json::parse(updateStr);
-//             std::cout << "Received updated client addresses:" << std::endl;
-//             for (auto& [id, addr] : updatedClientAddresses.items()) {
-//                 std::cout << id << ": " << addr << std::endl;
-
-//                 // Connect to new peers
-//                 zmq::socket_t pushSocket(context, ZMQ_PUSH);
-//                 pushSocket.connect(addr);
-//                 pushSockets.push_back(std::move(pushSocket));
-
-//                 // Send a connection request
-//                 zmq::message_t connectMsg("CONNECT");
-//                 pushSockets.back().send(connectMsg, zmq::send_flags::none);
-//             }
-//         } catch (const json::parse_error& e) {
-//             std::cerr << "Parse error: " << e.what() << std::endl;
-//         }
-//     }
-// }
-// void listenForPeers(zmq::socket_t& pullSocket) {
-//     while (true) {
-//         zmq::message_t message;
-//         pullSocket.recv(message, zmq::recv_flags::none);
-//         std::string msgStr(static_cast<char*>(message.data()), message.size());
-
-//         if (msgStr == "CONNECT") {
-//             std::cout << "Received connection request from peer" << std::endl;
-
-//             // Send acknowledgment back
-//             zmq::message_t ackMsg("ACK");
-//             pullSocket.send(ackMsg, zmq::send_flags::none);
-//         } else if (msgStr == "ACK") {
-//             std::cout << "Received acknowledgment from peer" << std::endl;
-//         }
-//     }
-// }
-
-void listenForUpdates(zmq::socket_t& subscriberSocket, std::vector<zmq::socket_t>& peerSockets, zmq::context_t& context) {
-    while (true) {
-        zmq::message_t update;
-        subscriberSocket.recv(update, zmq::recv_flags::none);
-        std::string updateStr(static_cast<char*>(update.data()), update.size());
-
-        // Parse the received JSON data
-        try {
-            auto updatedClientAddresses = json::parse(updateStr);
-            std::cout << "Received updated client addresses:" << std::endl;
-            for (auto& [id, addr] : updatedClientAddresses.items()) {
-                std::cout << id << ": " << addr << std::endl;
-
-                // Connect to new peers using PAIR sockets
-                zmq::socket_t peerSocket(context, ZMQ_PAIR);
-                peerSocket.connect(addr);
-                peerSockets.push_back(std::move(peerSocket));
-
-                // Send a connection request
-                zmq::message_t connectMsg("CONNECT");
-                peerSockets.back().send(connectMsg, zmq::send_flags::none);
-            }
-        } catch (const json::parse_error& e) {
-            std::cerr << "Parse error: " << e.what() << std::endl;
-        }
-    }
-}
 
 // Function to listen for peer messages and send acknowledgments
 void listenForPeers(zmq::socket_t& pairSocket) {
@@ -242,6 +84,138 @@ void listenForPeers(zmq::socket_t& pairSocket) {
         }
     }
 }
+void listenForUpdatessss(zmq::socket_t& subscriberSocket, std::vector<std::string>& knownAddresses, zmq::context_t& context) {
+    while (true) {
+        zmq::message_t update;
+        subscriberSocket.recv(update, zmq::recv_flags::none);
+        std::string updateStr(static_cast<char*>(update.data()), update.size());
+
+        try {
+            auto updatedClientAddresses = json::parse(updateStr);
+            std::cout << "Received updated client addresses:" << std::endl;
+            for (auto& [id, addr] : updatedClientAddresses.items()) {
+                std::cout << id << ": " << addr << std::endl;
+
+                if (std::find(knownAddresses.begin(), knownAddresses.end(), addr) == knownAddresses.end()) {
+                    
+                    knownAddresses.push_back(addr);
+
+                    for (const auto& addr : knownAddresses) {
+                        zmq::socket_t dealerSocket(context, ZMQ_DEALER);
+                        dealerSocket.connect(addr);
+
+                        // Send a connect message
+                        zmq::message_t connectMsg("CONNECT");
+                        dealerSocket.send(connectMsg, zmq::send_flags::none);
+
+                        // Wait for acknowledgment
+                        zmq::message_t ack;
+                        dealerSocket.recv(ack, zmq::recv_flags::none);
+                        std::string ackStr(static_cast<char*>(ack.data()), ack.size());
+                        if (ackStr == "ACK") {
+                            std::cout << "Received acknowledgment from peer at " << addr << std::endl;
+                        }
+                    }
+                    
+                }
+            }
+        } catch (const json::parse_error& e) {
+            std::cerr << "Parse error: " << e.what() << std::endl;
+        }
+    }
+}
+
+
+std::mutex knownAddressesMutex;
+
+
+// Listen for client updates from the server and establish P2P connections with other clients
+void listenForUpdates(zmq::socket_t& subscriberSocket, std::unordered_map<std::string, zmq::socket_t>& dealerSockets, zmq::context_t& context, const std::string& clientAddress) {
+    while (true) {
+        zmq::message_t update;
+        subscriberSocket.recv(update, zmq::recv_flags::none);
+        std::string updateStr(static_cast<char*>(update.data()), update.size());
+
+        try {
+            auto updatedClientAddresses = json::parse(updateStr);
+            std::cout << "Received updated client addresses:" << std::endl;
+            for (auto& [id, addr] : updatedClientAddresses.items()) {
+                std::cout << id << ": " << addr << std::endl;
+
+                // Ensure addr is treated as a string
+                std::string addrStr = addr.get<std::string>();
+
+                if (addrStr == clientAddress) {
+                    // Skip connecting to itself
+                    continue;
+                }
+
+                std::lock_guard<std::mutex> lock(knownAddressesMutex);
+                if (dealerSockets.find(addrStr) == dealerSockets.end() && updatedClientAddresses.size() > 1) {
+                    zmq::socket_t dealerSocket(context, ZMQ_DEALER);
+                    dealerSocket.setsockopt(ZMQ_IDENTITY, clientAddress.c_str(), clientAddress.size());
+                    dealerSocket.connect(addrStr);
+                    dealerSockets[addrStr] = std::move(dealerSocket);
+
+                    // Send a connect message with client address
+                    std::string connectMessage = "CONNECT:" + clientAddress;
+                    zmq::message_t connectMsg(connectMessage.size());
+                    memcpy(connectMsg.data(), connectMessage.c_str(), connectMessage.size());
+                    dealerSockets[addrStr].send(connectMsg, zmq::send_flags::none);
+
+                    // Wait for acknowledgment
+                    zmq::message_t ack;
+                    dealerSockets[addrStr].recv(ack, zmq::recv_flags::none);
+                    std::string ackStr(static_cast<char*>(ack.data()), ack.size());
+                    if (ackStr == "ACK") {
+                        std::cout << "Received acknowledgment from peer at " << addrStr << std::endl;
+                    }
+                }
+            }
+        } catch (const json::parse_error& e) {
+            std::cerr << "Parse error: " << e.what() << std::endl;
+        }
+    }
+}
+
+void handleIncomingMessages(zmq::socket_t& routerSocket, std::unordered_map<std::string, std::string>& identityToAddressMap) {
+    while (true) {
+        zmq::message_t identity;
+        zmq::message_t message;
+
+        // Receive identity frame
+        routerSocket.recv(identity, zmq::recv_flags::none);
+        std::string identityStr(static_cast<char*>(identity.data()), identity.size());
+
+        // Receive message frame
+        routerSocket.recv(message, zmq::recv_flags::none);
+        std::string msgStr(static_cast<char*>(message.data()), message.size());
+
+        // Extract address from CONNECT message
+        if (msgStr.rfind("CONNECT:", 0) == 0) {  // Check if the message starts with "CONNECT:"
+            std::string senderAddress = msgStr.substr(8);  // Extract address from the message
+            identityToAddressMap[identityStr] = senderAddress;  // Update map with the new address
+
+            std::cout << "Received connection request from " << senderAddress << ": " << msgStr << std::endl;
+
+            // Send acknowledgment back
+            zmq::message_t ackMsg("ACK", 3);
+            routerSocket.send(identity, zmq::send_flags::sndmore);
+            routerSocket.send(ackMsg, zmq::send_flags::none);
+        } else {
+            auto it = identityToAddressMap.find(identityStr);
+            if (it != identityToAddressMap.end()) {
+                std::cout << "Received message from " << it->second << ": " << msgStr << std::endl;
+            } else {
+                std::cout << "Received message from Unknown: " << msgStr << std::endl;
+            }
+        }
+    }
+}
+
+
+
+
 void printPositions(SDL_Renderer* renderer, TTF_Font* font, const std::vector<std::tuple<std::string, int, int>>& positions) {
     SDL_Color textColor = {255, 255, 255}; // White color for the text
     int yOffset = 20; // Starting Y position for text rendering
@@ -327,37 +301,23 @@ int main(int argc, char* argv[]) {
     zmq::socket_t subscriber(context, ZMQ_SUB);
     subscriber.connect("tcp://localhost:5556"); // For receiving position updates
     subscriber.setsockopt(ZMQ_SUBSCRIBE, "", 0); // Subscribe to all messages
-    
-    // Set up PULL socket to listen for peer messages
-    // zmq::socket_t pullSocket(context, ZMQ_PULL);
-    // pullSocket.bind(clientAddress); // Assuming clientAddress is the listening address
-    // std::vector<zmq::socket_t> pushSockets;
 
-    // std::thread updateListener(listenForUpdates, std::ref(subscriber));
-    // updateListener.detach();
+    zmq::socket_t routerSocket(context, ZMQ_ROUTER);
+    routerSocket.bind(clientAddress);
 
-    // std::thread updateListener2(listenForUpdates2, std::ref(subscriber), std::ref(pushSockets), std::ref(context));
-    // updateListener2.detach();
+    // Map to store DEALER sockets by address
+    std::unordered_map<std::string, zmq::socket_t> dealerSockets;
 
-    // std::thread updateListener(listenForUpdates, std::ref(subscriber), std::ref(pushSockets), std::ref(context), std::ref(pullSocket));
-    // updateListener.detach(); // Detach the thread to allow it to run independently
+    // Map to track identities and their corresponding addresses
+    std::unordered_map<std::string, std::string> identityToAddressMap;
 
-    // std::thread peerListener(listenForPeers, std::ref(pullSocket));
-    // peerListener.detach(); // Detach the thread to allow it to run independently
+    // Start thread for listening for server updates
+std::thread updateListener(listenForUpdates, std::ref(subscriber), std::ref(dealerSockets), std::ref(context), std::cref(clientAddress));
+    updateListener.detach();
 
-    // Set up PAIR socket to listen for peer messages
-    zmq::socket_t pairSocket(context, ZMQ_PAIR);
-    pairSocket.bind(clientAddress); // Assuming clientAddress is the listening address
-
-    // Start threads for listening and handling peer communication
-    std::vector<zmq::socket_t> peerSockets; // Vector to store PAIR sockets for peers
-    std::thread updateListener(listenForUpdates, std::ref(subscriber), std::ref(peerSockets), std::ref(context));
-    updateListener.detach(); // Detach the thread to allow it to run independently
-
-    for(auto& soc: peerSockets){
-        std::thread peerListener(listenForPeers, std::ref(pairSocket));
-        peerListener.detach(); // Detach the thread to allow it to run independently
-    }
+    // Start thread to handle incoming messages
+    std::thread incomingHandler(handleIncomingMessages,std::ref(routerSocket),std::ref(identityToAddressMap));
+    incomingHandler.detach();
     bool quit = false;
     SDL_Event e;
     
@@ -506,31 +466,6 @@ int main(int argc, char* argv[]) {
             }
         }
         
-        // If this is the first time we are sending peer addresses
-        // if (pushSockets.empty()) {
-        //     std::string peerList = reply.to_string(); // Assuming the reply contains peer addresses
-        //     std::istringstream stream(peerList);
-        //     std::string peerData;
-            
-        //     while (getline(stream, peerData, ';')) {
-        //         zmq::socket_t pushSocket(context, ZMQ_PUSH);
-        //         pushSocket.connect(peerData); // Connect to each peer address
-        //         pushSockets.push_back(std::move(pushSocket));
-        //     }
-        // }
-        // Set the background color to blue and clear the screen
-        // json messageData = {
-        //     {"clientId", clientId},
-        //     {"x", controllableEntity.getRect().x},
-        //     {"y", controllableEntity.getRect().y}
-        // };
-        // string messageJson = messageData.dump();
-        // for (auto& pushSocket : pushSockets) {
-        //     zmq::message_t msg(messageJson.size());
-        //     memcpy(msg.data(), messageJson.c_str(), messageJson.size());
-        //     pushSocket.send(msg, zmq::send_flags::none);
-        // }
-        // std::this_thread::sleep_for(std::chrono::seconds(1));
         SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
         SDL_RenderClear(renderer);
 

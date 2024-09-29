@@ -6,35 +6,49 @@
 #include <ctime>   // For time()
 
 // Function to handle messages from the server
-void listenForMessages(zmq::socket_t& dealerSocket, std::unordered_map<std::string, std::string>& knownPeers) {
+void listenForUpdates(zmq::socket_t& subscriberSocket, std::vector<zmq::socket_t>& peerSockets, zmq::context_t& context) {
+    while (true) {
+        zmq::message_t update;
+        subscriberSocket.recv(update, zmq::recv_flags::none);
+        std::string updateStr(static_cast<char*>(update.data()), update.size());
+
+        // Parse the received JSON data
+        try {
+            auto updatedClientAddresses = json::parse(updateStr);
+            std::cout << "Received updated client addresses:" << std::endl;
+            for (auto& [id, addr] : updatedClientAddresses.items()) {
+                std::cout << id << ": " << addr << std::endl;
+
+                // Connect to new peers using PAIR sockets
+                zmq::socket_t peerSocket(context, ZMQ_PAIR);
+                peerSocket.connect(addr);
+                peerSockets.push_back(std::move(peerSocket));
+
+                // Send a connection request
+                zmq::message_t connectMsg("CONNECT");
+                peerSockets.back().send(connectMsg, zmq::send_flags::none);
+            }
+        } catch (const json::parse_error& e) {
+            std::cerr << "Parse error: " << e.what() << std::endl;
+        }
+    }
+}
+
+void listenForPeers(zmq::socket_t& pairSocket) {
     while (true) {
         zmq::message_t message;
-        dealerSocket.recv(message, zmq::recv_flags::none);
+        pairSocket.recv(message, zmq::recv_flags::none);
         std::string msgStr(static_cast<char*>(message.data()), message.size());
 
-        // Handle different types of messages
-        if (msgStr.find("NEW_PEER") == 0) {
-            std::string newPeerID = msgStr.substr(9); // Extract peer ID from message
-            if (knownPeers.find(newPeerID) == knownPeers.end()) {
-                knownPeers[newPeerID] = "localhost"; // Store new peer info
-                std::cout << "New peer connected: " << newPeerID << std::endl;
-            }
-        } else if (msgStr.find("EXISTING_PEER") == 0) {
-            std::string existingPeerID = msgStr.substr(14); // Extract peer ID from message
-            if (knownPeers.find(existingPeerID) == knownPeers.end()) {
-                knownPeers[existingPeerID] = "localhost"; // Store existing peer info
-                std::cout << "Existing peer: " << existingPeerID << std::endl;
-            }
-        } else {
-            std::cout << "Received message: " << msgStr << std::endl;
-        }
+        if (msgStr == "CONNECT") {
+            std::cout << "Received connection request from peer" << std::endl;
 
-        // Print out all known peers
-        std::cout << "Known peers: ";
-        for (const auto& peer : knownPeers) {
-            std::cout << peer.first << " ";
+            // Send acknowledgment back
+            zmq::message_t ackMsg("ACK");
+            pairSocket.send(ackMsg, zmq::send_flags::none);
+        } else if (msgStr == "ACK") {
+            std::cout << "Received acknowledgment from peer" << std::endl;
         }
-        std::cout << std::endl;
     }
 }
 
