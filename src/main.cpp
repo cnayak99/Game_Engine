@@ -61,7 +61,6 @@ void printPositions(const json& positions) {
         int x = position["position"]["x"];
         int y = position["position"]["y"];
         cout<< "ClientAddr: "<<clientAddr<<endl;
-        // std::cout << "Client ID: " << clientId << "Client Addr: "<< clientAddr <<" Position: (" << x << ", " << y << ")" << std::endl;
     }
 }
 
@@ -179,40 +178,7 @@ void handleIncomingMessages(zmq::socket_t& routerSocket, std::unordered_map<std:
     }
 }
 
-void printPositions(SDL_Renderer* renderer, TTF_Font* font, const std::vector<std::tuple<std::string, int, int>>& positions) {
-    SDL_Color textColor = {255, 255, 255}; // White color for the text
-    int yOffset = 20; // Starting Y position for text rendering
 
-    for (const auto& [clientId, x, y] : positions) {
-        std::string positionText = clientId + " is at position (" + std::to_string(x) + ", " + std::to_string(y) + ")";
-
-        // Create an SDL_Surface with the text
-        SDL_Surface* textSurface = TTF_RenderText_Solid(font, positionText.c_str(), textColor);
-        if (textSurface == nullptr) {
-            std::cerr << "Failed to create text surface: " << TTF_GetError() << std::endl;
-            continue;
-        }
-
-        // Create a texture from the surface
-        SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
-        SDL_FreeSurface(textSurface); // Free the surface once the texture is created
-
-        if (textTexture == nullptr) {
-            std::cerr << "Failed to create texture: " << SDL_GetError() << std::endl;
-            continue;
-        }
-
-        // Set the position and size for rendering the text
-        SDL_Rect textRect = {20, yOffset, textSurface->w, textSurface->h}; // x = 20, y = yOffset
-        yOffset += textSurface->h + 10; // Increment yOffset for next line of text
-
-        // Render the text on the screen
-        SDL_RenderCopy(renderer, textTexture, nullptr, &textRect);
-
-        // Clean up the texture
-        SDL_DestroyTexture(textTexture);
-    }
-}
 int main(int argc, char* argv[]) {
     /**
      * This code section is heavily inspired from the example delta time
@@ -232,7 +198,6 @@ int main(int argc, char* argv[]) {
     srand(static_cast<unsigned int>(time(0)));
     int randomNum = rand() % 10000; // Generate a random number between 0 and 9999
     std::string clientId = "client" + std::to_string(randomNum);  // Random client ID
-    // std::string clientId = "Admin";
     int clientPort = 5560 + randomNum; // Unique port based on client ID
     std::string clientAddress = "tcp://localhost:" + std::to_string(clientPort);
       
@@ -315,7 +280,6 @@ int main(int argc, char* argv[]) {
         int moveSpeed = 5;
 
         if(state[SDL_SCANCODE_UP]){
-            // controllableEntity.move(0, -moveSpeed);
             verticalVel = thrust;
         }
 
@@ -394,9 +358,6 @@ int main(int argc, char* argv[]) {
             // More sides will be added in the future.
         }
 
-        // Send the position of the controllable entity to the server
-        // string positionData = clientId + ":" + to_string(movingEntity.getRect().x) + "," +
-        //                       to_string(movingEntity.getRect().y);
         json jsonString = {
             {"clientId", clientId},
             {"clientAddr", clientAddress},
@@ -424,9 +385,9 @@ int main(int argc, char* argv[]) {
             int y = position["position"]["y"]; // Get the y coordinate from the nested "position" object
 
             // Update movingEntity's position based on the server data for the controlling client
-            if (clientId != "Admin") {
-                movingEntity.setPosition(x, y); // Implement setPosition method in Entity class
-            }
+
+            movingEntity.setPosition(x, y); // Implement setPosition method in Entity class
+            
         }
 
         nlohmann::json controllableEntityDetails = {
