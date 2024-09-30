@@ -130,6 +130,9 @@ void listenForUpdates(zmq::socket_t& subscriberSocket, std::unordered_map<std::s
 }
 
 // Function to handle incoming messages from peers
+std::unordered_map<std::string, SDL_Rect> entityPositions;
+std::mutex positionMutex;
+
 void handleIncomingMessages(zmq::socket_t& routerSocket, std::unordered_map<std::string, std::string>& identityToAddressMap) {
     while (true) {
         zmq::message_t identity;
@@ -143,30 +146,28 @@ void handleIncomingMessages(zmq::socket_t& routerSocket, std::unordered_map<std:
         routerSocket.recv(message, zmq::recv_flags::none);
         std::string msgStr(static_cast<char*>(message.data()), message.size());
 
-        // Extract address from CONNECT message
-        if (msgStr.rfind("CONNECT:", 0) == 0) {  // Check if the message starts with "CONNECT:"
-            std::string senderAddress = msgStr.substr(8);  // Extract address from the message
-            identityToAddressMap[identityStr] = senderAddress;  // Update map with the new address
-
+        if (msgStr.rfind("CONNECT:", 0) == 0) {
+            std::string senderAddress = msgStr.substr(8);
+            identityToAddressMap[identityStr] = senderAddress;
             std::cout << "Received connection request from " << senderAddress << ": " << msgStr << std::endl;
 
-            // Send acknowledgment back
             zmq::message_t ackMsg("ACK", 3);
             routerSocket.send(identity, zmq::send_flags::sndmore);
             routerSocket.send(ackMsg, zmq::send_flags::none);
         } else {
             auto it = identityToAddressMap.find(identityStr);
             if (it != identityToAddressMap.end()) {
-                // std::cout << "Received message from " << it->second << ": " << msgStr << std::endl;
-
-                // Process received position data here
                 try {
-                    auto positionData = json::parse(msgStr);
-                    string clientId = positionData["clientId"];
+                    auto positionData = nlohmann::json::parse(msgStr);
+                    std::string clientId = positionData["clientId"];
                     float x = positionData["x"];
                     float y = positionData["y"];
-                    std::cout << "Position Coordinates of "<<clientId<< " are"<<" - X: " << x << ", Y: " << y << std::endl;
-                } catch (const json::parse_error& e) {
+
+                    // Update entity position in a thread-safe manner
+                    std::lock_guard<std::mutex> lock(positionMutex);
+                    entityPositions[clientId] = {static_cast<int>(x), static_cast<int>(y), 50, 50}; // Assuming width and height are 50
+
+                } catch (const nlohmann::json::parse_error& e) {
                     std::cerr << "Error parsing JSON: " << e.what() << std::endl;
                 } catch (const std::exception& e) {
                     std::cerr << "Error accessing coordinates: " << e.what() << std::endl;
@@ -274,7 +275,7 @@ int main(int argc, char* argv[]) {
     std::unordered_map<std::string, std::string> identityToAddressMap;
 
     // Start thread for listening for server updates
-std::thread updateListener(listenForUpdates, std::ref(subscriber), std::ref(dealerSockets), std::ref(context), std::cref(clientAddress));
+    std::thread updateListener(listenForUpdates, std::ref(subscriber), std::ref(dealerSockets), std::ref(context), std::cref(clientAddress));
     updateListener.detach();
 
     // Start thread to handle incoming messages
@@ -449,7 +450,14 @@ std::thread updateListener(listenForUpdates, std::ref(subscriber), std::ref(deal
         movingEntity.render(renderer);
         // printPositions(renderer, font, parsedPositions);
 
-
+        // Render entities based on updated positions
+        {
+            std::lock_guard<std::mutex> lock(positionMutex);
+            for (const auto& [clientId, rect] : entityPositions) {
+                SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // Green color for entities
+                SDL_RenderFillRect(renderer, &rect);
+            }
+        }
         // Present the rendered content
         SDL_RenderPresent(renderer);
 
