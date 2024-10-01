@@ -22,6 +22,11 @@ void Entity::setVelocity(float vx, float vy) {
     velocity.y = vy;
 }
 
+void Entity::setPosition(int x, int y) {
+    rect.x = x;
+    rect.y = y;  
+}
+
 void Entity::setWeight(bool w) {
     weighted = w;
 }
