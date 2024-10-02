@@ -31,6 +31,8 @@ class Timeline {
         Timeline(Timeline *anchor, int64_t tic); // Constructs Timeline struct.
         // All three following functions must use a mutex.
         int64_t getTimeline(); // Returns Timeline.
+        int64_t getTicks(); // Returns the units of anchor time for this timeline.
+        void setTicks(int64_t tic); // Sets the units of anchor time for this timeline.
         void pause(); // Pauses the game.
         void unpause(); // Unpauses the game.
 };

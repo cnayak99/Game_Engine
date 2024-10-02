@@ -15,6 +15,8 @@
  * "General Information and Discussions" subtitle.
  * 
  * @author Lillie Sharpe (lssharpe)
+ * @author Robbie Martin (rdmarti5)
+ * 
  */
 
 Timeline::Timeline(Timeline *anchor, int64_t tic): anchor(anchor), tic(tic){}
@@ -33,9 +35,9 @@ int64_t Timeline::getTimeline() {
     // Locks mutex and automatically unlocks itself.
     std::lock_guard<std::mutex> guard(m);
     // Returns the elapsed time of this Timeline object.
-    std::chrono::time_point<std::chrono::system_clock> curr = std::chrono::system_clock::now();
+    std::chrono::time_point<std::chrono::system_clock> curr = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     if (anchor == nullptr) {
-        std::chrono::duration elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(curr - start);
+        std::chrono::duration elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(curr - std::chrono::time_point_cast<std::chrono::milliseconds>(start));
         count = elapsed.count() / tic;
         return count;
     }
@@ -75,4 +77,20 @@ void Timeline::unpause() {
     // Unpauses the game.
     pauseElapsed = anchor->getTimeline() - pauseLast;
     isPaused = false;
+}
+
+/**
+ * Sets the rate at which a timeline moves forward for each unit of anchor time.
+ */
+
+void Timeline::setTicks(int64_t tic) {
+    this->tic = tic;
+}
+
+/**
+ * Returns the rate at which a timeline moves forward for each unit of anchor time.
+ */
+
+int64_t Timeline::getTicks() {
+    return tic;
 }
