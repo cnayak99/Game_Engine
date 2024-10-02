@@ -8,32 +8,12 @@
 #include "Intersect.h"
 #include "Timeline.h"    
 #include "structs.h"     
-#include <zmq.hpp>       
-#include <SDL2/SDL_ttf.h> 
+#include <zmq.hpp>
 #include "json.hpp" // Use relative path to the include directory
-#include <thread>        
+#include <thread>
 
 using namespace std; 
 using json = nlohmann::json;
-
-
-/**
- * Runs the game.
- * 
- * References resources and tutorials provided by Professor Card through
- * the "CSC 481-581 HW 1-4.pdf" located beneath the "Homework 1" title in
- * the "CSC 481/581 (001) Fall 2024 Game Engine Foundations" course
- * Moodle page. These resources can be found in the
- * https://wiki.libsdl.org/SDL2/FrontPage website.
- * 
- * \param argc the count argument
- * \param argv the string argument
- * \returns int 0 if successful, else, unsuccessful
- * 
- * @author Lillie Sharpe
- * @author Chinmay Nayak
- * @author Robbie Martin
- */
 
 json parseUpdatedPositions(const std::string& updatedPositions) {
     return json::parse(updatedPositions); // Parse the JSON string into a JSON object
@@ -163,9 +143,25 @@ void handleIncomingMessages(zmq::socket_t& routerSocket, std::unordered_map<std:
     }
 }
 
-
-/*Use this main function for All the sections Except Section 2 and 3*/
-
+/**
+ * Runs the game.
+ * 
+ * Use this main function for all Homework 2 Sections except Sections 2 and 3.
+ * 
+ * References resources and tutorials provided by Professor Card through
+ * the "CSC 481-581 HW 1-4.pdf" located beneath the "Homework 1" title in
+ * the "CSC 481/581 (001) Fall 2024 Game Engine Foundations" course
+ * Moodle page. These resources can be found in the
+ * https://wiki.libsdl.org/SDL2/FrontPage website.
+ * 
+ * \param argc the count argument
+ * \param argv the string argument
+ * \returns int 0 if successful, else, unsuccessful
+ * 
+ * @author Lillie Sharpe
+ * @author Chinmay Nayak
+ * @author Robbie Martin
+ */
 int main(int argc, char* argv[]) {
     srand(static_cast<unsigned int>(time(0)));
     int randomNum = rand() % 10000; // Generate a random number between 0 and 9999
@@ -173,9 +169,6 @@ int main(int argc, char* argv[]) {
     int clientPort = 5560 + randomNum; // Unique port based on client ID
     std::string clientAddress = "tcp://localhost:" + std::to_string(clientPort);
     
-    
-    SDL_Window* window = nullptr;
-    SDL_Renderer* renderer = nullptr;
     // Create the Game object.
     Game game;
     // Set the window up.
@@ -213,6 +206,7 @@ int main(int argc, char* argv[]) {
     // Start thread to handle incoming messages
     std::thread incomingHandler(handleIncomingMessages,std::ref(routerSocket),std::ref(identityToAddressMap));
     incomingHandler.detach();
+
     // Create the Concepts object.
     Concepts concepts;
 
@@ -290,6 +284,8 @@ int main(int argc, char* argv[]) {
             }
         }
         if (!anchor.isPaused) {
+            // Enter threads functionality here!
+
             // If the player is pressing up.
             if(concepts.state[SDL_SCANCODE_UP]){ // Move up.
                 concepts.verticalVel = concepts.thrust;
@@ -323,7 +319,8 @@ int main(int argc, char* argv[]) {
                 concepts.held = false;
             }
 
-            concepts.verticalVel += concepts.gravity * deltaTime * 60;
+            concepts.verticalVel += concepts.gravity * concepts.delta * 60;
+            printf("Vel: %f\n", concepts.verticalVel);
             controllableEntity.move(0, static_cast<int>(concepts.verticalVel));
             //Apply Gravity to this object
 
@@ -445,8 +442,25 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-/*Use this main function only for Section 2 and 3*/
-
+///**
+// * Runs the game.
+// * 
+// * Use this main function only for Homework 2 Sections 2 and 3.
+// * 
+// * References resources and tutorials provided by Professor Card through
+// * the "CSC 481-581 HW 1-4.pdf" located beneath the "Homework 1" title in
+// * the "CSC 481/581 (001) Fall 2024 Game Engine Foundations" course
+// * Moodle page. These resources can be found in the
+// * https://wiki.libsdl.org/SDL2/FrontPage website.
+// * 
+// * \param argc the count argument
+// * \param argv the string argument
+// * \returns int 0 if successful, else, unsuccessful
+// * 
+// * @author Lillie Sharpe
+// * @author Chinmay Nayak
+// * @author Robbie Martin
+// */
 // int main(int argc, char* argv[]) {
 //     /**
 //      * This code section is heavily inspired from the example delta time
@@ -467,28 +481,28 @@ int main(int argc, char* argv[]) {
 //     std::string clientId = "client" + std::to_string(randomNum);  // Random client ID
 //     int clientPort = 5560 + randomNum; // Unique port based on client ID
 //     std::string clientAddress = "tcp://localhost:" + std::to_string(clientPort);
-      
+//
 //     SDL_Window* window = nullptr;
 //     SDL_Renderer* renderer = nullptr;
-
+//
 //     if (!initializeSDL(&window, &renderer)) {
 //         return 1; // Initialization failed
 //     }
-    
-
+//  
+//
 //     // Initialize ZeroMQ context and sockets
 //     zmq::context_t context(1);
 //     zmq::socket_t receiver(context, ZMQ_REQ);
 //     receiver.connect("tcp://localhost:5555"); // For sending position updates
-
+//
 //     zmq::socket_t subscriber(context, ZMQ_SUB);
 //     subscriber.connect("tcp://localhost:5556"); // For receiving position updates
 //     subscriber.setsockopt(ZMQ_SUBSCRIBE, "", 0); // Subscribe to all messages
-
+//
 //     bool quit = false;
 //     SDL_Event e;
-    
-
+//   
+//
 //     Entity staticEntity(Rectangle(100,100,100,100),{255,0,0,255}, false);//Static Red Shape
 //     Entity controllableEntity(Rectangle(300,300,50,50),{0,255,0,255}, true);//Controllable Green Shape 
 //     Entity movingEntity(Rectangle(100,100,100,100),{0,0,0,255}, true);//Black Moving Shape
@@ -496,33 +510,33 @@ int main(int argc, char* argv[]) {
 //     bool held = false;
 //     float gravity = 9.8f;
 //     // Physics physics(gravity);
-
+//
 //     int speed = 5; // Speed of the Entity
 //     float verticalVel =0.0f;
 //     float thrust = -9.8f;
 //     Uint32 lastTime = SDL_GetTicks();
-
-
+//
+//
 //     std::unordered_map<std::string, SDL_Rect> otherClientEntities;
-
+//
 //     while (!quit) {
 //         Uint32 currentTime = SDL_GetTicks();
 //         float deltaTime = (currentTime - lastTime) / 1000.0f;
 //         lastTime = currentTime;
-
+//
 //         while (SDL_PollEvent(&e) != 0) {
 //             if (e.type == SDL_QUIT) {
 //                 quit = true;
 //             }
 //         }
-        
+//
 //         const Uint8* state = SDL_GetKeyboardState(nullptr);
 //         int moveSpeed = 5;
-
+//
 //         if(state[SDL_SCANCODE_UP]){
 //             verticalVel = thrust;
 //         }
-
+//
 //         if(state[SDL_SCANCODE_LEFT]){//Move Right
 //             controllableEntity.move(-moveSpeed,0);
 //         }
@@ -548,17 +562,17 @@ int main(int argc, char* argv[]) {
 //         if (state[SDL_SCANCODE_ESCAPE]) {// Exit the game
 //             quit = true; 
 //         }
-
+//
 //         verticalVel += gravity * deltaTime;
 //         controllableEntity.move(0, static_cast<int>(verticalVel));
 //         //Apply Gravity to this object
-
+//
 //         // Move the shape in a continuous pattern (horizontal)
 //         movingEntity.move(speed, 0);
 //         if (movingEntity.getRect().x > 1820 || movingEntity.getRect().x < 100) {
 //             speed = -speed;
 //         }
-
+//
 //         // Keeps track of the controllable rectangle.
 //         Rectangle c = controllableEntity.getRect();
 //         // Keeps track of the moving rectangle.
@@ -568,7 +582,7 @@ int main(int argc, char* argv[]) {
 //         // Stores the address of a Rectangle entity.
 //         // Due to redundancy, for now, 'result' has been removed.
 //         // Rectangle * result;
-
+//
 //         // Senses other shapes for collision.
 //         if (hasIntersection(&c, &m) == true) {
 //             // If there was an intersection on the top of the terrain rectangle,
@@ -585,7 +599,7 @@ int main(int argc, char* argv[]) {
 //             }
 //             // More sides will be added in the future.
 //         }
-
+//
 //         // Senses other shapes for collision.
 //         if (hasIntersection(&c, &s) == true) {
 //             // If there was an intersection on the top of the terrain rectangle,
@@ -597,56 +611,56 @@ int main(int argc, char* argv[]) {
 //             }
 //             // More sides will be added in the future.
 //         }
-
+//
 //          json jsonString = {
 //             {"clientId", clientId},
 //             {"clientAddr", clientAddress},
 //             {"x", controllableEntity.getRect().x},
 //             {"y", controllableEntity.getRect().y}
 //         };
-
+//
 //         std::string positionData = jsonString.dump();
 //         zmq::message_t message(positionData.size());
 //         memcpy(message.data(), positionData.c_str(), positionData.size());
 //         receiver.send(message, zmq::send_flags::none);
-
+//
 //         zmq::message_t reply;
 //         receiver.recv(reply, zmq::recv_flags::none);
-
+//
 //         std::string updatedPositions(reply.to_string());
 //         auto parsedPositions = parseUpdatedPositions(updatedPositions);
-
+//
 //         for (const auto& position : parsedPositions) {
 //             std::string clientIdFromServer = position["clientId"];
 //             int xFromServer = position["position"]["x"];
 //             int yFromServer = position["position"]["y"];
-
+//
 //             if (clientIdFromServer != clientId) { // Ensure not rendering own entity
 //                 otherClientEntities[clientIdFromServer] = {xFromServer, yFromServer, 50, 50};
 //             }
 //         }
-
+//
 //         SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
 //         SDL_RenderClear(renderer);
-
+//
 //         staticEntity.render(renderer);
 //         controllableEntity.render(renderer);
-
+//
 //         // Render entities from other clients
 //         for (const auto& [id, rect] : otherClientEntities) {
 //             SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
 //             SDL_RenderFillRect(renderer, &rect);
 //         }
-
+//
 //         movingEntity.render(renderer);
 //         SDL_RenderPresent(renderer);
 //         SDL_Delay(16);
 //     }
-
+//
 //     // Clean up and shut down SDL
 //     SDL_DestroyRenderer(renderer);
 //     SDL_DestroyWindow(window);
 //     SDL_Quit();
-
+//
 //     return 0;
 // }
