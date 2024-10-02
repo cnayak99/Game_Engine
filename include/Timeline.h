@@ -26,8 +26,8 @@ class Timeline {
         int64_t pauseLast = 0; // Last pause time.
         int64_t tic; // Units of anchor time for each step.
         int64_t count = 0; // Amount of object ticks since being initialized.
-        bool isPaused; // Keeps track of pause status.
     public:
+        bool isPaused; // Keeps track of pause status.
         Timeline(Timeline *anchor, int64_t tic); // Constructs Timeline struct.
         // All three following functions must use a mutex.
         int64_t getTimeline(); // Returns Timeline.

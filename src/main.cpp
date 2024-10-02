@@ -224,7 +224,7 @@ int main(int argc, char* argv[]) {
 
     // Construct the anchor timeline.
     Timeline anchor(nullptr, 1);
-
+    
     // Creates the static red shape and connects its address to concepts.
     Entity staticEntity(Rectangle(100,100,100,100),{255,0,0,255}, false); // Static red shape.
     concepts.s = &staticEntity;
@@ -275,93 +275,103 @@ int main(int argc, char* argv[]) {
         // Stores the move speed in concepts.
         concepts.moveSpeed = 5;
 
-        // If the player is pressing up.
-        if(concepts.state[SDL_SCANCODE_UP]){ // Move up.
-            concepts.verticalVel = concepts.thrust;
-        }
-
-        // If the player is pressing left.
-        if(concepts.state[SDL_SCANCODE_LEFT]){ // Move left.
-            controllableEntity.move(-concepts.moveSpeed,0);
-        }
-
-        // If the player is pressing right.
-        if(concepts.state[SDL_SCANCODE_RIGHT]){// Move right.
-            controllableEntity.move(concepts.moveSpeed, 0);
-        }
-        
-        // If the player is pressing 'C'.
-        if (concepts.state[SDL_SCANCODE_C]) { // Change window size.
-            if (!concepts.held) {
-                concepts.held = true;
-                if (!concepts.scaling) {
-                    SDL_RenderSetLogicalSize(game.renderer, 1920, 1080);
-                    concepts.scaling = true;
-                }
-                else {
-                    SDL_RenderSetLogicalSize(game.renderer, 0, 0);
-                    concepts.scaling = false;
-                }
-            }
-        }
-        else {
-            concepts.held = false;
-        }
-
         // If the player is pressing 'ESC'.
         if (concepts.state[SDL_SCANCODE_ESCAPE]) {// Exit the game.
             concepts.quit = true; 
         }
 
-        concepts.verticalVel += concepts.gravity * deltaTime * 60;
-        controllableEntity.move(0, static_cast<int>(concepts.verticalVel));
-        //Apply Gravity to this object
-
-        // Move the shape in a continuous pattern (horizontal)
-        movingEntity.move(concepts.speed, 0);
-        if (movingEntity.getRect().x > 1820 || movingEntity.getRect().x < 100) {
-            concepts.speed = -concepts.speed;
+        // If the player is pressing 'P'.
+        if (concepts.state[SDL_SCANCODE_P]) {// Pause/unpause the game.
+            if (!anchor.isPaused) {
+                anchor.unpause();
+            }
+            else {
+                anchor.pause();
+            }
         }
+        if (!anchor.isPaused) {
+            // If the player is pressing up.
+            if(concepts.state[SDL_SCANCODE_UP]){ // Move up.
+                concepts.verticalVel = concepts.thrust;
+            }
 
-        // Keeps track of the controllable rectangle.
-        Rectangle c = controllableEntity.getRect();
-        // Keeps track of the moving rectangle.
-        Rectangle m = movingEntity.getRect();
-        // Keeps track of the static rectangle.
-        Rectangle s = staticEntity.getRect();
-        // Stores the address of a Rectangle entity.
-        // Due to redundancy, for now, 'result' has been removed.
-        // Rectangle * result;
+            // If the player is pressing left.
+            if(concepts.state[SDL_SCANCODE_LEFT]){ // Move left.
+                controllableEntity.move(-concepts.moveSpeed,0);
+            }
 
-        // Senses other shapes for collision.
-        if (hasIntersection(&c, &m) == true) {
-            // If there was an intersection on the top of the terrain rectangle,
-            // the controllable rectangle lands on the terrain rectangle.
-            if (intersect(&c, &m) == 2) {
-                // Causes vertical collision.
-                deltaTime = 0;
-                concepts.verticalVel = 0;
-                // Enables player movement mimicking the moving entity.
-                controllableEntity.move(concepts.speed, static_cast<int>(concepts.verticalVel));
-                if (controllableEntity.getRect().x > 1820 || controllableEntity.getRect().x < 100) {
-                    concepts.speed = -concepts.speed;
+            // If the player is pressing right.
+            if(concepts.state[SDL_SCANCODE_RIGHT]){// Move right.
+                controllableEntity.move(concepts.moveSpeed, 0);
+            }
+            
+            // If the player is pressing 'C'.
+            if (concepts.state[SDL_SCANCODE_C]) { // Change window size.
+                if (!concepts.held) {
+                    concepts.held = true;
+                    if (!concepts.scaling) {
+                        SDL_RenderSetLogicalSize(game.renderer, 1920, 1080);
+                        concepts.scaling = true;
+                    }
+                    else {
+                        SDL_RenderSetLogicalSize(game.renderer, 0, 0);
+                        concepts.scaling = false;
+                    }
                 }
             }
-            // More sides will be added in the future.
-        }
-
-        // Senses other shapes for collision.
-        if (hasIntersection(&c, &s) == true) {
-            // If there was an intersection on the top of the terrain rectangle,
-            // the controllable rectangle lands on the terrain rectangle.
-            if (intersect(&c, &s) == 2) {
-                // Causes vertical collision.
-                deltaTime = 0;
-                concepts.verticalVel = 0;
+            else {
+                concepts.held = false;
             }
-            // More sides will be added in the future.
-        }
 
+            concepts.verticalVel += concepts.gravity * deltaTime * 60;
+            controllableEntity.move(0, static_cast<int>(concepts.verticalVel));
+            //Apply Gravity to this object
+
+            // Move the shape in a continuous pattern (horizontal)
+            movingEntity.move(concepts.speed, 0);
+            if (movingEntity.getRect().x > 1820 || movingEntity.getRect().x < 100) {
+                concepts.speed = -concepts.speed;
+            }
+
+            // Keeps track of the controllable rectangle.
+            Rectangle c = controllableEntity.getRect();
+            // Keeps track of the moving rectangle.
+            Rectangle m = movingEntity.getRect();
+            // Keeps track of the static rectangle.
+            Rectangle s = staticEntity.getRect();
+            // Stores the address of a Rectangle entity.
+            // Due to redundancy, for now, 'result' has been removed.
+            // Rectangle * result;
+
+            // Senses other shapes for collision.
+            if (hasIntersection(&c, &m) == true) {
+                // If there was an intersection on the top of the terrain rectangle,
+                // the controllable rectangle lands on the terrain rectangle.
+                if (intersect(&c, &m) == 2) {
+                    // Causes vertical collision.
+                    deltaTime = 0;
+                    concepts.verticalVel = 0;
+                    // Enables player movement mimicking the moving entity.
+                    controllableEntity.move(concepts.speed, static_cast<int>(concepts.verticalVel));
+                    if (controllableEntity.getRect().x > 1820 || controllableEntity.getRect().x < 100) {
+                        concepts.speed = -concepts.speed;
+                    }
+                }
+                // More sides will be added in the future.
+            }
+
+            // Senses other shapes for collision.
+            if (hasIntersection(&c, &s) == true) {
+                // If there was an intersection on the top of the terrain rectangle,
+                // the controllable rectangle lands on the terrain rectangle.
+                if (intersect(&c, &s) == 2) {
+                    // Causes vertical collision.
+                    deltaTime = 0;
+                    concepts.verticalVel = 0;
+                }
+                // More sides will be added in the future.
+            }
+        }
         json jsonString = {
             {"clientId", clientId},
             {"clientAddr", clientAddress},
@@ -427,7 +437,6 @@ int main(int argc, char* argv[]) {
         SDL_Delay(16);
         lastTime = currentTime;
     }
-
     // Clean up and shut down SDL
     SDL_DestroyRenderer(game.renderer);
     SDL_DestroyWindow(game.window);
