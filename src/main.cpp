@@ -269,6 +269,8 @@ int main(int argc, char* argv[]) {
         // Stores the move speed in concepts.
         concepts.moveSpeed = 5;
 
+        // ENTER THREADS HERE!
+
         // If the player is pressing 'ESC'.
         if (concepts.state[SDL_SCANCODE_ESCAPE]) {// Exit the game.
             concepts.quit = true; 
@@ -319,7 +321,7 @@ int main(int argc, char* argv[]) {
                 concepts.held = false;
             }
 
-            concepts.verticalVel += concepts.gravity * concepts.delta * 60;
+            concepts.verticalVel += concepts.gravity * concepts.delta;
             printf("Vel: %f\n", concepts.verticalVel);
             controllableEntity.move(0, static_cast<int>(concepts.verticalVel));
             //Apply Gravity to this object
@@ -330,15 +332,14 @@ int main(int argc, char* argv[]) {
                 concepts.speed = -concepts.speed;
             }
 
+            // DELETE UNTIL HERE! EDIT THREADS ACCORDINGLY!
+
             // Keeps track of the controllable rectangle.
             Rectangle c = controllableEntity.getRect();
             // Keeps track of the moving rectangle.
             Rectangle m = movingEntity.getRect();
             // Keeps track of the static rectangle.
             Rectangle s = staticEntity.getRect();
-            // Stores the address of a Rectangle entity.
-            // Due to redundancy, for now, 'result' has been removed.
-            // Rectangle * result;
 
             // Senses other shapes for collision.
             if (hasIntersection(&c, &m) == true) {
