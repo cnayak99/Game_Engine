@@ -68,7 +68,7 @@ void runPhysics() {
             std::unique_lock<std::mutex> cv_lock(*_mutex);
 
             // Applies gravity to the player object.
-            concepts->verticalVel += concepts->gravity * concepts->delta * 60;
+            concepts->verticalVel += concepts->gravity * concepts->delta;
             concepts->c->move(0, static_cast<int>(concepts->verticalVel));
                         
             printf("Thread 1 applied gravity.");

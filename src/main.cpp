@@ -335,39 +335,39 @@ int main(int argc, char* argv[]) {
             // DELETE UNTIL HERE! EDIT THREADS ACCORDINGLY!
 
             // Keeps track of the controllable rectangle.
-            Rectangle c = controllableEntity.getRect();
-            // Keeps track of the moving rectangle.
-            Rectangle m = movingEntity.getRect();
+            Rectangle cRect = concepts.c->getRect();
             // Keeps track of the static rectangle.
-            Rectangle s = staticEntity.getRect();
+            Rectangle sRect = concepts.s->getRect();
+            // Keeps track of the moving rectangle.
+            Rectangle mRect = concepts.m->getRect();
 
             // Senses other shapes for collision.
-            if (hasIntersection(&c, &m) == true) {
+            if (hasIntersection(&cRect, &sRect) == true) {
                 // If there was an intersection on the top of the terrain rectangle,
                 // the controllable rectangle lands on the terrain rectangle.
-                if (intersect(&c, &m) == 2) {
+                if (intersect(&cRect, &sRect) == 2) {
                     // Causes vertical collision.
-                    deltaTime = 0;
+                    concepts.delta = 0;
                     concepts.verticalVel = 0;
-                    // Enables player movement mimicking the moving entity.
-                    controllableEntity.move(concepts.speed, static_cast<int>(concepts.verticalVel));
-                    if (controllableEntity.getRect().x > 1820 || controllableEntity.getRect().x < 100) {
-                        concepts.speed = -concepts.speed;
-                    }
                 }
                 // More sides will be added in the future.
             }
 
             // Senses other shapes for collision.
-            if (hasIntersection(&c, &s) == true) {
+            if (hasIntersection(&cRect, &mRect) == true) {
                 // If there was an intersection on the top of the terrain rectangle,
                 // the controllable rectangle lands on the terrain rectangle.
-                if (intersect(&c, &s) == 2) {
+                if (intersect(&cRect, &mRect) == 2) {
                     // Causes vertical collision.
-                    deltaTime = 0;
+                    concepts.delta = 0;
                     concepts.verticalVel = 0;
+                    // Enables player movement mimicking the moving entity.
+                    concepts.c->move(concepts.speed, static_cast<int>(concepts.verticalVel));
+                    if (concepts.c->getRect().x > 1820 || concepts.c->getRect().x < 100) {
+                        concepts.speed = -concepts.speed;
+                    }
                 }
-                // More sides will be added in the future.
+                // More sides may be added in the future.
             }
         }
         json jsonString = {
