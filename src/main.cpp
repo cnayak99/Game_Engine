@@ -296,14 +296,21 @@ int main(int argc, char* argv[]) {
         // Stores the move speed in concepts.
         concepts.moveSpeed = 5;
 
-        // If the player is pressing 'P'.
-        if (concepts.state[SDL_SCANCODE_P]) { // Pause game.
+        // If the player is pressing 'O'.
+        if (concepts.state[SDL_SCANCODE_O]) { // Pause game.
             if (!concepts.held) {
                 concepts.held = true;
                 if (!concepts.a->isPaused) {
                     concepts.a->pause();
                 }
-                else {
+            }
+        }
+
+        // If the player is pressing 'P'.
+        if (concepts.state[SDL_SCANCODE_P]) { // Unpause game.
+            if (!concepts.held) {
+                concepts.held = true;
+                if (concepts.a->isPaused) {
                     concepts.a->unpause();
                 }
             }
