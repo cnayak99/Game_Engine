@@ -95,7 +95,6 @@ void Timeline::unpause() {
 /**
  * Sets the rate at which a timeline moves forward for each unit of anchor time.
  */
-
 void Timeline::setTicks(int64_t tic) {
     this->tic = tic;
 }

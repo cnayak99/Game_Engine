@@ -137,23 +137,23 @@ void runInput() {
 
         //if (!concepts->a->isPaused) {
 
-            // If the player is pressing 'B'.
-            if(concepts->state[SDL_SCANCODE_B]){ // Set tic to 0.5 (which is marked with 3).
-                time_Threads->setTicks(3);
-                printf("Tics set to 0.5.\n");
-            }
+            // // If the player is pressing 'B'.
+            // if(concepts->state[SDL_SCANCODE_B]){ // Set tic to 0.5 (which is marked with 3).
+            //     time_Threads->setTicks(3);
+            //     printf("Tics set to 0.5.\n");
+            // }
 
-            // If the player is pressing 'N'.
-            if(concepts->state[SDL_SCANCODE_N]){ // Set tic to 1.
-                time_Threads->setTicks(1);
-                printf("Tics set to 1.\n");
-            }
+            // // If the player is pressing 'N'.
+            // if(concepts->state[SDL_SCANCODE_N]){ // Set tic to 1.
+            //     time_Threads->setTicks(1);
+            //     printf("Tics set to 1.\n");
+            // }
 
-            // If the player is pressing 'M'.
-            if(concepts->state[SDL_SCANCODE_M]){ // Set tic to 2.
-                time_Threads->setTicks(2);
-                printf("Tics set to 2.\n");
-            }
+            // // If the player is pressing 'M'.
+            // if(concepts->state[SDL_SCANCODE_M]){ // Set tic to 2.
+            //     time_Threads->setTicks(2);
+            //     printf("Tics set to 2.\n");
+            // }
 
             // If the player is pressing up.
             if(concepts->state[SDL_SCANCODE_UP]){ // Move up.
