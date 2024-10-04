@@ -81,13 +81,9 @@ int64_t Timeline::getTimeline() {
  * https://en.cppreference.com/w/cpp/thread/mutex
  */
 void Timeline::pause() {
-    // Locks mutex and automatically unlocks itself.
-    std::unique_lock<std::mutex> cv_lock(m);
     // Pauses the game.
     pauseLast = getTimeline();
     isPaused = true;
-    // Notifies unpause that the game is paused.
-    cv_m.notify_all();
 }
 
 /**
@@ -100,13 +96,9 @@ void Timeline::pause() {
  * https://en.cppreference.com/w/cpp/thread/mutex
  */
 void Timeline::unpause() {
-    // Locks mutex and automatically unlocks itself.
-    std::unique_lock<std::mutex> cv_lock(m);
     // Unpauses the game.
-    pauseElapsed = anchor->getTimeline() - pauseLast;
+    pauseElapsed = getTimeline() - pauseLast;
     isPaused = false;
-    // Notifies pause that the game is paused.
-    cv_m.notify_all();
 }
 
 /**

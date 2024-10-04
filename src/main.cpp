@@ -276,7 +276,12 @@ int main(int argc, char* argv[]) {
         // Gets the current time.
         int64_t currentTime = anchor.getTimeline();
         // Calculates delta time.
-        float deltaTime = (currentTime - lastTime) / 1000.0f;
+        float deltaTime = 0;
+        if (timeThreads.getTicks() != 3) {
+            deltaTime = ((currentTime - lastTime) / timeThreads.getTicks()) / 1000.0f;
+        } else {
+            deltaTime = ((currentTime - lastTime) * 2) / 1000.0f;
+        }
         // Stores delta time in concepts.
         concepts.delta = deltaTime;
         // TEMPORARY: prints calculated time variables.
@@ -298,56 +303,33 @@ int main(int argc, char* argv[]) {
 
         // If the player is pressing 'O'.
         if (concepts.state[SDL_SCANCODE_O]) { // Pause game.
-            if (!concepts.held) {
-                concepts.held = true;
-                if (!concepts.a->isPaused) {
-                    concepts.a->pause();
-                }
+            if (!concepts.a->isPaused) {
+                concepts.a->pause();
             }
         }
 
         // If the player is pressing 'P'.
         if (concepts.state[SDL_SCANCODE_P]) { // Unpause game.
-            if (!concepts.held) {
-                concepts.held = true;
-                if (concepts.a->isPaused) {
-                    concepts.a->unpause();
-                }
+            if (concepts.a->isPaused) {
+                concepts.a->unpause();
             }
         }
-
-        int64_t oldTic = timeThreads.getTicks();
 
         // If the player is pressing 'B'.
         if(concepts.state[SDL_SCANCODE_B]){ // Set tic to 0.5 (which is marked with 3).
             timeThreads.setTicks(3);
-            if (oldTic == 3) {
-                lastTime = (lastTime / 2) * 2;
-            } else {
-                lastTime = (lastTime * oldTic) * 2;
-            }
             printf("Tics set to 0.5.\n");
         }
 
         // If the player is pressing 'N'.
         if(concepts.state[SDL_SCANCODE_N]){ // Set tic to 1.
             timeThreads.setTicks(1);
-            if (oldTic == 3) {
-                lastTime = (lastTime / 2) * 2;
-            } else {
-                lastTime = (lastTime * oldTic) * 2;
-            }
             printf("Tics set to 1.\n");
         }
 
         // If the player is pressing 'M'.
         if(concepts.state[SDL_SCANCODE_M]){ // Set tic to 2.
             timeThreads.setTicks(2);
-            if (oldTic == 3) {
-                lastTime = (lastTime / 2) * 2;
-            } else {
-                lastTime = (lastTime * oldTic) * 2;
-            }
             printf("Tics set to 2.\n");
         }
 
@@ -455,8 +437,9 @@ int main(int argc, char* argv[]) {
         // Present the rendered content
         SDL_RenderPresent(game.renderer);
 
-        // ~60 frames per second
+        // Puts a delay on the game. (Can be changed!)
         SDL_Delay(16);
+        // Sets the last time to the current time.
         lastTime = currentTime;
     }
     // Clean up and shut down SDL
