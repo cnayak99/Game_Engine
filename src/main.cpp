@@ -289,7 +289,7 @@ int main(int argc, char* argv[]) {
         }
 
         // Pausing functionality started here!
-        if (!threadsTime.isPaused) {
+        if (!anchor.isPaused) {
 
             // Run threads.
             startThreads(&timeThreads, &concepts, &game);
