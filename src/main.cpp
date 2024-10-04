@@ -276,7 +276,20 @@ int main(int argc, char* argv[]) {
         // Create a timeline to run threads.
         Timeline timeThreads(&anchor, 1); // Set tic to whatever is desired.
 
+        if (concepts.state[SDL_SCANCODE_P]) { // Pause game.
+            if (!concepts.held) {
+                concepts.held = true;
+                if (!anchor.isPaused) {
+                    anchor.pause();
+                }
+                else {
+                    anchor.unpause();
+                }
+            }
+        }
+
         // Pausing functionality started here!
+        if (!threadsTime.isPaused) {
 
             // Run threads.
             startThreads(&timeThreads, &concepts, &game);
@@ -317,6 +330,7 @@ int main(int argc, char* argv[]) {
                 // More sides may be added in the future.
             }
 
+        }
         // Pausing functionality ended here!
 
         json jsonString = {
