@@ -466,6 +466,9 @@ int main(int argc, char* argv[]) {
 //     float thrust = -9.8f;
 //     Uint32 lastTime = SDL_GetTicks();
 //
+//     // Stores the variable that determines whether or not the game is paused.
+//     concepts.p = &anchor.isPaused;
+//
 //
 //     std::unordered_map<std::string, SDL_Rect> otherClientEntities;
 //
@@ -483,45 +486,51 @@ int main(int argc, char* argv[]) {
 //         const Uint8* state = SDL_GetKeyboardState(nullptr);
 //         int moveSpeed = 5;
 //
-//         if(state[SDL_SCANCODE_UP]){
-//             verticalVel = thrust;
-//         }
-//
-//         if(state[SDL_SCANCODE_LEFT]){//Move Right
-//             controllableEntity.move(-moveSpeed,0);
-//         }
-//         if(state[SDL_SCANCODE_RIGHT]){//Move Right
-//             controllableEntity.move(moveSpeed, 0);
-//         }
-//         if (state[SDL_SCANCODE_C]) {
-//             if (!held) {
-//                 held = true;
-//                 if (!scaling) {
-//                     SDL_RenderSetLogicalSize(renderer, 1920, 1080);
-//                     scaling = true;
-//                 }
-//                 else {
-//                     SDL_RenderSetLogicalSize(renderer, 0, 0);
-//                     scaling = false;
-//                 }
-//             }
-//         }
-//         else {
-//             held = false;
-//         }
-//         if (state[SDL_SCANCODE_ESCAPE]) {// Exit the game
-//             quit = true; 
-//         }
-//
-//         verticalVel += gravity * deltaTime;
-//         controllableEntity.move(0, static_cast<int>(verticalVel));
-//         //Apply Gravity to this object
-//
-//         // Move the shape in a continuous pattern (horizontal)
-//         movingEntity.move(speed, 0);
-//         if (movingEntity.getRect().x > 1820 || movingEntity.getRect().x < 100) {
-//             speed = -speed;
-//         }
+    // Create a timeline to run threads.
+    // Timeline timeThreads(&anchor, 1); // Set tic to whatever is desired.
+
+    // // Pausing functionality started here!
+
+    //     // Run threads.
+    //     startThreads(&timeThreads, &concepts, &game);
+
+    //     // Keeps track of the controllable rectangle.
+    //     Rectangle cRect = concepts.c->getRect();
+    //     // Keeps track of the static rectangle.
+    //     Rectangle sRect = concepts.s->getRect();
+    //     // Keeps track of the moving rectangle.
+    //     Rectangle mRect = concepts.m->getRect();
+
+    //     // Senses other shapes for collision.
+    //     if (hasIntersection(&cRect, &sRect) == true) {
+    //         // If there was an intersection on the top of the terrain rectangle,
+    //         // the controllable rectangle lands on the terrain rectangle.
+    //         if (intersect(&cRect, &sRect) == 2) {
+    //             // Causes vertical collision.
+    //             concepts.delta = 0;
+    //             concepts.verticalVel = 0;
+    //         }
+    //         // More sides will be added in the future.
+    //     }
+
+    //     // Senses other shapes for collision.
+    //     if (hasIntersection(&cRect, &mRect) == true) {
+    //         // If there was an intersection on the top of the terrain rectangle,
+    //         // the controllable rectangle lands on the terrain rectangle.
+    //         if (intersect(&cRect, &mRect) == 2) {
+    //             // Causes vertical collision.
+    //             concepts.delta = 0;
+    //             concepts.verticalVel = 0;
+    //             // Enables player movement mimicking the moving entity.
+    //             concepts.c->move(concepts.speed, static_cast<int>(concepts.verticalVel));
+    //             if (concepts.c->getRect().x > 1820 || concepts.c->getRect().x < 100) {
+    //                 concepts.speed = -concepts.speed;
+    //             }
+    //         }
+    //         // More sides may be added in the future.
+    //     }
+
+//         // Pausing functionality ended here!
 //
 //         // Keeps track of the controllable rectangle.
 //         Rectangle cRect = concepts.c->getRect();
