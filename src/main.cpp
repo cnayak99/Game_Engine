@@ -489,114 +489,180 @@ int main(int argc, char* argv[]) {
 //     std::string clientId = "client" + std::to_string(randomNum);  // Random client ID
 //     int clientPort = 5560 + randomNum; // Unique port based on client ID
 //     std::string clientAddress = "tcp://localhost:" + std::to_string(clientPort);
-//
-//     SDL_Window* window = nullptr;
-//     SDL_Renderer* renderer = nullptr;
-//
-//     if (!initializeSDL(&window, &renderer)) {
-//         return 1; // Initialization failed
+
+//     // Create the Game object.
+//     Game game;
+//     // Set the window up.
+//     game.window = nullptr;
+//     // Set the renderer up.
+//     game.renderer = nullptr;
+
+//     // Attempt to initialize the game.
+//     if (!initializeSDL(&game.window, &game.renderer)) {
+//         return 1; // If unsuccessful, initialization failed.
 //     }
-//  
-//
+
 //     // Initialize ZeroMQ context and sockets
 //     zmq::context_t context(1);
 //     zmq::socket_t receiver(context, ZMQ_REQ);
 //     receiver.connect("tcp://localhost:5555"); // For sending position updates
-//
+
 //     zmq::socket_t subscriber(context, ZMQ_SUB);
 //     subscriber.connect("tcp://localhost:5556"); // For receiving position updates
 //     subscriber.setsockopt(ZMQ_SUBSCRIBE, "", 0); // Subscribe to all messages
-//
-//     bool quit = false;
+
+//     // Create the Concepts object.
+//     Concepts concepts;
+
+//     // Initialize quit to false.
+//     concepts.quit = false;
+
+//     // Create an event object.
 //     SDL_Event e;
-//   
-//
-//     Entity staticEntity(Rectangle(100,100,100,100),{255,0,0,255}, false);//Static Red Shape
-//     Entity controllableEntity(Rectangle(300,300,50,50),{0,255,0,255}, true);//Controllable Green Shape 
-//     Entity movingEntity(Rectangle(100,100,100,100),{0,0,0,255}, true);//Black Moving Shape
-//     bool scaling = false;
-//     bool held = false;
-//     float gravity = 9.8f;
-//     // Physics physics(gravity);
-//
-//     int speed = 5; // Speed of the Entity
-//     float verticalVel =0.0f;
-//     float thrust = -9.8f;
-//     Uint32 lastTime = SDL_GetTicks();
-//
+
+//     // Construct the anchor timeline.
+//     Timeline anchor(nullptr, 1);
+
+//     // Creates the static red shape and connects its address to concepts.
+//     Entity staticEntity(Rectangle(100,100,100,100),{255,0,0,255}, false); // Static red shape.
+//     concepts.s = &staticEntity;
+
+//     // Creates the controllable green shape and connects its address to concepts.
+//     Entity controllableEntity(Rectangle(300,300,50,50),{0,255,0,255}, true); // Controllable green shape.
+//     concepts.c = &controllableEntity;
+
+//     // Creates the moving black shape and connects its address to concepts.
+//     Entity movingEntity(Rectangle(100,100,100,100),{0,0,0,255}, false); // Black moving shape.
+//     concepts.m = &movingEntity;
+
+//     // Initializes scaling and held through concepts.
+//     concepts.scaling = false;
+//     concepts.held = false;
+
+//     // Initializes physics variables.
+//     concepts.gravity = 9.8f;
+//     concepts.speed = 5; // Speed of the Entity.
+//     concepts.verticalVel = 0.0f;
+//     concepts.thrust = -9.8f;
+
 //     // Stores the variable that determines whether or not the game is paused.
-//     concepts.p = &anchor.isPaused;
-//
-//
+//     concepts.a = &anchor;
+
+//     // Create a timeline to run threads.
+//     Timeline timeThreads(&anchor, 1); // Set tic to whatever is desired.
+
+//     // Sets the last time.
+//     int64_t lastTime = anchor.getTimeline();
+
 //     std::unordered_map<std::string, SDL_Rect> otherClientEntities;
-//
-//     while (!quit) {
-//         Uint32 currentTime = SDL_GetTicks();
-//         float deltaTime = (currentTime - lastTime) / 1000.0f;
-//         lastTime = currentTime;
-//
+
+//     // Runs the game.
+//     while (!concepts.quit) {
+//         // Gets the current time.
+//         int64_t currentTime = anchor.getTimeline();
+//         // Calculates delta time.
+//         float deltaTime = 0;
+//         if (timeThreads.getTicks() != 3) {
+//             deltaTime = ((currentTime - lastTime) / timeThreads.getTicks()) / 1000.0f;
+//         } else {
+//             deltaTime = ((currentTime - lastTime) * 2) / 1000.0f;
+//         }
+//         // Stores delta time in concepts.
+//         concepts.delta = deltaTime;
+//         // TEMPORARY: prints calculated time variables.
+//         printf("Time: %ld\nLast Time: %ld\nDelta: %f\n", currentTime, lastTime, deltaTime);
+
 //         while (SDL_PollEvent(&e) != 0) {
 //             if (e.type == SDL_QUIT) {
-//                 quit = true;
+//                 concepts.quit = true;
 //             }
 //         }
-//
-//         const Uint8* state = SDL_GetKeyboardState(nullptr);
-//         int moveSpeed = 5;
-//
-    // Create a timeline to run threads.
-    // Timeline timeThreads(&anchor, 1); // Set tic to whatever is desired.
 
-    // // Pausing functionality started here!
+//         concepts.state = SDL_GetKeyboardState(nullptr);
+//         concepts.moveSpeed = 5;
 
-    //     // Run threads.
-    //     startThreads(&timeThreads, &concepts, &game);
+//     // If the player is pressing 'O'.
+//         if (concepts.state[SDL_SCANCODE_O]) { // Pause game.
+//             if (!concepts.a->isPaused) {
+//                 concepts.a->pause();
+//             }
+//         }
 
-    //     // Keeps track of the controllable rectangle.
-    //     Rectangle cRect = concepts.c->getRect();
-    //     // Keeps track of the static rectangle.
-    //     Rectangle sRect = concepts.s->getRect();
-    //     // Keeps track of the moving rectangle.
-    //     Rectangle mRect = concepts.m->getRect();
+//         // If the player is pressing 'P'.
+//         if (concepts.state[SDL_SCANCODE_P]) { // Unpause game.
+//             if (concepts.a->isPaused) {
+//                 concepts.a->unpause();
+//             }
+//         }
 
-    //     // Senses other shapes for collision.
-    //     if (hasIntersection(&cRect, &sRect) == true) {
-    //         // If there was an intersection on the top of the terrain rectangle,
-    //         // the controllable rectangle lands on the terrain rectangle.
-    //         if (intersect(&cRect, &sRect) == 2) {
-    //             // Causes vertical collision.
-    //             concepts.delta = 0;
-    //             concepts.verticalVel = 0;
-    //         }
-    //         // More sides will be added in the future.
-    //     }
+//         // If the player is pressing 'B'.
+//         if(concepts.state[SDL_SCANCODE_B]){ // Set tic to 0.5 (which is marked with 3).
+//             timeThreads.setTicks(3);
+//             printf("Tics set to 0.5.\n");
+//         }
 
-    //     // Senses other shapes for collision.
-    //     if (hasIntersection(&cRect, &mRect) == true) {
-    //         // If there was an intersection on the top of the terrain rectangle,
-    //         // the controllable rectangle lands on the terrain rectangle.
-    //         if (intersect(&cRect, &mRect) == 2) {
-    //             // Causes vertical collision.
-    //             concepts.delta = 0;
-    //             concepts.verticalVel = 0;
-    //             // Enables player movement mimicking the moving entity.
-    //             concepts.c->move(concepts.speed, static_cast<int>(concepts.verticalVel));
-    //             if (concepts.c->getRect().x > 1820 || concepts.c->getRect().x < 100) {
-    //                 concepts.speed = -concepts.speed;
-    //             }
-    //         }
-    //         // More sides may be added in the future.
-    //     }
+//         // If the player is pressing 'N'.
+//         if(concepts.state[SDL_SCANCODE_N]){ // Set tic to 1.
+//             timeThreads.setTicks(1);
+//             printf("Tics set to 1.\n");
+//         }
 
-//         // Pausing functionality ended here!
-//
+//         // If the player is pressing 'M'.
+//         if(concepts.state[SDL_SCANCODE_M]){ // Set tic to 2.
+//             timeThreads.setTicks(2);
+//             printf("Tics set to 2.\n");
+//         }
+
+//         if (!concepts.a->isPaused) {
+
+//             // Run threads.
+//             startThreads(&timeThreads, &concepts, &game);
+
+//             // Keeps track of the controllable rectangle.
+//             Rectangle cRect = concepts.c->getRect();
+//             // Keeps track of the static rectangle.
+//             Rectangle sRect = concepts.s->getRect();
+//             // Keeps track of the moving rectangle.
+//             Rectangle mRect = concepts.m->getRect();
+
+//             // Senses other shapes for collision.
+//             if (hasIntersection(&cRect, &sRect) == true) {
+//                 // If there was an intersection on the top of the terrain rectangle,
+//                 // the controllable rectangle lands on the terrain rectangle.
+//                 if (intersect(&cRect, &sRect) == 2) {
+//                     // Causes vertical collision.
+//                     concepts.delta = 0;
+//                     concepts.verticalVel = 0;
+//                 }
+//                 // More sides will be added in the future.
+//             }
+
+//             // Senses other shapes for collision.
+//             if (hasIntersection(&cRect, &mRect) == true) {
+//                 // If there was an intersection on the top of the terrain rectangle,
+//                 // the controllable rectangle lands on the terrain rectangle.
+//                 if (intersect(&cRect, &mRect) == 2) {
+//                     // Causes vertical collision.
+//                     concepts.delta = 0;
+//                     concepts.verticalVel = 0;
+//                     // Enables player movement mimicking the moving entity.
+//                     concepts.c->move(concepts.speed, static_cast<int>(concepts.verticalVel));
+//                     if (concepts.c->getRect().x > 1820 || concepts.c->getRect().x < 100) {
+//                         concepts.speed = -concepts.speed;
+//                     }
+//                 }
+//                 // More sides may be added in the future.
+//             }
+
+//         }
+
 //         // Keeps track of the controllable rectangle.
 //         Rectangle cRect = concepts.c->getRect();
 //         // Keeps track of the static rectangle.
 //         Rectangle sRect = concepts.s->getRect();
 //         // Keeps track of the moving rectangle.
 //         Rectangle mRect = concepts.m->getRect();
-//
+
 //         // Senses other shapes for collision.
 //         if (hasIntersection(&cRect, &sRect) == true) {
 //             // If there was an intersection on the top of the terrain rectangle,
@@ -608,8 +674,8 @@ int main(int argc, char* argv[]) {
 //             }
 //             // More sides will be added in the future.
 //         }
-//    
-//
+   
+
 //         // Senses other shapes for collision.
 //         if (hasIntersection(&cRect, &mRect) == true) {
 //             // If there was an intersection on the top of the terrain rectangle,
@@ -626,56 +692,60 @@ int main(int argc, char* argv[]) {
 //             }
 //             // More sides may be added in the future.
 //         }
-//
+
 //          json jsonString = {
 //             {"clientId", clientId},
 //             {"clientAddr", clientAddress},
 //             {"x", concepts.c->getRect().x},
 //             {"y", concepts.c->getRect().y}
 //         };
-//
+
 //         std::string positionData = jsonString.dump();
 //         zmq::message_t message(positionData.size());
 //         memcpy(message.data(), positionData.c_str(), positionData.size());
 //         receiver.send(message, zmq::send_flags::none);
-//
+
 //         zmq::message_t reply;
 //         receiver.recv(reply, zmq::recv_flags::none);
-//
+
 //         std::string updatedPositions(reply.to_string());
 //         auto parsedPositions = parseUpdatedPositions(updatedPositions);
-//
+
 //         for (const auto& position : parsedPositions) {
 //             std::string clientIdFromServer = position["clientId"];
 //             int xFromServer = position["position"]["x"];
 //             int yFromServer = position["position"]["y"];
-//
+
 //             if (clientIdFromServer != clientId) { // Ensure not rendering own entity
 //                 otherClientEntities[clientIdFromServer] = {xFromServer, yFromServer, 50, 50};
 //             }
 //         }
-//
-//         SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-//         SDL_RenderClear(renderer);
-//
-//         concepts.s->render(renderer);
-//         concepts.c->render(renderer);
-//
+
+//         SDL_SetRenderDrawColor(game.renderer, 0, 0, 255, 255);
+//         SDL_RenderClear(game.renderer);
+
+//         concepts.s->render(game.renderer);
+//         concepts.c->render(game.renderer);
+
 //         // Render entities from other clients
 //         for (const auto& [id, rect] : otherClientEntities) {
-//             SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-//             SDL_RenderFillRect(renderer, &rect);
+//             SDL_SetRenderDrawColor(game.renderer, 0, 255, 0, 255);
+//             SDL_RenderFillRect(game.renderer, &rect);
 //         }
-//
-//         concepts.m->render(renderer);
-//         SDL_RenderPresent(renderer);
+
+//         concepts.m->render(game.renderer);
+//         SDL_RenderPresent(game.renderer);
+
+//         // Puts a delay on the game. (Can be changed!)
 //         SDL_Delay(16);
+//         // Sets the last time to the current time.
+//         lastTime = currentTime;
 //     }
-//
+
 //     // Clean up and shut down SDL
-//     SDL_DestroyRenderer(renderer);
-//     SDL_DestroyWindow(window);
+//     SDL_DestroyRenderer(game.renderer);
+//     SDL_DestroyWindow(game.window);
 //     SDL_Quit();
-//
+
 //     return 0;
 // }
