@@ -12,7 +12,7 @@
 #include "structs.h"
 #include "Threads.h"
 
-std::mutex *_mutex; // the object for mutual exclusion of execution
+std::mutex *_mutex; // The object for mutual exclusion of execution.
 std::condition_variable *_cv_c; // For thread communication regarding the controllable entity.
 Timeline *time_Threads; // To keep track of the timeline for these threads.
 Concepts *concepts; // To keep track of initialized variables.
@@ -123,17 +123,17 @@ void runInput() {
         printf("Thread 2 is processing player input.");
 
         // If the player is pressing 'P'.
-        if (concepts->state[SDL_SCANCODE_P]) { // Pause game.
-            if (!concepts->held) {
-                concepts->held = true;
-                if (!concepts->a->isPaused) {
-                    time_Threads->pause();
-                }
-                else {
-                    time_Threads->unpause();
-                }
-            }
-        }
+        //if (concepts->state[SDL_SCANCODE_P]) { // Pause game.
+        //    if (!concepts->held) {
+        //        concepts->held = true;
+        //        if (!concepts->a->isPaused) {
+        //            time_Threads->pause();
+        //        }
+        //        else {
+        //            time_Threads->unpause();
+        //        }
+        //    }
+        //}
 
         //if (!concepts->a->isPaused) {
 

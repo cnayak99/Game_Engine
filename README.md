@@ -1,12 +1,8 @@
-Lillie Sharpe
-Robbie Martin
-Chinmay Nayak
-
+Lillie Sharpe Robbie Martin Chinmay Nayak
 
 ***Team 13 HW2***
 
-These are the instructions including the startup process for our base game engine application and the controls for the controllable rectangle in it.
-We will begin by explaining the controls because they will be important for Step 6 of the base game engine application startup.
+These are the instructions including the startup process for our base game engine application and the controls for the controllable rectangle in it. We will begin by explaining the controls because they will be important for Step 13 of the base game engine application startup.
 
 
 **Controls**
