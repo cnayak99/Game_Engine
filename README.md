@@ -2,7 +2,8 @@ Lillie Sharpe Robbie Martin Chinmay Nayak
 
 ***Team 13 HW2***
 
-These are the instructions including the startup process for our base game engine application and the controls for the controllable rectangle in it. We will begin by explaining the controls because they will be important for Step 6 of the base game engine application startup.
+These are the instructions including the startup process for our base game engine application and the controls for the controllable rectangle in it. We will begin by explaining the controls because they will be important for Step 13 of the base game engine application startup.
+
 
 **Controls**
 
@@ -24,6 +25,7 @@ N = Sets the tic to 1x.
 
 M = Sets the tic to 2x.
 
+
 **Startup Process**
 
 Step 1.) Download the .zip file including the resources for the game engine.
@@ -36,7 +38,7 @@ Step 4.) In a VSCode terminal, change directories to the folder containing the g
 
 Step 5.) Ensure that the zmq library is installed by running the following command in a system terminal: sudo apt install libzmq3-dev
 
-Step 6.) If you would like to access Section 6 functionality (and where our team has implemented Timelines more correctly so far), leave the first main function in main.cpp uncommented. If you would like to access Section 2 and 3 functionality, comment the first main function and uncomment the second main function.
+Step 6.) If you would like to access *Section 6* functionality (and where our team has implemented Timelines more correctly so far), leave the first main function in main.cpp uncommented. If you would like to access *Section 2 and 3* functionality, comment the first main function and uncomment the second main function.
 
 Step 7.) Open a second VSCode terminal.
 
@@ -50,6 +52,6 @@ Step 11.) Without closing the terminal running "./server", return to the VSCode 
 
 Step 12.) Enter the command "make" in the terminal. The game engine should compile with no errors or warnings.
 
-Step 13.) Enter the command "./game_engine_app" in the terminal. This should start up the base game engine application, but be careful! If you do not move the controllable rectangle to a non-controllable rectangle soon after you open the game, then the controllable rectangle will accelerate with increasing speed downward off the screen.
+Step 13.) Enter the command "./game_engine_app" in the terminal. This should start up the base game engine application, but be careful! *If you do not move the controllable rectangle to a non-controllable rectangle soon after you open the game, then the controllable rectangle will accelerate with increasing speed downward off the screen.*
 
 Thank you very much for viewing our game engine!
