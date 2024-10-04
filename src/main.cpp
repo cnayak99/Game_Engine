@@ -11,6 +11,7 @@
 #include <zmq.hpp>
 #include "json.hpp" // Use relative path to the include directory
 #include <thread>
+#include "Threads.h"
 
 using namespace std; 
 using json = nlohmann::json;
@@ -244,6 +245,9 @@ int main(int argc, char* argv[]) {
     // Sets the last time.
     int64_t lastTime = anchor.getTimeline();
 
+    // Stores the variable that determines whether or not the game is paused.
+    concepts.p = &anchor.isPaused;
+
     // Runs the game.
     while (!concepts.quit) {
         // Gets the current time.
@@ -269,70 +273,13 @@ int main(int argc, char* argv[]) {
         // Stores the move speed in concepts.
         concepts.moveSpeed = 5;
 
-        // ENTER THREADS HERE!
+        // Create a timeline to run threads.
+        Timeline timeThreads(&anchor, 1); // Set tic to whatever is desired.
 
-        // If the player is pressing 'ESC'.
-        if (concepts.state[SDL_SCANCODE_ESCAPE]) {// Exit the game.
-            concepts.quit = true; 
-        }
+        // Pausing functionality started here!
 
-        // If the player is pressing 'P'.
-        if (concepts.state[SDL_SCANCODE_P]) {// Pause/unpause the game.
-            if (!anchor.isPaused) {
-                anchor.unpause();
-            }
-            else {
-                anchor.pause();
-            }
-        }
-        if (!anchor.isPaused) {
-            // Enter threads functionality here!
-
-            // If the player is pressing up.
-            if(concepts.state[SDL_SCANCODE_UP]){ // Move up.
-                concepts.verticalVel = concepts.thrust;
-            }
-
-            // If the player is pressing left.
-            if(concepts.state[SDL_SCANCODE_LEFT]){ // Move left.
-                controllableEntity.move(-concepts.moveSpeed,0);
-            }
-
-            // If the player is pressing right.
-            if(concepts.state[SDL_SCANCODE_RIGHT]){// Move right.
-                controllableEntity.move(concepts.moveSpeed, 0);
-            }
-            
-            // If the player is pressing 'C'.
-            if (concepts.state[SDL_SCANCODE_C]) { // Change window size.
-                if (!concepts.held) {
-                    concepts.held = true;
-                    if (!concepts.scaling) {
-                        SDL_RenderSetLogicalSize(game.renderer, 1920, 1080);
-                        concepts.scaling = true;
-                    }
-                    else {
-                        SDL_RenderSetLogicalSize(game.renderer, 0, 0);
-                        concepts.scaling = false;
-                    }
-                }
-            }
-            else {
-                concepts.held = false;
-            }
-
-            concepts.verticalVel += concepts.gravity * concepts.delta;
-            printf("Vel: %f\n", concepts.verticalVel);
-            controllableEntity.move(0, static_cast<int>(concepts.verticalVel));
-            //Apply Gravity to this object
-
-            // Move the shape in a continuous pattern (horizontal)
-            movingEntity.move(concepts.speed, 0);
-            if (movingEntity.getRect().x > 1820 || movingEntity.getRect().x < 100) {
-                concepts.speed = -concepts.speed;
-            }
-
-            // DELETE UNTIL HERE! EDIT THREADS ACCORDINGLY!
+            // Run threads.
+            startThreads(&timeThreads, &concepts, &game);
 
             // Keeps track of the controllable rectangle.
             Rectangle cRect = concepts.c->getRect();
@@ -369,12 +316,14 @@ int main(int argc, char* argv[]) {
                 }
                 // More sides may be added in the future.
             }
-        }
+
+        // Pausing functionality ended here!
+
         json jsonString = {
             {"clientId", clientId},
             {"clientAddr", clientAddress},
-            {"x", movingEntity.getRect().x},
-            {"y", movingEntity.getRect().y}
+            {"x", concepts.m->getRect().x},
+            {"y", concepts.m->getRect().y}
         };
 
         std::string positionData  = jsonString.dump();
@@ -398,15 +347,15 @@ int main(int argc, char* argv[]) {
 
             // Update movingEntity's position based on the server data for the controlling client
 
-                movingEntity.setPosition(x, y); // Implement setPosition method in Entity class
+                concepts.m->setPosition(x, y); // Implement setPosition method in Entity class
             
         }
 
         nlohmann::json controllableEntityDetails = {
             {"clientId", clientId},
             {"clientAddr", clientAddress},
-            {"x", controllableEntity.getRect().x},
-            {"y", controllableEntity.getRect().y}
+            {"x", concepts.c->getRect().x},
+            {"y", concepts.c->getRect().y}
         };
         std::string controllablePositionData = controllableEntityDetails.dump();
 
@@ -417,9 +366,9 @@ int main(int argc, char* argv[]) {
         SDL_RenderClear(game.renderer);
 
         // Render the shapes
-        staticEntity.render(game.renderer);
-        controllableEntity.render(game.renderer);
-        movingEntity.render(game.renderer);
+        concepts.s->render(game.renderer);
+        concepts.c->render(game.renderer);
+        concepts.m->render(game.renderer);
         
         {
             std::lock_guard<std::mutex> lock(positionMutex);
@@ -575,49 +524,47 @@ int main(int argc, char* argv[]) {
 //         }
 //
 //         // Keeps track of the controllable rectangle.
-//         Rectangle c = controllableEntity.getRect();
-//         // Keeps track of the moving rectangle.
-//         Rectangle m = movingEntity.getRect();
+//         Rectangle cRect = concepts.c->getRect();
 //         // Keeps track of the static rectangle.
-//         Rectangle s = staticEntity.getRect();
-//         // Stores the address of a Rectangle entity.
-//         // Due to redundancy, for now, 'result' has been removed.
-//         // Rectangle * result;
+//         Rectangle sRect = concepts.s->getRect();
+//         // Keeps track of the moving rectangle.
+//         Rectangle mRect = concepts.m->getRect();
 //
 //         // Senses other shapes for collision.
-//         if (hasIntersection(&c, &m) == true) {
+//         if (hasIntersection(&cRect, &sRect) == true) {
 //             // If there was an intersection on the top of the terrain rectangle,
 //             // the controllable rectangle lands on the terrain rectangle.
-//             if (intersect(&c, &m) == 2) {
+//             if (intersect(&cRect, &sRect) == 2) {
 //                 // Causes vertical collision.
-//                 deltaTime = 0;
-//                 verticalVel = 0;
-//                 // Enables player movement mimicking the moving entity.
-//                 controllableEntity.move(speed, static_cast<int>(verticalVel));
-//                 if (controllableEntity.getRect().x > 1820 || controllableEntity.getRect().x < 100) {
-//                     speed = -speed;
-//                 }
+//                 concepts.delta = 0;
+//                 concepts.verticalVel = 0;
 //             }
 //             // More sides will be added in the future.
 //         }
+//    
 //
 //         // Senses other shapes for collision.
-//         if (hasIntersection(&c, &s) == true) {
+//         if (hasIntersection(&cRect, &mRect) == true) {
 //             // If there was an intersection on the top of the terrain rectangle,
 //             // the controllable rectangle lands on the terrain rectangle.
-//             if (intersect(&c, &s) == 2) {
+//             if (intersect(&cRect, &mRect) == 2) {
 //                 // Causes vertical collision.
-//                 deltaTime = 0;
-//                 verticalVel = 0;
+//                 concepts.delta = 0;
+//                 concepts.verticalVel = 0;
+//                 // Enables player movement mimicking the moving entity.
+//                 concepts.c->move(concepts.speed, static_cast<int>(concepts.verticalVel));
+//                 if (concepts.c->getRect().x > 1820 || concepts.c->getRect().x < 100) {
+//                     concepts.speed = -concepts.speed;
+//                 }
 //             }
-//             // More sides will be added in the future.
+//             // More sides may be added in the future.
 //         }
 //
 //          json jsonString = {
 //             {"clientId", clientId},
 //             {"clientAddr", clientAddress},
-//             {"x", controllableEntity.getRect().x},
-//             {"y", controllableEntity.getRect().y}
+//             {"x", concepts.c->getRect().x},
+//             {"y", concepts.c->getRect().y}
 //         };
 //
 //         std::string positionData = jsonString.dump();
@@ -644,8 +591,8 @@ int main(int argc, char* argv[]) {
 //         SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
 //         SDL_RenderClear(renderer);
 //
-//         staticEntity.render(renderer);
-//         controllableEntity.render(renderer);
+//         concepts.s->render(renderer);
+//         concepts.c->render(renderer);
 //
 //         // Render entities from other clients
 //         for (const auto& [id, rect] : otherClientEntities) {
@@ -653,7 +600,7 @@ int main(int argc, char* argv[]) {
 //             SDL_RenderFillRect(renderer, &rect);
 //         }
 //
-//         movingEntity.render(renderer);
+//         concepts.m->render(renderer);
 //         SDL_RenderPresent(renderer);
 //         SDL_Delay(16);
 //     }

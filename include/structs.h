@@ -28,6 +28,8 @@ typedef struct {
     Entity *c;
     Entity *m;
 
+    bool *p;
+
     bool quit;
 } Concepts;
 

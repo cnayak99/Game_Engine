@@ -185,11 +185,18 @@ void runInput() {
  * The following websites are where we learned about their
  * respective functions. We learned about the <vector> header,
  * including the push_back() function, from
- * https://en.cppreference.com/w/cpp/container/vector. Because
- * the threads no longer were accessible after they were executed,
- * we also learned about the "auto" keyword for the sake of joining
- * them back together, which we learned about from
- * https://en.cppreference.com/w/cpp/language/auto.
+ * https://en.cppreference.com/w/cpp/container/vector. More details
+ * on the push_back() function were located from
+ * https://en.cppreference.com/w/cpp/container/vector/push_back.
+ * Because the threads no longer were accessible after they were
+ * executed, we also looked into using the (auto& : container)
+ * for loop structure for the sake of joining them back together,
+ * before the end of the program. One of the team members (Lillie
+ * Sharpe) has used this concept before, but to refresh ourselves,
+ * we viewed more information about it from
+ * https://en.cppreference.com/w/cpp/language/range-for#:~:text=Range-based%20loop%20(since%20C++11)%20{statement...%20Executes%20a%20for%20loop%20over,
+ * which included studying the concept of temporary entities
+ * (like our std::threads) within the same webpage.
  */
 int startThreads(Timeline *t, Concepts *c, Game *g)
 {
@@ -199,13 +206,13 @@ int startThreads(Timeline *t, Concepts *c, Game *g)
     std::condition_variable cv_c;
     _cv_c = &cv_c;
 
+    // Creates a vector with both threads stored inside.
+    std::vector<std::thread> both;
+
     // Initialize the three fields.
     time_Threads = t;
     concepts = c;
     game = g;
-
-    // Creates a vector with both threads stored inside.
-    std::vector<std::thread> both;
 
     // Initializes a list of two threads and runs them.
     for (int i = 0; i < 2; i++) {
