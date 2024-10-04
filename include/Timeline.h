@@ -19,7 +19,7 @@
  */
 class Timeline {
     private:
-        std::mutex m; // For multithreading threads of different sizes.
+        std::mutex m; // For making sure that race conditions do not occur.
         Timeline *anchor; // For the base time.
         std::chrono::time_point<std::chrono::system_clock> start; // The start time of the anchor.
         int64_t pauseElapsed = 0; // Elapsed pause time.
