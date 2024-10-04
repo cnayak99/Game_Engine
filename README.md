@@ -14,14 +14,19 @@ We will begin by explaining the controls because they will be important for Step
 C = Changes the method by which the window can be resized.
 
 Up Arrow Key = Propels the controllable rectangle upwards, similar to a jump. Can be pressed endlessly, resulting in the rectangle continuing to move upwards in a fashion similar to jumping.
+
 Left Arrow Key = Moves the controllable rectangle left at a constant speed.
+
 Right Arrow Key = Moves the controllable rectangle right at a constant speed.
 
 O = Pauses the game.
+
 P = Unpauses the game.
 
 B = Sets the tic to .5x.
+
 N = Sets the tic to 1x.
+
 M = Sets the tic to 2x.
 
 
