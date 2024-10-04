@@ -6,7 +6,13 @@
 
 // Use the nlohmann namespace for convenience
 using json = nlohmann::json;
-
+/*
+This code has been referred from the zeromq official wesite
+Links:
+1) https://zguide.zeromq.org/docs/chapter3/
+2) https://zguide.zeromq.org/docs/chapter5/
+3) http://wiki.zeromq.org/tutorials:dealer-and-router
+*/
 void broadcast(zmq::socket_t& socket, const std::string& message) {
     zmq::message_t broadcastMessage(message.size());
     memcpy(broadcastMessage.data(), message.c_str(), message.size());

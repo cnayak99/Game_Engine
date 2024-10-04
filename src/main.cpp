@@ -32,7 +32,13 @@ void printPositions(const json& positions) {
 
 
 std::mutex knownAddressesMutex;
-
+/*
+This code has been referred from the zeromq official wesite
+Links:
+1) https://zguide.zeromq.org/docs/chapter3/
+2) https://zguide.zeromq.org/docs/chapter5/
+3) http://wiki.zeromq.org/tutorials:dealer-and-router
+*/
 
 void broadcastPosition(std::unordered_map<std::string, zmq::socket_t>& dealerSockets, const std::string& positionData) {
     std::lock_guard<std::mutex> lock(knownAddressesMutex); // Lock for thread safety
@@ -44,6 +50,13 @@ void broadcastPosition(std::unordered_map<std::string, zmq::socket_t>& dealerSoc
         socket.send(std::move(msg), zmq::send_flags::none);
     }
 }
+/*
+This code has been referred from the zeromq official wesite
+Links:
+1) https://zguide.zeromq.org/docs/chapter3/
+2) https://zguide.zeromq.org/docs/chapter5/
+3) http://wiki.zeromq.org/tutorials:dealer-and-router
+*/
 
 // Function to listen for updates and establish connections
 void listenForUpdates(zmq::socket_t& subscriberSocket, std::unordered_map<std::string, zmq::socket_t>& dealerSockets, zmq::context_t& context, const std::string& clientAddress) {
@@ -94,6 +107,13 @@ void listenForUpdates(zmq::socket_t& subscriberSocket, std::unordered_map<std::s
     }
 }
 
+/*
+This code has been referred from the zeromq official wesite
+Links:
+1) https://zguide.zeromq.org/docs/chapter3/
+2) https://zguide.zeromq.org/docs/chapter5/
+3) http://wiki.zeromq.org/tutorials:dealer-and-router
+*/
 // Function to handle incoming messages from peers
 std::unordered_map<std::string, SDL_Rect> entityPositions;
 std::mutex positionMutex;
