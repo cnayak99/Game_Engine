@@ -442,6 +442,7 @@ int main(int argc, char* argv[]) {
         // Sets the last time to the current time.
         lastTime = currentTime;
     }
+    
     // Clean up and shut down SDL
     SDL_DestroyRenderer(game.renderer);
     SDL_DestroyWindow(game.window);
