@@ -219,7 +219,7 @@ int main(int argc, char* argv[]) {
 
     // Construct the anchor timeline.
     Timeline anchor(nullptr, 1);
-    
+
     // Creates the static red shape and connects its address to concepts.
     Entity staticEntity(Rectangle(100,100,100,100),{255,0,0,255}, false); // Static red shape.
     concepts.s = &staticEntity;
@@ -246,14 +246,17 @@ int main(int argc, char* argv[]) {
     int64_t lastTime = anchor.getTimeline();
 
     // Stores the variable that determines whether or not the game is paused.
-    concepts.p = &anchor.isPaused;
+    concepts.a = &anchor;
+
+    // Create a timeline to run threads.
+    Timeline timeThreads(&anchor, 1); // Set tic to whatever is desired.
 
     // Runs the game.
     while (!concepts.quit) {
         // Gets the current time.
         int64_t currentTime = anchor.getTimeline();
         // Calculates delta time.
-        float deltaTime = (currentTime - lastTime) / 1000.0f;
+        float deltaTime = (currentTime - lastTime) / (1000.0f * timeThreads.getTicks());
         // Stores delta time in concepts.
         concepts.delta = deltaTime;
         // TEMPORARY: prints calculated time variables.
@@ -273,23 +276,20 @@ int main(int argc, char* argv[]) {
         // Stores the move speed in concepts.
         concepts.moveSpeed = 5;
 
-        // Create a timeline to run threads.
-        Timeline timeThreads(&anchor, 1); // Set tic to whatever is desired.
-
+        // If the player is pressing 'P'.
         if (concepts.state[SDL_SCANCODE_P]) { // Pause game.
             if (!concepts.held) {
                 concepts.held = true;
-                if (!anchor.isPaused) {
-                    anchor.pause();
+                if (!concepts.a->isPaused) {
+                    concepts.a->pause();
                 }
                 else {
-                    anchor.unpause();
+                    concepts.a->unpause();
                 }
             }
         }
 
-        // Pausing functionality started here!
-        if (!anchor.isPaused) {
+        if (!concepts.a->isPaused) {
 
             // Run threads.
             startThreads(&timeThreads, &concepts, &game);
@@ -331,7 +331,6 @@ int main(int argc, char* argv[]) {
             }
 
         }
-        // Pausing functionality ended here!
 
         json jsonString = {
             {"clientId", clientId},

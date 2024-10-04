@@ -62,27 +62,30 @@ void runPhysics() {
     {
         printf("Thread 1 trying.");
 
-        // This block controls the physics for the Controllable Entity.
-        { // Anonymous block to manage mutex lock scope.
-            // Sets up the mutex lock.
-            std::unique_lock<std::mutex> cv_lock(*_mutex);
+        //if (!concepts->a->isPaused) {}
 
-            // Applies gravity to the player object.
-            concepts->verticalVel += concepts->gravity * concepts->delta;
-            concepts->c->move(0, static_cast<int>(concepts->verticalVel));
+            // This block controls the physics for the Controllable Entity.
+            { // Anonymous block to manage mutex lock scope.
+                // Sets up the mutex lock.
+                std::unique_lock<std::mutex> cv_lock(*_mutex);
+
+                // Applies gravity to the player object.
+                concepts->verticalVel += concepts->gravity * concepts->delta;
+                concepts->c->move(0, static_cast<int>(concepts->verticalVel));
                         
-            printf("Thread 1 applied gravity.");
+                printf("Thread 1 applied gravity.");
 
-            // Notifies all that the controllable entity had physics applied.
-            _cv_c->notify_all();
-        }
+                // Notifies all that the controllable entity had physics applied.
+                _cv_c->notify_all();
+            }
 
-        // Controls physics for the Moving Entity.
-        // Moves the moving shape in a continuous horizontal pattern.
-        concepts->m->move(concepts->speed, 0);
-        if (concepts->m->getRect().x > 1820 || concepts->m->getRect().x < 100) {
-            concepts->speed = -concepts->speed;
-        }
+            // Controls physics for the Moving Entity.
+            // Moves the moving shape in a continuous horizontal pattern.
+            concepts->m->move(concepts->speed, 0);
+            if (concepts->m->getRect().x > 1820 || concepts->m->getRect().x < 100) {
+                concepts->speed = -concepts->speed;
+            }
+        //}
 
         printf("Thread 1 moved Entity M.");
 
@@ -119,38 +122,72 @@ void runInput() {
 
         printf("Thread 2 is processing player input.");
 
-        // If the player is pressing up.
-        if(concepts->state[SDL_SCANCODE_UP]){ // Move up.
-            concepts->verticalVel = concepts->thrust;
-        }
-
-        // If the player is pressing left.
-        if(concepts->state[SDL_SCANCODE_LEFT]){ // Move left.
-            concepts->c->move(-concepts->moveSpeed,0);
-        }
-
-        // If the player is pressing right.
-        if(concepts->state[SDL_SCANCODE_RIGHT]){// Move right.
-            concepts->c->move(concepts->moveSpeed, 0);
-        }
-        
-        // If the player is pressing 'C'.
-        if (concepts->state[SDL_SCANCODE_C]) { // Change window size.
+        // If the player is pressing 'P'.
+        if (concepts->state[SDL_SCANCODE_P]) { // Pause game.
             if (!concepts->held) {
                 concepts->held = true;
-                if (!concepts->scaling) {
-                    SDL_RenderSetLogicalSize(game->renderer, 1920, 1080);
-                    concepts->scaling = true;
+                if (!concepts->a->isPaused) {
+                    time_Threads->pause();
                 }
                 else {
-                    SDL_RenderSetLogicalSize(game->renderer, 0, 0);
-                    concepts->scaling = false;
+                    time_Threads->unpause();
                 }
             }
         }
-        else {
-            concepts->held = false;
-        }
+
+        //if (!concepts->a->isPaused) {
+
+            // If the player is pressing 'B'.
+            if(concepts->state[SDL_SCANCODE_B]){ // Set tic to 0.5 (which is marked with 3).
+                time_Threads->setTicks(3);
+                printf("Tics set to 0.5.\n");
+            }
+
+            // If the player is pressing 'N'.
+            if(concepts->state[SDL_SCANCODE_N]){ // Set tic to 1.
+                time_Threads->setTicks(1);
+                printf("Tics set to 1.\n");
+            }
+
+            // If the player is pressing 'M'.
+            if(concepts->state[SDL_SCANCODE_M]){ // Set tic to 2.
+                time_Threads->setTicks(2);
+                printf("Tics set to 2.\n");
+            }
+
+            // If the player is pressing up.
+            if(concepts->state[SDL_SCANCODE_UP]){ // Move up.
+                concepts->verticalVel = concepts->thrust;
+            }
+
+            // If the player is pressing left.
+            if(concepts->state[SDL_SCANCODE_LEFT]){ // Move left.
+                concepts->c->move(-concepts->moveSpeed,0);
+            }
+
+            // If the player is pressing right.
+            if(concepts->state[SDL_SCANCODE_RIGHT]){// Move right.
+                concepts->c->move(concepts->moveSpeed, 0);
+            }
+        
+            // If the player is pressing 'C'.
+            if (concepts->state[SDL_SCANCODE_C]) { // Change window size.
+                if (!concepts->held) {
+                    concepts->held = true;
+                    if (!concepts->scaling) {
+                        SDL_RenderSetLogicalSize(game->renderer, 1920, 1080);
+                        concepts->scaling = true;
+                    }
+                    else {
+                        SDL_RenderSetLogicalSize(game->renderer, 0, 0);
+                        concepts->scaling = false;
+                    }
+                }
+            }
+            else {
+                concepts->held = false;
+            }
+        //}
 
         // If the player is pressing 'ESC'.
         if (concepts->state[SDL_SCANCODE_ESCAPE]) {// Exit the game.

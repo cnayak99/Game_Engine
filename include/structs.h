@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include "Entity.h"
+#include "Timeline.h"
 
 typedef struct {
     SDL_Renderer *renderer;
@@ -28,7 +29,7 @@ typedef struct {
     Entity *c;
     Entity *m;
 
-    bool *p;
+    Timeline *a;
 
     bool quit;
 } Concepts;

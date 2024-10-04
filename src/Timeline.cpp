@@ -38,10 +38,23 @@ int64_t Timeline::getTimeline() {
     std::chrono::time_point<std::chrono::system_clock> curr = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     if (anchor == nullptr) {
         std::chrono::duration elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(curr - std::chrono::time_point_cast<std::chrono::milliseconds>(start));
-        count = elapsed.count() / tic;
+        
+        if (tic != 3) {
+            // If tic is not 3, treat it like normal.
+            count = elapsed.count() / tic;
+        } else {
+            // If tic is 3, treat it like .5.
+            count = elapsed.count() * 2;
+        }
         return count;
     }
-    count = anchor->getTimeline() / tic;
+    if (tic != 3) {
+        // If tic is not 3, treat it like normal.
+        count = anchor->getTimeline() / tic;
+    } else {
+        // If tic is 3, treat it like .5.
+        count = anchor->getTimeline() * 2;
+    }
     return count - pauseElapsed;
 }
 
