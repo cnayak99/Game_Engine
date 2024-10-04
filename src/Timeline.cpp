@@ -1,7 +1,12 @@
-#include "Timeline.h"
 #include <mutex>
 #include <cmath>
 #include <chrono>
+#include <condition_variable>
+
+#include "Timeline.h"
+
+/** Allows pause and unpause to communicate. */
+std::condition_variable cv_m;
 
 /**
  * Creates a Timeline struct, which keeps track of and monitors a
@@ -33,12 +38,14 @@ Timeline::Timeline(Timeline *anchor, int64_t tic): anchor(anchor), tic(tic){}
 int64_t Timeline::getTimeline() {
     using namespace std::chrono;
     // Locks mutex and automatically unlocks itself.
-    std::lock_guard<std::mutex> guard(m);
+    std::unique_lock<std::mutex> cv_lock(m);
+    // Keeps track of the count.
+    int64_t countFull = 0;
     // Returns the elapsed time of this Timeline object.
     std::chrono::time_point<std::chrono::system_clock> curr = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
     if (anchor == nullptr) {
         std::chrono::duration elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(curr - std::chrono::time_point_cast<std::chrono::milliseconds>(start));
-        
+        // Checks the value of tic to update it accordingly.
         if (tic != 3) {
             // If tic is not 3, treat it like normal.
             count = elapsed.count() / tic;
@@ -46,7 +53,10 @@ int64_t Timeline::getTimeline() {
             // If tic is 3, treat it like .5.
             count = elapsed.count() * 2;
         }
-        return count;
+        countFull = count;
+        // Notifies unpause that the game is paused.
+        cv_m.notify_all();
+        return countFull;
     }
     if (tic != 3) {
         // If tic is not 3, treat it like normal.
@@ -55,7 +65,10 @@ int64_t Timeline::getTimeline() {
         // If tic is 3, treat it like .5.
         count = anchor->getTimeline() * 2;
     }
-    return count - pauseElapsed;
+    countFull = count - pauseElapsed;
+    // Notifies unpause that the game is paused.
+    cv_m.notify_all();
+    return countFull;
 }
 
 /**
@@ -69,10 +82,12 @@ int64_t Timeline::getTimeline() {
  */
 void Timeline::pause() {
     // Locks mutex and automatically unlocks itself.
-    std::lock_guard<std::mutex> guard(m);
+    std::unique_lock<std::mutex> cv_lock(m);
     // Pauses the game.
     pauseLast = getTimeline();
     isPaused = true;
+    // Notifies unpause that the game is paused.
+    cv_m.notify_all();
 }
 
 /**
@@ -86,17 +101,23 @@ void Timeline::pause() {
  */
 void Timeline::unpause() {
     // Locks mutex and automatically unlocks itself.
-    std::lock_guard<std::mutex> guard(m);
+    std::unique_lock<std::mutex> cv_lock(m);
     // Unpauses the game.
     pauseElapsed = anchor->getTimeline() - pauseLast;
     isPaused = false;
+    // Notifies pause that the game is paused.
+    cv_m.notify_all();
 }
 
 /**
  * Sets the rate at which a timeline moves forward for each unit of anchor time.
  */
 void Timeline::setTicks(int64_t tic) {
+    // Locks mutex and automatically unlocks itself.
+    std::unique_lock<std::mutex> cv_lock(m);
     this->tic = tic;
+    // Notifies unpause that the game is paused.
+    cv_m.notify_all();
 }
 
 /**
@@ -104,5 +125,12 @@ void Timeline::setTicks(int64_t tic) {
  */
 
 int64_t Timeline::getTicks() {
-    return tic;
+    // Locks mutex and automatically unlocks itself.
+    std::unique_lock<std::mutex> cv_lock(m);
+    // Stores the current tic.
+    int64_t currentTic = this->tic;
+    // Notifies unpause that the game is paused.
+    cv_m.notify_all();
+    // Returns the current tic.
+    return currentTic;
 }

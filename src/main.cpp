@@ -274,7 +274,7 @@ int main(int argc, char* argv[]) {
     // Runs the game.
     while (!concepts.quit) {
         // Gets the current time.
-        int64_t currentTime = timeThreads.getTimeline();
+        int64_t currentTime = anchor.getTimeline();
         // Calculates delta time.
         float deltaTime = (currentTime - lastTime) / 1000.0f;
         // Stores delta time in concepts.
