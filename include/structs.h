@@ -28,6 +28,7 @@ typedef struct {
     Entity *s;
     Entity *c;
     Entity *m;
+    Entity *sR;
 
     Timeline *a;
 

@@ -240,16 +240,21 @@ int main(int argc, char* argv[]) {
     // Construct the anchor timeline.
     Timeline anchor(nullptr, 1);
 
+    int windowWidth = 1920;
+    int windowHeight = 1080;
+
     // Creates the static red shape and connects its address to concepts.
-    Entity staticEntity(Rectangle(100,100,100,100),{255,0,0,255}, false); // Static red shape.
+    Entity staticEntity(Rectangle(0,windowHeight-400,300,100),{255,0,0,255}, false); // Static red shape.
     concepts.s = &staticEntity;
 
+    Entity staticEntityRight(Rectangle(windowWidth - 300, windowHeight - 400, 300, 100), {255, 0, 0, 255}, false); // Static Red Shape (right)
+    concepts.sR = &staticEntityRight;
     // Creates the controllable green shape and connects its address to concepts.
     Entity controllableEntity(Rectangle(300,300,50,50),{0,255,0,255}, true); // Controllable green shape.
     concepts.c = &controllableEntity;
 
     // Creates the moving black shape and connects its address to concepts.
-    Entity movingEntity(Rectangle(100,100,100,100),{0,0,0,255}, false); // Black moving shape.
+    Entity movingEntity(Rectangle(300, windowHeight - 500, 300, 10),{0,0,0,255}, false); // Black moving shape.
     concepts.m = &movingEntity;
 
     // Initializes scaling and held through concepts.
@@ -345,11 +350,23 @@ int main(int argc, char* argv[]) {
             // Keeps track of the moving rectangle.
             Rectangle mRect = concepts.m->getRect();
 
-            // Senses other shapes for collision.
+            Rectangle sRRect = concepts.sR->getRect();
+
+            
             if (hasIntersection(&cRect, &sRect) == true) {
                 // If there was an intersection on the top of the terrain rectangle,
                 // the controllable rectangle lands on the terrain rectangle.
                 if (intersect(&cRect, &sRect) == 2) {
+                    // Causes vertical collision.
+                    concepts.delta = 0;
+                    concepts.verticalVel = 0;
+                }
+                // More sides will be added in the future.
+            }
+            if (hasIntersection(&cRect, &sRRect) == true) {
+                // If there was an intersection on the top of the terrain rectangle,
+                // the controllable rectangle lands on the terrain rectangle.
+                if (intersect(&cRect, &sRRect) == 2) {
                     // Causes vertical collision.
                     concepts.delta = 0;
                     concepts.verticalVel = 0;
@@ -367,12 +384,14 @@ int main(int argc, char* argv[]) {
                     concepts.verticalVel = 0;
                     // Enables player movement mimicking the moving entity.
                     concepts.c->move(concepts.speed, static_cast<int>(concepts.verticalVel));
-                    if (concepts.c->getRect().x > 1820 || concepts.c->getRect().x < 100) {
+                    if (concepts.c->getRect().x > 1500 || concepts.c->getRect().x < 100) {
                         concepts.speed = -concepts.speed;
                     }
                 }
                 // More sides may be added in the future.
             }
+
+            
 
         }
 
@@ -404,7 +423,7 @@ int main(int argc, char* argv[]) {
 
             // Update movingEntity's position based on the server data for the controlling client
 
-                concepts.m->setPosition(x, y); // Implement setPosition method in Entity class
+            concepts.m->setPosition(x, y); // Implement setPosition method in Entity class
             
         }
 
@@ -426,6 +445,7 @@ int main(int argc, char* argv[]) {
         concepts.s->render(game.renderer);
         concepts.c->render(game.renderer);
         concepts.m->render(game.renderer);
+        concepts.sR->render(game.renderer);
         
         {
             std::lock_guard<std::mutex> lock(positionMutex);
@@ -524,16 +544,21 @@ int main(int argc, char* argv[]) {
 //     // Construct the anchor timeline.
 //     Timeline anchor(nullptr, 1);
 
+//     int windowWidth = 1920;
+//     int windowHeight = 1080;
+
 //     // Creates the static red shape and connects its address to concepts.
-//     Entity staticEntity(Rectangle(100,100,100,100),{255,0,0,255}, false); // Static red shape.
+//     Entity staticEntity(Rectangle(0,windowHeight-400,300,100),{255,0,0,255}, false); // Static red shape.
 //     concepts.s = &staticEntity;
 
+//     Entity staticEntityRight(Rectangle(windowWidth - 300, windowHeight - 400, 300, 100), {255, 0, 0, 255}, false); // Static Red Shape (right)
+//     concepts.sR = &staticEntityRight;
 //     // Creates the controllable green shape and connects its address to concepts.
 //     Entity controllableEntity(Rectangle(300,300,50,50),{0,255,0,255}, true); // Controllable green shape.
 //     concepts.c = &controllableEntity;
 
 //     // Creates the moving black shape and connects its address to concepts.
-//     Entity movingEntity(Rectangle(100,100,100,100),{0,0,0,255}, false); // Black moving shape.
+//     Entity movingEntity(Rectangle(300, windowHeight - 500, 300, 10),{0,0,0,255}, false); // Black moving shape.
 //     concepts.m = &movingEntity;
 
 //     // Initializes scaling and held through concepts.
@@ -626,11 +651,22 @@ int main(int argc, char* argv[]) {
 //             // Keeps track of the moving rectangle.
 //             Rectangle mRect = concepts.m->getRect();
 
-//             // Senses other shapes for collision.
+//             Rectangle sRRect = concepts.sR->getRect();
+
 //             if (hasIntersection(&cRect, &sRect) == true) {
 //                 // If there was an intersection on the top of the terrain rectangle,
 //                 // the controllable rectangle lands on the terrain rectangle.
 //                 if (intersect(&cRect, &sRect) == 2) {
+//                     // Causes vertical collision.
+//                     concepts.delta = 0;
+//                     concepts.verticalVel = 0;
+//                 }
+//                 // More sides will be added in the future.
+//             }
+//             if (hasIntersection(&cRect, &sRRect) == true) {
+//                 // If there was an intersection on the top of the terrain rectangle,
+//                 // the controllable rectangle lands on the terrain rectangle.
+//                 if (intersect(&cRect, &sRRect) == 2) {
 //                     // Causes vertical collision.
 //                     concepts.delta = 0;
 //                     concepts.verticalVel = 0;
@@ -655,43 +691,6 @@ int main(int argc, char* argv[]) {
 //                 // More sides may be added in the future.
 //             }
 
-//         }
-
-//         // Keeps track of the controllable rectangle.
-//         Rectangle cRect = concepts.c->getRect();
-//         // Keeps track of the static rectangle.
-//         Rectangle sRect = concepts.s->getRect();
-//         // Keeps track of the moving rectangle.
-//         Rectangle mRect = concepts.m->getRect();
-
-//         // Senses other shapes for collision.
-//         if (hasIntersection(&cRect, &sRect) == true) {
-//             // If there was an intersection on the top of the terrain rectangle,
-//             // the controllable rectangle lands on the terrain rectangle.
-//             if (intersect(&cRect, &sRect) == 2) {
-//                 // Causes vertical collision.
-//                 concepts.delta = 0;
-//                 concepts.verticalVel = 0;
-//             }
-//             // More sides will be added in the future.
-//         }
-   
-
-//         // Senses other shapes for collision.
-//         if (hasIntersection(&cRect, &mRect) == true) {
-//             // If there was an intersection on the top of the terrain rectangle,
-//             // the controllable rectangle lands on the terrain rectangle.
-//             if (intersect(&cRect, &mRect) == 2) {
-//                 // Causes vertical collision.
-//                 concepts.delta = 0;
-//                 concepts.verticalVel = 0;
-//                 // Enables player movement mimicking the moving entity.
-//                 concepts.c->move(concepts.speed, static_cast<int>(concepts.verticalVel));
-//                 if (concepts.c->getRect().x > 1820 || concepts.c->getRect().x < 100) {
-//                     concepts.speed = -concepts.speed;
-//                 }
-//             }
-//             // More sides may be added in the future.
 //         }
 
 //          json jsonString = {
@@ -727,6 +726,7 @@ int main(int argc, char* argv[]) {
 
 //         concepts.s->render(game.renderer);
 //         concepts.c->render(game.renderer);
+//         concepts.sR->render(game.renderer);
 
 //         // Render entities from other clients
 //         for (const auto& [id, rect] : otherClientEntities) {
