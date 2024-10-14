@@ -1,7 +1,6 @@
 #ifndef ENTITY_H
 #define ENTITY_H
 
-#include "Rectangle.h"
 #include <SDL2/SDL.h>
 
 /**
@@ -16,14 +15,17 @@
  */
 class Entity {
 public:
-    Entity(Rectangle rect, SDL_Color color);
+    Entity(int x, int y, int width, int height, SDL_Color color, bool weighted);
 
+    bool weighted;
     void render(SDL_Renderer* renderer);
     void move(int dx, int dy);
     void setVelocity(float vx, float vy);
     void setWeight(bool w);
-    Rectangle getRect() const;
+    void setPosition(int x, int y);
+    SDL_Rect getRect() const;
     SDL_Color getColor() const;
+    bool getWeight() const;
 
     struct {
         float x;
@@ -31,7 +33,7 @@ public:
     } velocity;
 
 private:
-    Rectangle rect;
+    SDL_Rect rect;
     SDL_Color color;
 };
 

@@ -1,4 +1,4 @@
-#include "Rectangle.h"
+#include <SDL2/SDL.h>
 
 /**
  * Checks two rectangles to see if they intersect for basic collision.
@@ -21,7 +21,7 @@
  * 
  * @author Lillie Sharpe (lssharpe)
  */
-extern bool hasIntersection(const Rectangle * first, const Rectangle * second);
+extern bool hasIntersection(const SDL_Rect * first, const SDL_Rect * second);
 
 /**
  * Verifies where the collision occurred.
@@ -45,4 +45,4 @@ extern bool hasIntersection(const Rectangle * first, const Rectangle * second);
  * 
  * @author Lillie Sharpe (lssharpe)
  */
-extern int intersect(const Rectangle * first, const Rectangle * second);
+extern int intersect(const SDL_Rect * first, const SDL_Rect * second);

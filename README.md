@@ -4,12 +4,11 @@ Lillie Sharpe Robbie Martin Chinmay Nayak
 
 These are the instructions including the startup process for our base game engine application and the controls for the controllable rectangle in it. We will begin by explaining the controls because they will be important for Step 13 of the base game engine application startup.
 
-
 **Controls**
 
 C = Changes the method by which the window can be resized.
 
-Up Arrow Key = Propels the controllable rectangle upwards, similar to a jump. Can be pressed endlessly, resulting in the rectangle continuing to move upwards in a fashion similar to jumping.
+Space = Propels the controllable rectangle upwards, similar to a jump. Can be pressed endlessly, resulting in the rectangle continuing to move upwards in a fashion similar to jumping.
 
 Left Arrow Key = Moves the controllable rectangle left at a constant speed.
 
@@ -25,8 +24,11 @@ N = Sets the tic to 1x.
 
 M = Sets the tic to 2x.
 
+ESCAPE = Closes the window.
 
 **Startup Process**
+
+IMPORTANT NOTE: This demo was made is WSL, so that should be the OS of choice for this demo. There are some inconsistencies with ZMQ's addressing that were edited from the base version to work in WSL (namely, changing "localhost" to "127.0.0.1")
 
 Step 1.) Download the .zip file including the resources for the game engine.
 
@@ -34,11 +36,13 @@ Step 2.) Unzip the .zip file in a location that would be easy to access through 
 
 Step 3.) Access the folder containing the game engine resources through VSCode.
 
-Step 4.) In a VSCode terminal, change directories to the folder containing the game engine resources (in this case, this folder should be "/CSC28_Team13").
+Step 4.) In a VSCode terminal, change directories to the folder containing the game engine resources (in this case, this folder should be "/CSC281_Team13").
 
 Step 5.) Ensure that the zmq library is installed by running the following command in a system terminal: sudo apt install libzmq3-dev
 
 Step 6.) If you would like to access *Section 6* functionality (and where our team has implemented Timelines more correctly so far), leave the first main function in main.cpp uncommented. If you would like to access *Section 2 and 3* functionality, comment the first main function and uncomment the second main function.
+
+Note: The individual demo was built in the first main method. It should compile as needed without commenting out code.
 
 Step 7.) Open a second VSCode terminal.
 

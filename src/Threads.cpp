@@ -55,13 +55,9 @@ void runThread(int id) {
  * Game Engine Foundations" course Moodle page.
  */
 void runPhysics() {
-    printf("Thread 1 start.");
-
     // Thread 1 tries to keep track of non-player rectangles for this tic.
     try
     {
-        printf("Thread 1 trying.");
-
         //if (!concepts->a->isPaused) {}
 
             // This block controls the physics for the Controllable Entity.
@@ -73,8 +69,6 @@ void runPhysics() {
                 concepts->verticalVel += concepts->gravity * concepts->delta;
                 concepts->c->move(0, static_cast<int>(concepts->verticalVel));
                         
-                printf("Thread 1 applied gravity.");
-
                 // Notifies all that the controllable entity had physics applied.
                 _cv_c->notify_all();
             }
@@ -86,8 +80,6 @@ void runPhysics() {
                 concepts->speed = -concepts->speed;
             }
         //}
-
-        printf("Thread 1 moved Entity M.");
 
         // Add additional blocks to control additional shapes here if necessary.
     }
@@ -112,15 +104,11 @@ void runPhysics() {
  * Game Engine Foundations" course Moodle page.
  */
 void runInput() {
-    printf("Start Thread 2.");
-
     // Thread 2 tries to manage player input for this tic.
     try 
     {
         // Sets up the mutex lock.
         std::unique_lock<std::mutex> cv_lock(*_mutex);
-
-        printf("Thread 2 is processing player input.");
 
         // If the player is pressing 'P'.
         //if (concepts->state[SDL_SCANCODE_P]) { // Pause game.
@@ -155,8 +143,8 @@ void runInput() {
             //     printf("Tics set to 2.\n");
             // }
 
-            // If the player is pressing up.
-            if(concepts->state[SDL_SCANCODE_UP]){ // Move up.
+            // If the player is pressing space.
+            if(concepts->state[SDL_SCANCODE_SPACE]){ // Move up.
                 concepts->verticalVel = concepts->thrust;
             }
 
@@ -193,8 +181,6 @@ void runInput() {
         if (concepts->state[SDL_SCANCODE_ESCAPE]) {// Exit the game.
             concepts->quit = true; 
         }
-
-        printf("Thread 2 processed player input.");
 
         // Notifies Thread 1.
         _cv_c->notify_all();

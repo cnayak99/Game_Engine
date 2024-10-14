@@ -241,15 +241,15 @@ int main(int argc, char* argv[]) {
     Timeline anchor(nullptr, 1);
 
     // Creates the static red shape and connects its address to concepts.
-    Entity staticEntity(Rectangle(100,100,100,100),{255,0,0,255}, false); // Static red shape.
+    Entity staticEntity(128, 128, 64, 64,{255,0,0,255}, false); // Static red shape.
     concepts.s = &staticEntity;
 
     // Creates the controllable green shape and connects its address to concepts.
-    Entity controllableEntity(Rectangle(300,300,50,50),{0,255,0,255}, true); // Controllable green shape.
+    Entity controllableEntity(256, 128, 64, 64,{0,255,0,255}, true); // Controllable green shape.
     concepts.c = &controllableEntity;
 
     // Creates the moving black shape and connects its address to concepts.
-    Entity movingEntity(Rectangle(100,100,100,100),{0,0,0,255}, false); // Black moving shape.
+    Entity movingEntity(100, 960, 64, 64,{0,0,0,255}, false); // Black moving shape.
     concepts.m = &movingEntity;
 
     // Initializes scaling and held through concepts.
@@ -284,8 +284,6 @@ int main(int argc, char* argv[]) {
         }
         // Stores delta time in concepts.
         concepts.delta = deltaTime;
-        // TEMPORARY: prints calculated time variables.
-        printf("Time: %ld\nLast Time: %ld\nDelta: %f\n", currentTime, lastTime, deltaTime);
 
         // Checks if the user is quitting.
         while (SDL_PollEvent(&e) != 0) {
@@ -339,20 +337,21 @@ int main(int argc, char* argv[]) {
             startThreads(&timeThreads, &concepts, &game);
 
             // Keeps track of the controllable rectangle.
-            Rectangle cRect = concepts.c->getRect();
+            SDL_Rect cRect = concepts.c->getRect();
             // Keeps track of the static rectangle.
-            Rectangle sRect = concepts.s->getRect();
+            SDL_Rect sRect = concepts.s->getRect();
             // Keeps track of the moving rectangle.
-            Rectangle mRect = concepts.m->getRect();
+            SDL_Rect mRect = concepts.m->getRect();
 
             // Senses other shapes for collision.
             if (hasIntersection(&cRect, &sRect) == true) {
                 // If there was an intersection on the top of the terrain rectangle,
                 // the controllable rectangle lands on the terrain rectangle.
-                if (intersect(&cRect, &sRect) == 2) {
+                if (intersect(&cRect, &sRect) == 2 || intersect(&cRect, &sRect) == 4) {
                     // Causes vertical collision.
                     concepts.delta = 0;
                     concepts.verticalVel = 0;
+                    concepts.c->move(0, -(concepts.c->getRect().y + concepts.c->getRect().h - concepts.s->getRect().y));
                 }
                 // More sides will be added in the future.
             }
@@ -361,15 +360,12 @@ int main(int argc, char* argv[]) {
             if (hasIntersection(&cRect, &mRect) == true) {
                 // If there was an intersection on the top of the terrain rectangle,
                 // the controllable rectangle lands on the terrain rectangle.
-                if (intersect(&cRect, &mRect) == 2) {
+                if (intersect(&cRect, &mRect) == 2 || intersect(&cRect, &mRect) == 4) {
                     // Causes vertical collision.
                     concepts.delta = 0;
                     concepts.verticalVel = 0;
                     // Enables player movement mimicking the moving entity.
-                    concepts.c->move(concepts.speed, static_cast<int>(concepts.verticalVel));
-                    if (concepts.c->getRect().x > 1820 || concepts.c->getRect().x < 100) {
-                        concepts.speed = -concepts.speed;
-                    }
+                    concepts.c->move(0, - (concepts.c->getRect().y + concepts.c->getRect().h - concepts.m->getRect().y));
                 }
                 // More sides may be added in the future.
             }
@@ -570,9 +566,7 @@ int main(int argc, char* argv[]) {
 //         }
 //         // Stores delta time in concepts.
 //         concepts.delta = deltaTime;
-//         // TEMPORARY: prints calculated time variables.
-//         printf("Time: %ld\nLast Time: %ld\nDelta: %f\n", currentTime, lastTime, deltaTime);
-
+//
 //         while (SDL_PollEvent(&e) != 0) {
 //             if (e.type == SDL_QUIT) {
 //                 concepts.quit = true;

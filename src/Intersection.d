@@ -1,5 +1,2 @@
-src/Intersection.o: src/Intersection.cpp include/Rectangle.h \
- include/Intersect.h include/Rectangle.h
-include/Rectangle.h:
+src/Intersection.o: src/Intersection.cpp include/Intersect.h
 include/Intersect.h:
-include/Rectangle.h:
