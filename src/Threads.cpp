@@ -4,19 +4,24 @@
 #include <condition_variable>
 #include <iostream>
 #include <vector>
-
+#include <zmq.hpp>
 #include "Timeline.h"
 #include "Entity.h"
 #include "Rectangle.h"
 #include "Intersect.h"
 #include "structs.h"
 #include "Threads.h"
+#include "json.hpp" // Use relative path to the include directory
+using namespace std; 
+using json = nlohmann::json;
 
 std::mutex *_mutex; // The object for mutual exclusion of execution.
 std::condition_variable *_cv_c; // For thread communication regarding the controllable entity.
 Timeline *time_Threads; // To keep track of the timeline for these threads.
 Concepts *concepts; // To keep track of initialized variables.
 Game *game; // To keep track of game variables.
+string clientId1;
+zmq::socket_t* receiverPtr = nullptr;
 
 /**
  * Runs both initialized threads through different functions.
@@ -55,12 +60,12 @@ void runThread(int id) {
  * Game Engine Foundations" course Moodle page.
  */
 void runPhysics() {
-    printf("Thread 1 start.");
+    // printf("Thread 1 start.");
 
     // Thread 1 tries to keep track of non-player rectangles for this tic.
     try
     {
-        printf("Thread 1 trying.");
+        // printf("Thread 1 trying.");
 
         //if (!concepts->a->isPaused) {}
 
@@ -73,7 +78,7 @@ void runPhysics() {
                 concepts->verticalVel += concepts->gravity * concepts->delta;
                 concepts->c->move(0, static_cast<int>(concepts->verticalVel));
                         
-                printf("Thread 1 applied gravity.");
+                // printf("Thread 1 applied gravity.");
 
                 // Notifies all that the controllable entity had physics applied.
                 _cv_c->notify_all();
@@ -87,7 +92,7 @@ void runPhysics() {
             }
         //}
 
-        printf("Thread 1 moved Entity M.");
+        // printf("Thread 1 moved Entity M.");
 
         // Add additional blocks to control additional shapes here if necessary.
     }
@@ -112,95 +117,57 @@ void runPhysics() {
  * Game Engine Foundations" course Moodle page.
  */
 void runInput() {
-    printf("Start Thread 2.");
-
-    // Thread 2 tries to manage player input for this tic.
-    try 
-    {
-        // Sets up the mutex lock.
+    // printf("Start Thread 2.");
+    try {
         std::unique_lock<std::mutex> cv_lock(*_mutex);
+        // printf("Thread 2 is processing player input.");
 
-        printf("Thread 2 is processing player input.");
-
-        // If the player is pressing 'P'.
-        //if (concepts->state[SDL_SCANCODE_P]) { // Pause game.
-        //    if (!concepts->held) {
-        //        concepts->held = true;
-        //        if (!concepts->a->isPaused) {
-        //            time_Threads->pause();
-        //        }
-        //        else {
-        //            time_Threads->unpause();
-        //        }
-        //    }
-        //}
-
-        //if (!concepts->a->isPaused) {
-
-            // // If the player is pressing 'B'.
-            // if(concepts->state[SDL_SCANCODE_B]){ // Set tic to 0.5 (which is marked with 3).
-            //     time_Threads->setTicks(3);
-            //     printf("Tics set to 0.5.\n");
-            // }
-
-            // // If the player is pressing 'N'.
-            // if(concepts->state[SDL_SCANCODE_N]){ // Set tic to 1.
-            //     time_Threads->setTicks(1);
-            //     printf("Tics set to 1.\n");
-            // }
-
-            // // If the player is pressing 'M'.
-            // if(concepts->state[SDL_SCANCODE_M]){ // Set tic to 2.
-            //     time_Threads->setTicks(2);
-            //     printf("Tics set to 2.\n");
-            // }
-
-            // If the player is pressing up.
-            if(concepts->state[SDL_SCANCODE_UP]){ // Move up.
-                concepts->verticalVel = concepts->thrust;
-            }
-
-            // If the player is pressing left.
-            if(concepts->state[SDL_SCANCODE_LEFT]){ // Move left.
-                concepts->c->move(-concepts->moveSpeed,0);
-            }
-
-            // If the player is pressing right.
-            if(concepts->state[SDL_SCANCODE_RIGHT]){// Move right.
-                concepts->c->move(concepts->moveSpeed, 0);
-            }
-        
-            // If the player is pressing 'C'.
-            if (concepts->state[SDL_SCANCODE_C]) { // Change window size.
-                if (!concepts->held) {
-                    concepts->held = true;
-                    if (!concepts->scaling) {
-                        SDL_RenderSetLogicalSize(game->renderer, 1920, 1080);
-                        concepts->scaling = true;
-                    }
-                    else {
-                        SDL_RenderSetLogicalSize(game->renderer, 0, 0);
-                        concepts->scaling = false;
-                    }
+        if (concepts->state[SDL_SCANCODE_UP]) { // Move up.
+            concepts->verticalVel = concepts->thrust;
+        }
+        if (concepts->state[SDL_SCANCODE_LEFT]) { // Move left.
+            concepts->c->move(-concepts->moveSpeed, 0);
+        }
+        if (concepts->state[SDL_SCANCODE_RIGHT]) { // Move right.
+            concepts->c->move(concepts->moveSpeed, 0);
+        }
+        if (concepts->state[SDL_SCANCODE_C]) { // Change window size.
+            if (!concepts->held) {
+                concepts->held = true;
+                if (!concepts->scaling) {
+                    SDL_RenderSetLogicalSize(game->renderer, 1920, 1080);
+                    concepts->scaling = true;
+                } else {
+                    SDL_RenderSetLogicalSize(game->renderer, 0, 0);
+                    concepts->scaling = false;
                 }
             }
-            else {
-                concepts->held = false;
-            }
-        //}
-
-        // If the player is pressing 'ESC'.
-        if (concepts->state[SDL_SCANCODE_ESCAPE]) {// Exit the game.
-            concepts->quit = true; 
+        } else {
+            concepts->held = false;
         }
 
-        printf("Thread 2 processed player input.");
+        if (concepts->state[SDL_SCANCODE_ESCAPE]) { // Exit the game.
+            concepts->quit = true;
 
-        // Notifies Thread 1.
+            // Send disconnect message
+            json disconnectMessage = {
+                {"clientId", clientId1},
+                {"disconnect", true}
+            };
+            std::string messageString = disconnectMessage.dump();
+            zmq::message_t message(messageString.size());
+            memcpy(message.data(), messageString.c_str(), messageString.size());
+
+            if (receiverPtr) {
+                receiverPtr->send(message, zmq::send_flags::none);
+            }
+
+            return; // Exit the function after sending the disconnect message
+        }
+
+        // printf("Thread 2 processed player input.");
         _cv_c->notify_all();
-    }
-    catch (...)
-    {
+    } catch (...) {
         std::cerr << "Thread 2 caught exception." << std::endl;
     }
 }
@@ -235,32 +202,24 @@ void runInput() {
  * which included studying the concept of temporary entities
  * (like our std::threads) within the same webpage.
  */
-int startThreads(Timeline *t, Concepts *c, Game *g)
-{
-    // Mutex to handle locking, condition variables to handle notifications between threads.
+int startThreads(Timeline* t, Concepts* c, Game* g, zmq::socket_t& receiver, std::string& clientId) {
     std::mutex m;
     _mutex = &m;
     std::condition_variable cv_c;
     _cv_c = &cv_c;
-
-    // Creates a vector with both threads stored inside.
     std::vector<std::thread> both;
-
-    // Initialize the three fields.
     time_Threads = t;
     concepts = c;
     game = g;
+    clientId1 = clientId;
+    // Assign receiver pointer for use in runInput
+    receiverPtr = &receiver;
 
-    // Initializes a list of two threads and runs them.
     for (int i = 0; i < 2; i++) {
         both.push_back(std::thread(runThread, i));
     }
-
-    // Joins both threads as they finish.
-    for (auto& th : both){
+    for (auto& th : both) {
         th.join();
     }
-
-    // Exit successfully.
     return 0;
 }

@@ -59,16 +59,26 @@ Links:
 */
 
 // Function to listen for updates and establish connections
-void listenForUpdates(zmq::socket_t& subscriberSocket, std::unordered_map<std::string, zmq::socket_t>& dealerSockets, zmq::context_t& context, const std::string& clientAddress) {
+void listenForUpdates(zmq::socket_t& subscriberSocket, std::unordered_map<std::string, zmq::socket_t>& dealerSockets, zmq::context_t& context, const std::string& clientAddress, std::unordered_map<std::string, SDL_Rect>& entityPositions, std::mutex& positionMutex) {
     while (true) {
         zmq::message_t update;
         subscriberSocket.recv(update, zmq::recv_flags::none);
         std::string updateStr(static_cast<char*>(update.data()), update.size());
 
         try {
-            auto updatedClientAddresses = json::parse(updateStr);
+            auto jsonData = json::parse(updateStr);
+
+            // Check for disconnect notification
+            if (jsonData.contains("disconnectedClientId")) {
+                std::string disconnectedClientId = jsonData["disconnectedClientId"];
+                // Remove from active clients
+                std::lock_guard<std::mutex> lock(positionMutex);
+                entityPositions.erase(disconnectedClientId);
+                continue;
+            }
+
             std::cout << "Received updated client addresses:" << std::endl;
-            for (auto& [id, addr] : updatedClientAddresses.items()) {
+            for (auto& [id, addr] : jsonData.items()) {
                 std::cout << id << ": " << addr << std::endl;
 
                 // Ensure addr is treated as a string
@@ -80,7 +90,7 @@ void listenForUpdates(zmq::socket_t& subscriberSocket, std::unordered_map<std::s
                 }
 
                 std::lock_guard<std::mutex> lock(knownAddressesMutex);
-                if (dealerSockets.find(addrStr) == dealerSockets.end() && updatedClientAddresses.size() > 1) {
+                if (dealerSockets.find(addrStr) == dealerSockets.end() && jsonData.size() > 1) {
                     zmq::socket_t dealerSocket(context, ZMQ_DEALER);
                     dealerSocket.setsockopt(ZMQ_IDENTITY, clientAddress.c_str(), clientAddress.size());
                     dealerSocket.connect(addrStr);
@@ -163,7 +173,6 @@ void handleIncomingMessages(zmq::socket_t& routerSocket, std::unordered_map<std:
         }
     }
 }
-
 /**
  * Runs the game.
  * 
@@ -221,7 +230,15 @@ int main(int argc, char* argv[]) {
     std::unordered_map<std::string, std::string> identityToAddressMap;
 
     // Start thread for listening for server updates
-    std::thread updateListener(listenForUpdates, std::ref(subscriber), std::ref(dealerSockets), std::ref(context), std::cref(clientAddress));
+    std::thread updateListener(
+        listenForUpdates,
+        std::ref(subscriber),
+        std::ref(dealerSockets),
+        std::ref(context),
+        std::cref(clientAddress),
+        std::ref(entityPositions), // Pass by reference
+        std::ref(positionMutex)    // Pass by reference
+    );
     updateListener.detach();
 
     // Start thread to handle incoming messages
@@ -285,7 +302,7 @@ int main(int argc, char* argv[]) {
         // Stores delta time in concepts.
         concepts.delta = deltaTime;
         // TEMPORARY: prints calculated time variables.
-        printf("Time: %ld\nLast Time: %ld\nDelta: %f\n", currentTime, lastTime, deltaTime);
+        // printf("Time: %ld\nLast Time: %ld\nDelta: %f\n", currentTime, lastTime, deltaTime);
 
         // Checks if the user is quitting.
         while (SDL_PollEvent(&e) != 0) {
@@ -336,7 +353,7 @@ int main(int argc, char* argv[]) {
         if (!concepts.a->isPaused) {
 
             // Run threads.
-            startThreads(&timeThreads, &concepts, &game);
+            startThreads(&timeThreads, &concepts, &game, receiver, clientId);
 
             // Keeps track of the controllable rectangle.
             Rectangle cRect = concepts.c->getRect();
@@ -394,18 +411,17 @@ int main(int argc, char* argv[]) {
         // Parse and update positions of other entities based on received data
         string updatedPositions(reply.to_string());
         vector<string> peerAddresses;
-        auto parsedPositions = parseUpdatedPositions(updatedPositions);
+        // auto parsedPositions = parseUpdatedPositions(updatedPositions);
         // printPositions(parsedPositions);
 
+        auto parsedPositions = json::parse(updatedPositions);
         for (const auto& position : parsedPositions) {
-            std::string clientId = position["clientId"]; // Get the clientId from the JSON object
-            int x = position["position"]["x"]; // Get the x coordinate from the nested "position" object
-            int y = position["position"]["y"]; // Get the y coordinate from the nested "position" object
+            std::string clientId = position["clientId"];
+            int x = position["position"]["x"];
+            int y = position["position"]["y"];
 
             // Update movingEntity's position based on the server data for the controlling client
-
-                concepts.m->setPosition(x, y); // Implement setPosition method in Entity class
-            
+            concepts.m->setPosition(x, y);
         }
 
         nlohmann::json controllableEntityDetails = {
