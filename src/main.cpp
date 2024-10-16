@@ -2,6 +2,7 @@
 #include <SDL2/SDL.h>
 #include <iostream>
 #include "sdl_setup.h"
+#include "defs.h"
 #include "Entity.h"
 #include "Rectangle.h"
 #include "Physics.h"
@@ -240,6 +241,32 @@ int main(int argc, char* argv[]) {
     // Construct the anchor timeline.
     Timeline anchor(nullptr, 1);
 
+    int tileGuide[MAP_WIDTH][MAP_HEIGHT];
+    Entity * tileMap[MAP_WIDTH][MAP_HEIGHT];
+
+    for (int j = 0; j < MAP_HEIGHT; j++) {
+        for (int i = 0; i < MAP_WIDTH; i++) {
+            if (j < 8) {
+                tileGuide[i][j] = 0;
+            }
+            else if (i % 2 == 1) {
+                tileGuide[i][j] = 1;
+            }
+            else {
+                tileGuide[i][j] = 2;
+            }
+            if (tileGuide[i][j] == 0) {
+                tileMap[i][j] = nullptr;
+            }
+            if (tileGuide[i][j] == 1) {
+                tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false);
+            }
+            else if (tileGuide[i][j] == 2) {
+                tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,255,0,255}, false);
+            }
+        }
+    }
+
     // Creates the static red shape and connects its address to concepts.
     Entity staticEntity(128, 128, 64, 64,{255,0,0,255}, false); // Static red shape.
     concepts.s = &staticEntity;
@@ -249,7 +276,7 @@ int main(int argc, char* argv[]) {
     concepts.c = &controllableEntity;
 
     // Creates the moving black shape and connects its address to concepts.
-    Entity movingEntity(100, 960, 64, 64,{0,0,0,255}, false); // Black moving shape.
+    Entity movingEntity(100, 400, 64, 64,{0,0,0,255}, false); // Black moving shape.
     concepts.m = &movingEntity;
 
     // Initializes scaling and held through concepts.
@@ -343,6 +370,40 @@ int main(int argc, char* argv[]) {
             // Keeps track of the moving rectangle.
             SDL_Rect mRect = concepts.m->getRect();
 
+            // Get the coordinates of the bottom corners relative to the size of the map in tiles (if the player is within the game bounds)
+            if (cRect.x + cRect.w >= 0 && cRect.x < SCREEN_WIDTH && cRect.y + cRect.h >= 0 && cRect.y < SCREEN_HEIGHT) {
+                // The bottom left corner's map coordinates
+                int mapPlayerBL[2] = {floor(cRect.x / TILE_SIZE), floor((cRect.y + cRect.h) / TILE_SIZE)};
+                // The bottom right corner's map coordinates
+                int mapPlayerBR[2] = {floor((cRect.x + cRect.w) / TILE_SIZE), floor((cRect.y + cRect.h) / TILE_SIZE)};
+                // Rectangle of the entity (if any) at the bottom-left corner
+                //If the entity exists at the coordinates...
+                if (cRect.x >= 0 && tileMap[mapPlayerBL[0]][mapPlayerBL[1]] != nullptr) {
+                    // Store the rectangle of the captured entity
+                    SDL_Rect hitBL = tileMap[mapPlayerBL[0]][mapPlayerBL[1]]->getRect();
+                    // Check if the target is intersecting
+                    if (hasIntersection(&cRect, &hitBL) == true) {
+                        // Set vertical collision and push player out of the entity.
+                        concepts.delta = 0;
+                        concepts.verticalVel = 0;
+                        concepts.c->move(0, -(concepts.c->getRect().y + concepts.c->getRect().h - hitBL.y));
+                    }
+                }
+                // Rectangle of the entity (if any) at the bottom-right corner
+                //If the entity exists at the coordinates...
+                if (cRect.x + cRect.w < SCREEN_WIDTH && tileMap[mapPlayerBR[0]][mapPlayerBR[1]] != nullptr) {
+                    // Store the rectangle of the captured entity
+                    SDL_Rect hitBR = tileMap[mapPlayerBR[0]][mapPlayerBR[1]]->getRect();
+                    // Check if the target is intersecting
+                    if (hasIntersection(&cRect, &hitBR) == true) {
+                        // Set vertical collision and push player out of the entity.
+                        concepts.delta = 0;
+                        concepts.verticalVel = 0;
+                        concepts.c->move(0, -(concepts.c->getRect().y + concepts.c->getRect().h - hitBR.y));
+                    }
+                }
+            }
+
             // Senses other shapes for collision.
             if (hasIntersection(&cRect, &sRect) == true) {
                 // If there was an intersection on the top of the terrain rectangle,
@@ -420,9 +481,16 @@ int main(int argc, char* argv[]) {
 
         // Render the shapes
         concepts.s->render(game.renderer);
+        for (int j = 0; j < MAP_HEIGHT; j++) {
+            for (int i = 0; i < MAP_WIDTH; i++) {
+                if (tileMap[i][j] != nullptr) {
+                    tileMap[i][j]->render(game.renderer);
+                }
+            }
+        }
         concepts.c->render(game.renderer);
         concepts.m->render(game.renderer);
-        
+
         {
             std::lock_guard<std::mutex> lock(positionMutex);
             for (const auto& [clientId, rect] : entityPositions) {
