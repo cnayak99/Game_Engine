@@ -12,12 +12,18 @@
  * Moodle page. These resources can be found in the
  * https://wiki.libsdl.org/SDL2/FrontPage website. Particularly based on
  * tutorials and guidance from the wiki for drawing entities.
+ * 
+ * The "Special" field determines whether or not the Entity is normal,
+ * a spawn point, or a death zone. If it is 0, the Entity is normal. If
+ * it is 1, the Entity is a spawn point. If it is 2, the Entity is a
+ * death zone.
  */
 class Entity {
 public:
-    Entity(int x, int y, int width, int height, SDL_Color color, bool weighted);
+    Entity(int x, int y, int width, int height, SDL_Color color, bool weighted, int special);
 
     bool weighted;
+    int special;
     void render(SDL_Renderer* renderer);
     void move(int dx, int dy);
     void setVelocity(float vx, float vy);
@@ -26,6 +32,7 @@ public:
     SDL_Rect getRect() const;
     SDL_Color getColor() const;
     bool getWeight() const;
+    int getSpecial() const;
 
     struct {
         float x;

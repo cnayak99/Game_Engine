@@ -259,29 +259,37 @@ int main(int argc, char* argv[]) {
                 tileMap[i][j] = nullptr;
             }
             if (tileGuide[i][j] == 1) {
-                tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false);
+                tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
             }
             else if (tileGuide[i][j] == 2) {
-                tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,255,0,255}, false);
+                tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,255,0,255}, false, 0);
             }
         }
     }
 
     // Creates the static red shape and connects its address to concepts.
-    Entity staticEntity(128, 128, 64, 64,{255,0,0,255}, false); // Static red shape.
+    Entity staticEntity(128, 128, 64, 64,{255,0,0,255}, false, 0); // Static red shape.
     concepts.s = &staticEntity;
 
     // Creates the controllable green shape and connects its address to concepts.
-    Entity controllableEntity(256, 128, 64, 64,{0,255,0,255}, true); // Controllable green shape.
+    Entity controllableEntity(256, 128, 64, 64,{0,255,0,255}, true, 0); // Controllable green shape.
     concepts.c = &controllableEntity;
 
     // Creates the moving black shape and connects its address to concepts.
-    Entity movingEntity(100, 400, 64, 64,{0,0,0,255}, false); // Black moving shape.
+    Entity movingEntity(100, 400, 64, 64,{0,0,0,255}, false, 0); // Black moving shape.
     concepts.m = &movingEntity;
 
     // Creates the moving purple shape and connects its address to concepts.
-    Entity movingVertEntity(100, 400, 64, 64,{255,0,255,255}, false); // Purple moving shape.
+    Entity movingVertEntity(200, 200, 64, 64,{255,0,255,255}, false, 0); // Purple moving shape.
     concepts.v = &movingVertEntity;
+
+    // Creates the spawn shape and connects its address to concepts.
+    Entity spawnEntity(256, 128, 64, 64,{255,255,255,255}, false, 1); // For testing, it is white.
+    concepts.spawn = &spawnEntity;
+
+    // Creates the despawn shape and connects its address to concepts.
+    Entity despawnEntity(128, 300, 64, 64,{150,150,150,255}, false, 2); // For testing, it is gray.
+    concepts.despawn = &despawnEntity;
 
     // Initializes scaling and held through concepts.
     concepts.scaling = false;
@@ -373,8 +381,13 @@ int main(int argc, char* argv[]) {
             SDL_Rect sRect = concepts.s->getRect();
             // Keeps track of the moving rectangle.
             SDL_Rect mRect = concepts.m->getRect();
-            // Keeps track of the moving rectangle.
+            // Keeps track of the vertically moving rectangle.
             SDL_Rect vRect = concepts.v->getRect();
+
+            // Keeps track of the spawn rectangle.
+            SDL_Rect spawnRect = concepts.spawn->getRect();
+            // Keeps track of the despawn rectangle.
+            SDL_Rect despawnRect = concepts.despawn->getRect();
 
             // Get the coordinates of the bottom corners relative to the size of the map in tiles (if the player is within the game bounds)
             if (cRect.x + cRect.w >= 0 && cRect.x < SCREEN_WIDTH && cRect.y + cRect.h >= 0 && cRect.y < SCREEN_HEIGHT) {
@@ -451,6 +464,17 @@ int main(int argc, char* argv[]) {
                 // More sides may be added in the future.
             }
 
+            // Senses other shapes for collision.
+            if (hasIntersection(&cRect, &despawnRect) == true) {
+                // If there was an intersection on the top of the terrain rectangle,
+                // the controllable rectangle lands on the terrain rectangle.
+                if (intersect(&cRect, &despawnRect) == 2 || intersect(&cRect, &despawnRect) == 4) {
+                    // Respawns the player.
+                    concepts.c->setPosition(concepts.spawn->getRect().x, concepts.spawn->getRect().y);
+                }
+                // More sides will be added in the future.
+            }
+
         }
 
         json jsonString = {
@@ -517,6 +541,70 @@ int main(int argc, char* argv[]) {
             
         }
 
+        json jsonStringSpawn = {
+            {"clientId", clientId},
+            {"clientAddr", clientAddress},
+            {"x", concepts.spawn->getRect().x},
+            {"y", concepts.spawn->getRect().y}
+        };
+
+        std::string positionDataSpawn  = jsonStringSpawn.dump();
+        zmq::message_t messageSpawn(positionDataSpawn.size());
+        memcpy(messageSpawn.data(), positionDataSpawn.c_str(), positionDataSpawn.size());
+        receiver.send(messageSpawn, zmq::send_flags::none);
+
+        // Receive updated positions from the server
+        zmq::message_t replySpawn;
+        receiver.recv(replySpawn, zmq::recv_flags::none);
+        // Parse and update positions of other entities based on received data
+        string updatedPositionsSpawn(replySpawn.to_string());
+        vector<string> peerAddressesSpawn;
+        auto parsedPositionsSpawn = parseUpdatedPositions(updatedPositionsSpawn);
+        // printPositions(parsedPositions);
+
+        for (const auto& position : parsedPositionsSpawn) {
+            std::string clientId = position["clientId"]; // Get the clientId from the JSON object
+            int x = position["position"]["x"]; // Get the x coordinate from the nested "position" object
+            int y = position["position"]["y"]; // Get the y coordinate from the nested "position" object
+
+            // Update spawn's position based on the server data for the controlling client
+
+                concepts.spawn->setPosition(x, y); // Implement setPosition method in Entity class
+            
+        }
+
+        json jsonStringDespawn = {
+            {"clientId", clientId},
+            {"clientAddr", clientAddress},
+            {"x", concepts.despawn->getRect().x},
+            {"y", concepts.despawn->getRect().y}
+        };
+
+        std::string positionDataDespawn  = jsonStringDespawn.dump();
+        zmq::message_t messageDespawn(positionDataDespawn.size());
+        memcpy(messageDespawn.data(), positionDataDespawn.c_str(), positionDataDespawn.size());
+        receiver.send(messageDespawn, zmq::send_flags::none);
+
+        // Receive updated positions from the server
+        zmq::message_t replyDespawn;
+        receiver.recv(replyDespawn, zmq::recv_flags::none);
+        // Parse and update positions of other entities based on received data
+        string updatedPositionsDespawn(replyDespawn.to_string());
+        vector<string> peerAddressesDespawn;
+        auto parsedPositionsDespawn = parseUpdatedPositions(updatedPositionsDespawn);
+        // printPositions(parsedPositions);
+
+        for (const auto& position : parsedPositionsDespawn) {
+            std::string clientId = position["clientId"]; // Get the clientId from the JSON object
+            int x = position["position"]["x"]; // Get the x coordinate from the nested "position" object
+            int y = position["position"]["y"]; // Get the y coordinate from the nested "position" object
+
+            // Update despawn's position based on the server data for the controlling client
+
+                concepts.despawn->setPosition(x, y); // Implement setPosition method in Entity class
+            
+        }
+
         nlohmann::json controllableEntityDetails = {
             {"clientId", clientId},
             {"clientAddr", clientAddress},
@@ -540,9 +628,13 @@ int main(int argc, char* argv[]) {
                 }
             }
         }
+
         concepts.c->render(game.renderer);
         concepts.m->render(game.renderer);
         concepts.v->render(game.renderer);
+
+        concepts.spawn->render(game.renderer);
+        concepts.despawn->render(game.renderer);
 
         {
             std::lock_guard<std::mutex> lock(positionMutex);

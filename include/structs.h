@@ -30,6 +30,9 @@ typedef struct {
     Entity *m;
     Entity *v;
 
+    Entity *spawn;
+    Entity *despawn;
+
     Timeline *a;
 
     bool quit;

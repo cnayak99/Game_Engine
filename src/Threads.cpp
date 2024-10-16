@@ -83,7 +83,7 @@ void runPhysics() {
             // Controls physics for the Vertically Moving Entity.
             // Moves the moving shape in a continuous horizontal pattern.
             concepts->v->move(0, concepts->speed);
-            if (concepts->v->getRect().x > 1820 || concepts->v->getRect().x < 100) {
+            if (concepts->v->getRect().y > 300 || concepts->v->getRect().y < 100) {
                 concepts->speed = -concepts->speed;
             }
         //}

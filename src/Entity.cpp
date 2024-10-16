@@ -1,7 +1,7 @@
 #include "Entity.h"
 
-Entity::Entity(int x, int y, int width, int height, SDL_Color color, bool weighted)
-    : velocity({0, 0}), color(color), weighted(weighted){
+Entity::Entity(int x, int y, int width, int height, SDL_Color color, bool weighted, int special)
+    : velocity({0, 0}), color(color), weighted(weighted), special(special){
         rect.x = x;
         rect.y = y;
         rect.w = width;
@@ -43,4 +43,8 @@ SDL_Color Entity::getColor() const {
 
 bool Entity::getWeight() const {
     return weighted;
+}
+
+int Entity::getSpecial() const {
+    return special;
 }
