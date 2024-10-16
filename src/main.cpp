@@ -279,6 +279,10 @@ int main(int argc, char* argv[]) {
     Entity movingEntity(100, 400, 64, 64,{0,0,0,255}, false); // Black moving shape.
     concepts.m = &movingEntity;
 
+    // Creates the moving purple shape and connects its address to concepts.
+    Entity movingVertEntity(100, 400, 64, 64,{255,0,255,255}, false); // Purple moving shape.
+    concepts.v = &movingVertEntity;
+
     // Initializes scaling and held through concepts.
     concepts.scaling = false;
     concepts.held = false;
@@ -369,6 +373,8 @@ int main(int argc, char* argv[]) {
             SDL_Rect sRect = concepts.s->getRect();
             // Keeps track of the moving rectangle.
             SDL_Rect mRect = concepts.m->getRect();
+            // Keeps track of the moving rectangle.
+            SDL_Rect vRect = concepts.v->getRect();
 
             // Get the coordinates of the bottom corners relative to the size of the map in tiles (if the player is within the game bounds)
             if (cRect.x + cRect.w >= 0 && cRect.x < SCREEN_WIDTH && cRect.y + cRect.h >= 0 && cRect.y < SCREEN_HEIGHT) {
@@ -431,6 +437,20 @@ int main(int argc, char* argv[]) {
                 // More sides may be added in the future.
             }
 
+            // Senses other shapes for collision.
+            if (hasIntersection(&cRect, &vRect) == true) {
+                // If there was an intersection on the top of the terrain rectangle,
+                // the controllable rectangle lands on the terrain rectangle.
+                if (intersect(&cRect, &vRect) == 2 || intersect(&cRect, &vRect) == 4) {
+                    // Causes vertical collision.
+                    concepts.delta = 0;
+                    concepts.verticalVel = 0;
+                    // Enables player movement mimicking the moving entity.
+                    concepts.c->move(0, - (concepts.c->getRect().y + concepts.c->getRect().h - concepts.v->getRect().y));
+                }
+                // More sides may be added in the future.
+            }
+
         }
 
         json jsonString = {
@@ -465,6 +485,38 @@ int main(int argc, char* argv[]) {
             
         }
 
+        json jsonStringTwo = {
+            {"clientId", clientId},
+            {"clientAddr", clientAddress},
+            {"x", concepts.v->getRect().x},
+            {"y", concepts.v->getRect().y}
+        };
+
+        std::string positionDataTwo  = jsonStringTwo.dump();
+        zmq::message_t messageTwo(positionDataTwo.size());
+        memcpy(messageTwo.data(), positionDataTwo.c_str(), positionDataTwo.size());
+        receiver.send(messageTwo, zmq::send_flags::none);
+
+        // Receive updated positions from the server
+        zmq::message_t replyTwo;
+        receiver.recv(replyTwo, zmq::recv_flags::none);
+        // Parse and update positions of other entities based on received data
+        string updatedPositionsTwo(replyTwo.to_string());
+        vector<string> peerAddressesTwo;
+        auto parsedPositionsTwo = parseUpdatedPositions(updatedPositionsTwo);
+        // printPositions(parsedPositions);
+
+        for (const auto& position : parsedPositionsTwo) {
+            std::string clientId = position["clientId"]; // Get the clientId from the JSON object
+            int x = position["position"]["x"]; // Get the x coordinate from the nested "position" object
+            int y = position["position"]["y"]; // Get the y coordinate from the nested "position" object
+
+            // Update movingVertEntity's position based on the server data for the controlling client
+
+                concepts.v->setPosition(x, y); // Implement setPosition method in Entity class
+            
+        }
+
         nlohmann::json controllableEntityDetails = {
             {"clientId", clientId},
             {"clientAddr", clientAddress},
@@ -490,6 +542,7 @@ int main(int argc, char* argv[]) {
         }
         concepts.c->render(game.renderer);
         concepts.m->render(game.renderer);
+        concepts.v->render(game.renderer);
 
         {
             std::lock_guard<std::mutex> lock(positionMutex);

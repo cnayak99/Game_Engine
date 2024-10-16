@@ -79,6 +79,13 @@ void runPhysics() {
             if (concepts->m->getRect().x > 1820 || concepts->m->getRect().x < 100) {
                 concepts->speed = -concepts->speed;
             }
+
+            // Controls physics for the Vertically Moving Entity.
+            // Moves the moving shape in a continuous horizontal pattern.
+            concepts->v->move(0, concepts->speed);
+            if (concepts->v->getRect().x > 1820 || concepts->v->getRect().x < 100) {
+                concepts->speed = -concepts->speed;
+            }
         //}
 
         // Add additional blocks to control additional shapes here if necessary.
@@ -110,41 +117,10 @@ void runInput() {
         // Sets up the mutex lock.
         std::unique_lock<std::mutex> cv_lock(*_mutex);
 
-        // If the player is pressing 'P'.
-        //if (concepts->state[SDL_SCANCODE_P]) { // Pause game.
-        //    if (!concepts->held) {
-        //        concepts->held = true;
-        //        if (!concepts->a->isPaused) {
-        //            time_Threads->pause();
-        //        }
-        //        else {
-        //            time_Threads->unpause();
-        //        }
-        //    }
-        //}
-
         //if (!concepts->a->isPaused) {
 
-            // // If the player is pressing 'B'.
-            // if(concepts->state[SDL_SCANCODE_B]){ // Set tic to 0.5 (which is marked with 3).
-            //     time_Threads->setTicks(3);
-            //     printf("Tics set to 0.5.\n");
-            // }
-
-            // // If the player is pressing 'N'.
-            // if(concepts->state[SDL_SCANCODE_N]){ // Set tic to 1.
-            //     time_Threads->setTicks(1);
-            //     printf("Tics set to 1.\n");
-            // }
-
-            // // If the player is pressing 'M'.
-            // if(concepts->state[SDL_SCANCODE_M]){ // Set tic to 2.
-            //     time_Threads->setTicks(2);
-            //     printf("Tics set to 2.\n");
-            // }
-
-            // If the player is pressing space.
-            if(concepts->state[SDL_SCANCODE_SPACE]){ // Move up.
+            // If the player is pressing up.
+            if(concepts->state[SDL_SCANCODE_UP]){ // Move up.
                 concepts->verticalVel = concepts->thrust;
             }
 
