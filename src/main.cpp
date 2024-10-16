@@ -189,7 +189,7 @@ int main(int argc, char* argv[]) {
     int randomNum = rand() % 10000; // Generate a random number between 0 and 9999
     std::string clientId = "client" + std::to_string(randomNum);  // Random client ID
     int clientPort = 5560 + randomNum; // Unique port based on client ID
-    std::string clientAddress = "tcp://localhost:" + std::to_string(clientPort);
+    std::string clientAddress = "tcp://127.0.0.1:" + std::to_string(clientPort);
     
     // Create the Game object.
     Game game;
@@ -206,10 +206,10 @@ int main(int argc, char* argv[]) {
     // Initialize ZeroMQ context and sockets
     zmq::context_t context(1);
     zmq::socket_t receiver(context, ZMQ_REQ);
-    receiver.connect("tcp://localhost:5555"); // For sending position updates
+    receiver.connect("tcp://127.0.0.1:5555"); // For sending position updates
 
     zmq::socket_t subscriber(context, ZMQ_SUB);
-    subscriber.connect("tcp://localhost:5556"); // For receiving position updates
+    subscriber.connect("tcp://127.0.0.1:5556"); // For receiving position updates
     subscriber.setsockopt(ZMQ_SUBSCRIBE, "", 0); // Subscribe to all messages
 
     zmq::socket_t routerSocket(context, ZMQ_ROUTER);
@@ -241,28 +241,36 @@ int main(int argc, char* argv[]) {
     // Construct the anchor timeline.
     Timeline anchor(nullptr, 1);
 
-    int tileGuide[MAP_WIDTH][MAP_HEIGHT];
+    int map01[MAP_HEIGHT][MAP_WIDTH] = 
+    {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}};
     Entity * tileMap[MAP_WIDTH][MAP_HEIGHT];
 
     for (int j = 0; j < MAP_HEIGHT; j++) {
         for (int i = 0; i < MAP_WIDTH; i++) {
-            if (j < 8) {
-                tileGuide[i][j] = 0;
-            }
-            else if (i % 2 == 1) {
-                tileGuide[i][j] = 1;
-            }
-            else {
-                tileGuide[i][j] = 2;
-            }
-            if (tileGuide[i][j] == 0) {
+            if (map01[j][i] == 0) {
                 tileMap[i][j] = nullptr;
             }
-            if (tileGuide[i][j] == 1) {
+            else if (map01[j][i] == 1) {
                 tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
-            }
-            else if (tileGuide[i][j] == 2) {
-                tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,255,0,255}, false, 0);
             }
         }
     }
