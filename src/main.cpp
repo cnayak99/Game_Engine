@@ -245,14 +245,14 @@ int main(int argc, char* argv[]) {
     {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,3,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,3,3,3,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,3,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -272,15 +272,25 @@ int main(int argc, char* argv[]) {
             else if (map01[j][i] == 1) {
                 tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
             }
+            else if (map01[j][i] == 2) {
+                tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{200,150,100,255}, false, 0);
+            }
+            else if (map01[j][i] == 3) {
+                tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{150,0,255,255}, false, 0);
+            }
         }
     }
+
+    // Creates the spawn shape and connects its address to concepts.
+    Entity spawnEntity(635, 320, 64, 64,{0,0,255,255}, false, 1); // For testing, it is white.
+    concepts.spawn = &spawnEntity;
 
     // Creates the static red shape and connects its address to concepts.
     Entity staticEntity(128, 128, 64, 64,{255,0,0,255}, false, 0); // Static red shape.
     concepts.s = &staticEntity;
 
     // Creates the controllable green shape and connects its address to concepts.
-    Entity controllableEntity(256, 128, 64, 64,{0,255,0,255}, true, 0); // Controllable green shape.
+    Entity controllableEntity(concepts.spawn->getRect().x, concepts.spawn->getRect().y, 64, 64,{0,255,0,255}, true, 0); // Controllable green shape.
     concepts.c = &controllableEntity;
 
     // Creates the moving black shape and connects its address to concepts.
@@ -291,12 +301,8 @@ int main(int argc, char* argv[]) {
     Entity movingVertEntity(200, 200, 64, 64,{255,0,255,255}, false, 0); // Purple moving shape.
     concepts.v = &movingVertEntity;
 
-    // Creates the spawn shape and connects its address to concepts.
-    Entity spawnEntity(256, 128, 64, 64,{255,255,255,255}, false, 1); // For testing, it is white.
-    concepts.spawn = &spawnEntity;
-
     // Creates the despawn shape and connects its address to concepts.
-    Entity despawnEntity(128, 300, 64, 64,{150,150,150,255}, false, 2); // For testing, it is gray.
+    Entity despawnEntity(0, 0, 1920, 64,{0,0,255,255}, false, 2); // For testing, it is gray.
     concepts.despawn = &despawnEntity;
 
     // Initializes scaling and held through concepts.
@@ -637,12 +643,13 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        concepts.c->render(game.renderer);
         concepts.m->render(game.renderer);
         concepts.v->render(game.renderer);
 
         concepts.spawn->render(game.renderer);
         concepts.despawn->render(game.renderer);
+
+        concepts.c->render(game.renderer);
 
         {
             std::lock_guard<std::mutex> lock(positionMutex);
