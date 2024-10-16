@@ -44,12 +44,45 @@ int main() {
         try {
             jsonData = json::parse(clientDataString);
 
-            // Extract client ID, address, and position from the JSON
-            std::string clientId = jsonData["clientId"];
-            std::string clientAddr = jsonData["clientAddr"];
-            int x = jsonData["x"];
-            int y = jsonData["y"];
+        // Check if this is a disconnect message
+        if (jsonData.contains("disconnect") && jsonData["disconnect"]) {
+            if (!jsonData.contains("clientId")) {
+                std::cerr << "Disconnect message missing clientId: " << clientDataString << std::endl;
+                // Send an empty reply to maintain REQ/REP pattern
+                receiver.send(zmq::message_t(0), zmq::send_flags::none);
+                continue;
+            }
 
+            std::string clientId = jsonData["clientId"];
+
+            // Handle disconnection
+            clientData.erase(clientId);
+            clientAddresses.erase(clientId);
+            std::cout << "SERVER MESS: " << clientId << " disconnected" << std::endl;
+
+            // Notify other clients about the disconnection
+            json disconnectNotification = {
+                {"disconnectedClientId", clientId}
+            };
+            std::string disconnectMessage = disconnectNotification.dump();
+            zmq::message_t notification(disconnectMessage.size());
+            memcpy(notification.data(), disconnectMessage.c_str(), disconnectMessage.size());
+            broadcaster.send(notification, zmq::send_flags::none);
+            receiver.send(zmq::message_t(0), zmq::send_flags::none);
+            continue;
+        }
+
+        // For non-disconnect messages, ensure all required fields are present
+        if (!jsonData.contains("clientId") || !jsonData.contains("clientAddr") ||
+            !jsonData.contains("x") || !jsonData.contains("y")) {
+            std::cerr << "Received incomplete data: " << clientDataString << std::endl;
+            continue; // Skip processing this message
+        }
+
+        std::string clientId = jsonData["clientId"];
+        std::string clientAddr = jsonData["clientAddr"];
+        int x = jsonData["x"];
+        int y = jsonData["y"];
             // Check if this client ID is unique
             if (clientData.find(clientId) == clientData.end()) {
                 std::cout << "New client connected with ID: " << clientId 
@@ -71,9 +104,11 @@ int main() {
         } catch (const json::parse_error& e) {
             std::cerr << "Parse error: " << e.what() << std::endl;
             continue;
+        } catch (const json::type_error& e) {
+            std::cerr << "Type error: " << e.what() << std::endl;
+            continue;
         }
 
-        // Prepare the JSON response
         json positionUpdates = json::array();
         for (const auto& [id, data] : clientData) {
             positionUpdates.push_back({

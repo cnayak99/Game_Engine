@@ -4,20 +4,23 @@
 #include <condition_variable>
 #include <iostream>
 #include <vector>
-
+#include <zmq.hpp>
 #include "Timeline.h"
 #include "Entity.h"
 #include "Rectangle.h"
 #include "Intersect.h"
 #include "structs.h"
 #include "Threads.h"
-
+#include "json.hpp" // Use relative path to the include directory
+using namespace std; 
+using json = nlohmann::json;
 std::mutex *_mutex; // The object for mutual exclusion of execution.
 std::condition_variable *_cv_c; // For thread communication regarding the controllable entity.
 Timeline *time_Threads; // To keep track of the timeline for these threads.
 Concepts *concepts; // To keep track of initialized variables.
 Game *game; // To keep track of game variables.
-
+string clientId1;
+zmq::socket_t* receiverPtr = nullptr;
 /**
  * Runs both initialized threads through different functions.
  * 
@@ -154,8 +157,23 @@ void runInput() {
         //}
 
         // If the player is pressing 'ESC'.
-        if (concepts->state[SDL_SCANCODE_ESCAPE]) {// Exit the game.
-            concepts->quit = true; 
+        if (concepts->state[SDL_SCANCODE_ESCAPE]) { // Exit the game.
+            concepts->quit = true;
+
+            // Send disconnect message
+            json disconnectMessage = {
+                {"clientId", clientId1},
+                {"disconnect", true}
+            };
+            std::string messageString = disconnectMessage.dump();
+            zmq::message_t message(messageString.size());
+            memcpy(message.data(), messageString.c_str(), messageString.size());
+
+            if (receiverPtr) {
+                receiverPtr->send(message, zmq::send_flags::none);
+            }
+
+            return; // Exit the function after sending the disconnect message
         }
 
         // Notifies Thread 1.
@@ -197,8 +215,7 @@ void runInput() {
  * which included studying the concept of temporary entities
  * (like our std::threads) within the same webpage.
  */
-int startThreads(Timeline *t, Concepts *c, Game *g)
-{
+int startThreads(Timeline* t, Concepts* c, Game* g, zmq::socket_t& receiver, std::string& clientId) {
     // Mutex to handle locking, condition variables to handle notifications between threads.
     std::mutex m;
     _mutex = &m;
@@ -212,7 +229,9 @@ int startThreads(Timeline *t, Concepts *c, Game *g)
     time_Threads = t;
     concepts = c;
     game = g;
-
+    clientId1 = clientId;
+        // Assign receiver pointer for use in runInput
+    receiverPtr = &receiver;
     // Initializes a list of two threads and runs them.
     for (int i = 0; i < 2; i++) {
         both.push_back(std::thread(runThread, i));

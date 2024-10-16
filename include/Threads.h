@@ -92,6 +92,6 @@ void runInput();
  * which included studying the concept of temporary entities
  * (like our std::threads) within the same webpage.
  */
-int startThreads(Timeline *t, Concepts *c, Game *g);
+int startThreads(Timeline* t, Concepts* c, Game* g, zmq::socket_t& receiver, std::string& clientId);
 
 #endif
