@@ -325,7 +325,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Creates the spawn shape and connects its address to concepts.
-    Entity spawnEntity(635, 320, 64, 64,{0,0,255,255}, false, 1); // For testing, it is white.
+    Entity spawnEntity(635, 320, 64, 64,{0,0,255,255}, false, 1); // Invisible.
     concepts.spawn = &spawnEntity;
 
     // Creates the static red shape and connects its address to concepts.
@@ -345,14 +345,14 @@ int main(int argc, char* argv[]) {
     concepts.v = &movingVertEntity;
 
     // Creates the despawn shape and connects its address to concepts.
-    Entity despawnEntity(0, 0, 1920, 64,{0,0,255,255}, false, 2); // For testing, it is gray.
+    Entity despawnEntity(0, 0, 1920, 64,{0,0,255,255}, false, 2); // Invisible.
     concepts.despawn = &despawnEntity;
 
     // Creates the first bound shape.
-    Entity boundEntityOne(0, 0, 64, 1080,{0,255,255,255}, false, 3); // For testing, it is teal.
+    Entity boundEntityOne(0, 0, 64, 1080,{0,0,255,255}, false, 3); // Invisible.
 
     // Creates the second bound shape.
-    Entity boundEntityTwo(1856, 0, 64, 1080,{0,255,255,255}, false, 3); // For testing, it is teal.
+    Entity boundEntityTwo(1856, 0, 64, 1080,{0,0,255,255}, false, 3); // Invisible.
 
     // Initializes scaling and held through concepts.
     concepts.scaling = false;
