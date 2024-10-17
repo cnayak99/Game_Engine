@@ -269,17 +269,43 @@ int main(int argc, char* argv[]) {
     {0,0,0,0,0,0,0,0,0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
     {0,0,0,0,0,0,0,0,0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
     {0,0,0,0,0,0,0,0,0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,1,1,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}};
+
+    int map02[MAP_HEIGHT][MAP_WIDTH] = 
+    {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,3,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,3,3,3,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,3,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}};
+
     Entity * tileMap[MAP_WIDTH][MAP_HEIGHT];
+
+    // Keeps track of the current map tileset.
+    int map = 1;
 
     for (int j = 0; j < MAP_HEIGHT; j++) {
         for (int i = 0; i < MAP_WIDTH; i++) {
@@ -299,7 +325,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Creates the spawn shape and connects its address to concepts.
-    Entity spawnEntity(635, 320, 64, 64,{0,0,255,255}, false, 1); // For testing, it is white.
+    Entity spawnEntity(635, 320, 64, 64,{0,0,255,255}, false, 1); // Invisible.
     concepts.spawn = &spawnEntity;
 
     // Creates the static red shape and connects its address to concepts.
@@ -319,8 +345,14 @@ int main(int argc, char* argv[]) {
     concepts.v = &movingVertEntity;
 
     // Creates the despawn shape and connects its address to concepts.
-    Entity despawnEntity(0, 0, 1920, 64,{0,0,255,255}, false, 2); // For testing, it is gray.
+    Entity despawnEntity(0, 0, 1920, 64,{0,0,255,255}, false, 2); // Invisible.
     concepts.despawn = &despawnEntity;
+
+    // Creates the first bound shape.
+    Entity boundEntityOne(0, 0, 64, 1080,{0,0,255,255}, false, 3); // Invisible.
+
+    // Creates the second bound shape.
+    Entity boundEntityTwo(1856, 0, 64, 1080,{0,0,255,255}, false, 3); // Invisible.
 
     // Initializes scaling and held through concepts.
     concepts.scaling = false;
@@ -420,6 +452,11 @@ int main(int argc, char* argv[]) {
             // Keeps track of the despawn rectangle.
             SDL_Rect despawnRect = concepts.despawn->getRect();
 
+            // Keeps track of the spawn rectangle.
+            SDL_Rect boundOne = boundEntityOne.getRect();
+            // Keeps track of the despawn rectangle.
+            SDL_Rect boundTwo = boundEntityTwo.getRect();
+
             // Get the coordinates of the bottom corners relative to the size of the map in tiles (if the player is within the game bounds)
             if (cRect.x + cRect.w >= 0 && cRect.x < SCREEN_WIDTH && cRect.y + cRect.h >= 0 && cRect.y < SCREEN_HEIGHT) {
                 // The bottom left corner's map coordinates
@@ -506,6 +543,112 @@ int main(int argc, char* argv[]) {
                 // More sides will be added in the future.
             }
 
+            // Senses other shapes for collision.
+            if (hasIntersection(&cRect, &boundOne) == true) {
+                // If there was an intersection against the rectangle,
+                // the controllable rectangle intersects the rectangle.
+                if (intersect(&cRect, &boundTwo) == 1 || intersect(&cRect, &boundTwo) == 2 ||
+                    intersect(&cRect, &boundTwo) == 3 || intersect(&cRect, &boundTwo) == 4) {
+                    // If this is map 1, reset the map to map 2.
+                    if (map == 1) {
+                        map = 2;
+                        for (int j = 0; j < MAP_HEIGHT; j++) {
+                            for (int i = 0; i < MAP_WIDTH; i++) {
+                                if (map02[j][i] == 0) {
+                                    tileMap[i][j] = nullptr;
+                                }
+                                else if (map02[j][i] == 1) {
+                                    tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
+                                }
+                                else if (map02[j][i] == 2) {
+                                    tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{200,150,100,255}, false, 0);
+                                }
+                                else if (map02[j][i] == 3) {
+                                    tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{150,0,255,255}, false, 0);
+                                }
+                            }
+                        }
+                    }
+                    // If this is map 2, reset the map to map 1.
+                    else if (map == 2) {
+                        map = 1;
+                        for (int j = 0; j < MAP_HEIGHT; j++) {
+                            for (int i = 0; i < MAP_WIDTH; i++) {
+                                if (map01[j][i] == 0) {
+                                    tileMap[i][j] = nullptr;
+                                }
+                                else if (map01[j][i] == 1) {
+                                    tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
+                                }
+                                else if (map01[j][i] == 2) {
+                                    tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{200,150,100,255}, false, 0);
+                                }
+                                else if (map01[j][i] == 3) {
+                                    tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{150,0,255,255}, false, 0);
+                                }
+                            }
+                        }
+                    }
+
+                    // Respawns the player.
+                    concepts.c->setPosition(74, 450);
+                }
+                // More sides will be added in the future.
+            }
+
+            // Senses other shapes for collision.
+            if (hasIntersection(&cRect, &boundTwo) == true) {
+                // If there was an intersection against the rectangle,
+                // the controllable rectangle intersects the rectangle.
+                if (intersect(&cRect, &boundTwo) == 1 || intersect(&cRect, &boundTwo) == 2 ||
+                    intersect(&cRect, &boundTwo) == 3 || intersect(&cRect, &boundTwo) == 4) {
+                    // If this is map 1, reset the map to map 2.
+                    if (map == 1) {
+                        map = 2;
+                        for (int j = 0; j < MAP_HEIGHT; j++) {
+                            for (int i = 0; i < MAP_WIDTH; i++) {
+                                if (map02[j][i] == 0) {
+                                    tileMap[i][j] = nullptr;
+                                }
+                                else if (map02[j][i] == 1) {
+                                    tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
+                                }
+                                else if (map02[j][i] == 2) {
+                                    tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{200,150,100,255}, false, 0);
+                                }
+                                else if (map02[j][i] == 3) {
+                                    tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{150,0,255,255}, false, 0);
+                                }
+                            }
+                        }
+                    }
+                    // If this is map 2, reset the map to map 1.
+                    else if (map == 2) {
+                        map = 1;
+                        for (int j = 0; j < MAP_HEIGHT; j++) {
+                            for (int i = 0; i < MAP_WIDTH; i++) {
+                                if (map01[j][i] == 0) {
+                                    tileMap[i][j] = nullptr;
+                                }
+                                else if (map01[j][i] == 1) {
+                                    tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
+                                }
+                                else if (map01[j][i] == 2) {
+                                    tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{200,150,100,255}, false, 0);
+                                }
+                                else if (map01[j][i] == 3) {
+                                    tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{150,0,255,255}, false, 0);
+                                }
+                            }
+                        }
+                    }
+
+                    // Respawns the player.
+                    concepts.c->setPosition(1846, 450);
+                }
+                // More sides will be added in the future.
+            }
+
         }
         json jsonString = {
             {"clientId", clientId},
@@ -545,134 +688,6 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        // json jsonString = {
-        //     {"clientId", clientId},
-        //     {"clientAddr", clientAddress},
-        //     {"x", concepts.m->getRect().x},
-        //     {"y", concepts.m->getRect().y}
-        // };
-
-        // std::string positionData  = jsonString.dump();
-        // zmq::message_t message(positionData.size());
-        // memcpy(message.data(), positionData.c_str(), positionData.size());
-        // receiver.send(message, zmq::send_flags::none);
-
-        // // Receive updated positions from the server
-        // zmq::message_t reply;
-        // receiver.recv(reply, zmq::recv_flags::none);
-        // // Parse and update positions of other entities based on received data
-        // string updatedPositions(reply.to_string());
-        // vector<string> peerAddresses;
-        // auto parsedPositions = parseUpdatedPositions(updatedPositions);
-        // // printPositions(parsedPositions);
-
-        // for (const auto& position : parsedPositions) {
-        //     std::string clientId = position["clientId"]; // Get the clientId from the JSON object
-        //     int x = position["position"]["x"]; // Get the x coordinate from the nested "position" object
-        //     int y = position["position"]["y"]; // Get the y coordinate from the nested "position" object
-
-        //     // Update movingEntity's position based on the server data for the controlling client
-
-        //         concepts.m->setPosition(x, y); // Implement setPosition method in Entity class
-            
-        // }
-
-        // json jsonStringTwo = {
-        //     {"clientId", clientId},
-        //     {"clientAddr", clientAddress},
-        //     {"x", concepts.v->getRect().x},
-        //     {"y", concepts.v->getRect().y}
-        // };
-
-        // std::string positionDataTwo  = jsonStringTwo.dump();
-        // zmq::message_t messageTwo(positionDataTwo.size());
-        // memcpy(messageTwo.data(), positionDataTwo.c_str(), positionDataTwo.size());
-        // receiver.send(messageTwo, zmq::send_flags::none);
-
-        // // Receive updated positions from the server
-        // zmq::message_t replyTwo;
-        // receiver.recv(replyTwo, zmq::recv_flags::none);
-        // // Parse and update positions of other entities based on received data
-        // string updatedPositionsTwo(replyTwo.to_string());
-        // vector<string> peerAddressesTwo;
-        // auto parsedPositionsTwo = parseUpdatedPositions(updatedPositionsTwo);
-        // printPositions(parsedPositions);
-
-        // for (const auto& position : parsedPositionsTwo) {
-        //     std::string clientId = position["clientId"]; // Get the clientId from the JSON object
-        //     int x = position["position"]["x"]; // Get the x coordinate from the nested "position" object
-        //     int y = position["position"]["y"]; // Get the y coordinate from the nested "position" object
-
-        //     // Update movingVertEntity's position based on the server data for the controlling client
-
-        //         concepts.v->setPosition(x, y); // Implement setPosition method in Entity class
-            
-        // }
-
-        // json jsonStringSpawn = {
-        //     {"clientId", clientId},
-        //     {"clientAddr", clientAddress},
-        //     {"x", concepts.spawn->getRect().x},
-        //     {"y", concepts.spawn->getRect().y}
-        // };
-
-        // std::string positionDataSpawn  = jsonStringSpawn.dump();
-        // zmq::message_t messageSpawn(positionDataSpawn.size());
-        // memcpy(messageSpawn.data(), positionDataSpawn.c_str(), positionDataSpawn.size());
-        // receiver.send(messageSpawn, zmq::send_flags::none);
-
-        // // Receive updated positions from the server
-        // zmq::message_t replySpawn;
-        // receiver.recv(replySpawn, zmq::recv_flags::none);
-        // // Parse and update positions of other entities based on received data
-        // string updatedPositionsSpawn(replySpawn.to_string());
-        // vector<string> peerAddressesSpawn;
-        // auto parsedPositionsSpawn = parseUpdatedPositions(updatedPositionsSpawn);
-        // // printPositions(parsedPositions);
-
-        // for (const auto& position : parsedPositionsSpawn) {
-        //     std::string clientId = position["clientId"]; // Get the clientId from the JSON object
-        //     int x = position["position"]["x"]; // Get the x coordinate from the nested "position" object
-        //     int y = position["position"]["y"]; // Get the y coordinate from the nested "position" object
-
-        //     // Update spawn's position based on the server data for the controlling client
-
-        //         concepts.spawn->setPosition(x, y); // Implement setPosition method in Entity class
-            
-        // }
-
-        // json jsonStringDespawn = {
-        //     {"clientId", clientId},
-        //     {"clientAddr", clientAddress},
-        //     {"x", concepts.despawn->getRect().x},
-        //     {"y", concepts.despawn->getRect().y}
-        // };
-
-        // std::string positionDataDespawn  = jsonStringDespawn.dump();
-        // zmq::message_t messageDespawn(positionDataDespawn.size());
-        // memcpy(messageDespawn.data(), positionDataDespawn.c_str(), positionDataDespawn.size());
-        // receiver.send(messageDespawn, zmq::send_flags::none);
-
-        // // Receive updated positions from the server
-        // zmq::message_t replyDespawn;
-        // receiver.recv(replyDespawn, zmq::recv_flags::none);
-        // // Parse and update positions of other entities based on received data
-        // string updatedPositionsDespawn(replyDespawn.to_string());
-        // vector<string> peerAddressesDespawn;
-        // auto parsedPositionsDespawn = parseUpdatedPositions(updatedPositionsDespawn);
-        // // printPositions(parsedPositions);
-
-        // for (const auto& position : parsedPositionsDespawn) {
-        //     std::string clientId = position["clientId"]; // Get the clientId from the JSON object
-        //     int x = position["position"]["x"]; // Get the x coordinate from the nested "position" object
-        //     int y = position["position"]["y"]; // Get the y coordinate from the nested "position" object
-
-        //     // Update despawn's position based on the server data for the controlling client
-
-        //         concepts.despawn->setPosition(x, y); // Implement setPosition method in Entity class
-            
-        // }
-
         nlohmann::json controllableEntityDetails = {
             {"clientId", clientId},
             {"clientAddr", clientAddress},
@@ -702,6 +717,9 @@ int main(int argc, char* argv[]) {
 
         concepts.spawn->render(game.renderer);
         concepts.despawn->render(game.renderer);
+
+        boundEntityOne.render(game.renderer);
+        boundEntityTwo.render(game.renderer);
 
         concepts.c->render(game.renderer);
 
