@@ -507,15 +507,17 @@ int main(int argc, char* argv[]) {
             }
 
         }
-
         json jsonString = {
             {"clientId", clientId},
             {"clientAddr", clientAddress},
-            {"x", concepts.m->getRect().x},
-            {"y", concepts.m->getRect().y}
+            {"entities", json::array({
+                {{"type", "horizontal"}, {"x", concepts.m->getRect().x}, {"y", concepts.m->getRect().y}},
+                {{"type", "vertical"}, {"x", concepts.v->getRect().x}, {"y", concepts.v->getRect().y}}
+            })}
         };
 
-        std::string positionData  = jsonString.dump();
+
+        std::string positionData = jsonString.dump();
         zmq::message_t message(positionData.size());
         memcpy(message.data(), positionData.c_str(), positionData.size());
         receiver.send(message, zmq::send_flags::none);
@@ -523,118 +525,153 @@ int main(int argc, char* argv[]) {
         // Receive updated positions from the server
         zmq::message_t reply;
         receiver.recv(reply, zmq::recv_flags::none);
-        // Parse and update positions of other entities based on received data
-        string updatedPositions(reply.to_string());
-        vector<string> peerAddresses;
+
+        std::string updatedPositions(reply.to_string());
         auto parsedPositions = parseUpdatedPositions(updatedPositions);
-        // printPositions(parsedPositions);
 
+        // Process and update positions of entities from other clients
         for (const auto& position : parsedPositions) {
-            std::string clientId = position["clientId"]; // Get the clientId from the JSON object
-            int x = position["position"]["x"]; // Get the x coordinate from the nested "position" object
-            int y = position["position"]["y"]; // Get the y coordinate from the nested "position" object
+            std::string clientId = position["clientId"];
+            for (const auto& entity : position["entities"]) {
+                std::string type = entity["type"];
+                int x = entity["x"];
+                int y = entity["y"];
 
-            // Update movingEntity's position based on the server data for the controlling client
-
-                concepts.m->setPosition(x, y); // Implement setPosition method in Entity class
-            
+                if (type == "horizontal") {
+                    concepts.m->setPosition(x, y);  // Update horizontal entity
+                } else if (type == "vertical") {
+                    concepts.v->setPosition(x, y);  // Update vertical entity
+                }
+            }
         }
 
-        json jsonStringTwo = {
-            {"clientId", clientId},
-            {"clientAddr", clientAddress},
-            {"x", concepts.v->getRect().x},
-            {"y", concepts.v->getRect().y}
-        };
+        // json jsonString = {
+        //     {"clientId", clientId},
+        //     {"clientAddr", clientAddress},
+        //     {"x", concepts.m->getRect().x},
+        //     {"y", concepts.m->getRect().y}
+        // };
 
-        std::string positionDataTwo  = jsonStringTwo.dump();
-        zmq::message_t messageTwo(positionDataTwo.size());
-        memcpy(messageTwo.data(), positionDataTwo.c_str(), positionDataTwo.size());
-        receiver.send(messageTwo, zmq::send_flags::none);
+        // std::string positionData  = jsonString.dump();
+        // zmq::message_t message(positionData.size());
+        // memcpy(message.data(), positionData.c_str(), positionData.size());
+        // receiver.send(message, zmq::send_flags::none);
 
-        // Receive updated positions from the server
-        zmq::message_t replyTwo;
-        receiver.recv(replyTwo, zmq::recv_flags::none);
-        // Parse and update positions of other entities based on received data
-        string updatedPositionsTwo(replyTwo.to_string());
-        vector<string> peerAddressesTwo;
-        auto parsedPositionsTwo = parseUpdatedPositions(updatedPositionsTwo);
+        // // Receive updated positions from the server
+        // zmq::message_t reply;
+        // receiver.recv(reply, zmq::recv_flags::none);
+        // // Parse and update positions of other entities based on received data
+        // string updatedPositions(reply.to_string());
+        // vector<string> peerAddresses;
+        // auto parsedPositions = parseUpdatedPositions(updatedPositions);
+        // // printPositions(parsedPositions);
+
+        // for (const auto& position : parsedPositions) {
+        //     std::string clientId = position["clientId"]; // Get the clientId from the JSON object
+        //     int x = position["position"]["x"]; // Get the x coordinate from the nested "position" object
+        //     int y = position["position"]["y"]; // Get the y coordinate from the nested "position" object
+
+        //     // Update movingEntity's position based on the server data for the controlling client
+
+        //         concepts.m->setPosition(x, y); // Implement setPosition method in Entity class
+            
+        // }
+
+        // json jsonStringTwo = {
+        //     {"clientId", clientId},
+        //     {"clientAddr", clientAddress},
+        //     {"x", concepts.v->getRect().x},
+        //     {"y", concepts.v->getRect().y}
+        // };
+
+        // std::string positionDataTwo  = jsonStringTwo.dump();
+        // zmq::message_t messageTwo(positionDataTwo.size());
+        // memcpy(messageTwo.data(), positionDataTwo.c_str(), positionDataTwo.size());
+        // receiver.send(messageTwo, zmq::send_flags::none);
+
+        // // Receive updated positions from the server
+        // zmq::message_t replyTwo;
+        // receiver.recv(replyTwo, zmq::recv_flags::none);
+        // // Parse and update positions of other entities based on received data
+        // string updatedPositionsTwo(replyTwo.to_string());
+        // vector<string> peerAddressesTwo;
+        // auto parsedPositionsTwo = parseUpdatedPositions(updatedPositionsTwo);
         // printPositions(parsedPositions);
 
-        for (const auto& position : parsedPositionsTwo) {
-            std::string clientId = position["clientId"]; // Get the clientId from the JSON object
-            int x = position["position"]["x"]; // Get the x coordinate from the nested "position" object
-            int y = position["position"]["y"]; // Get the y coordinate from the nested "position" object
+        // for (const auto& position : parsedPositionsTwo) {
+        //     std::string clientId = position["clientId"]; // Get the clientId from the JSON object
+        //     int x = position["position"]["x"]; // Get the x coordinate from the nested "position" object
+        //     int y = position["position"]["y"]; // Get the y coordinate from the nested "position" object
 
-            // Update movingVertEntity's position based on the server data for the controlling client
+        //     // Update movingVertEntity's position based on the server data for the controlling client
 
-                concepts.v->setPosition(x, y); // Implement setPosition method in Entity class
+        //         concepts.v->setPosition(x, y); // Implement setPosition method in Entity class
             
-        }
+        // }
 
-        json jsonStringSpawn = {
-            {"clientId", clientId},
-            {"clientAddr", clientAddress},
-            {"x", concepts.spawn->getRect().x},
-            {"y", concepts.spawn->getRect().y}
-        };
+        // json jsonStringSpawn = {
+        //     {"clientId", clientId},
+        //     {"clientAddr", clientAddress},
+        //     {"x", concepts.spawn->getRect().x},
+        //     {"y", concepts.spawn->getRect().y}
+        // };
 
-        std::string positionDataSpawn  = jsonStringSpawn.dump();
-        zmq::message_t messageSpawn(positionDataSpawn.size());
-        memcpy(messageSpawn.data(), positionDataSpawn.c_str(), positionDataSpawn.size());
-        receiver.send(messageSpawn, zmq::send_flags::none);
+        // std::string positionDataSpawn  = jsonStringSpawn.dump();
+        // zmq::message_t messageSpawn(positionDataSpawn.size());
+        // memcpy(messageSpawn.data(), positionDataSpawn.c_str(), positionDataSpawn.size());
+        // receiver.send(messageSpawn, zmq::send_flags::none);
 
-        // Receive updated positions from the server
-        zmq::message_t replySpawn;
-        receiver.recv(replySpawn, zmq::recv_flags::none);
-        // Parse and update positions of other entities based on received data
-        string updatedPositionsSpawn(replySpawn.to_string());
-        vector<string> peerAddressesSpawn;
-        auto parsedPositionsSpawn = parseUpdatedPositions(updatedPositionsSpawn);
-        // printPositions(parsedPositions);
+        // // Receive updated positions from the server
+        // zmq::message_t replySpawn;
+        // receiver.recv(replySpawn, zmq::recv_flags::none);
+        // // Parse and update positions of other entities based on received data
+        // string updatedPositionsSpawn(replySpawn.to_string());
+        // vector<string> peerAddressesSpawn;
+        // auto parsedPositionsSpawn = parseUpdatedPositions(updatedPositionsSpawn);
+        // // printPositions(parsedPositions);
 
-        for (const auto& position : parsedPositionsSpawn) {
-            std::string clientId = position["clientId"]; // Get the clientId from the JSON object
-            int x = position["position"]["x"]; // Get the x coordinate from the nested "position" object
-            int y = position["position"]["y"]; // Get the y coordinate from the nested "position" object
+        // for (const auto& position : parsedPositionsSpawn) {
+        //     std::string clientId = position["clientId"]; // Get the clientId from the JSON object
+        //     int x = position["position"]["x"]; // Get the x coordinate from the nested "position" object
+        //     int y = position["position"]["y"]; // Get the y coordinate from the nested "position" object
 
-            // Update spawn's position based on the server data for the controlling client
+        //     // Update spawn's position based on the server data for the controlling client
 
-                concepts.spawn->setPosition(x, y); // Implement setPosition method in Entity class
+        //         concepts.spawn->setPosition(x, y); // Implement setPosition method in Entity class
             
-        }
+        // }
 
-        json jsonStringDespawn = {
-            {"clientId", clientId},
-            {"clientAddr", clientAddress},
-            {"x", concepts.despawn->getRect().x},
-            {"y", concepts.despawn->getRect().y}
-        };
+        // json jsonStringDespawn = {
+        //     {"clientId", clientId},
+        //     {"clientAddr", clientAddress},
+        //     {"x", concepts.despawn->getRect().x},
+        //     {"y", concepts.despawn->getRect().y}
+        // };
 
-        std::string positionDataDespawn  = jsonStringDespawn.dump();
-        zmq::message_t messageDespawn(positionDataDespawn.size());
-        memcpy(messageDespawn.data(), positionDataDespawn.c_str(), positionDataDespawn.size());
-        receiver.send(messageDespawn, zmq::send_flags::none);
+        // std::string positionDataDespawn  = jsonStringDespawn.dump();
+        // zmq::message_t messageDespawn(positionDataDespawn.size());
+        // memcpy(messageDespawn.data(), positionDataDespawn.c_str(), positionDataDespawn.size());
+        // receiver.send(messageDespawn, zmq::send_flags::none);
 
-        // Receive updated positions from the server
-        zmq::message_t replyDespawn;
-        receiver.recv(replyDespawn, zmq::recv_flags::none);
-        // Parse and update positions of other entities based on received data
-        string updatedPositionsDespawn(replyDespawn.to_string());
-        vector<string> peerAddressesDespawn;
-        auto parsedPositionsDespawn = parseUpdatedPositions(updatedPositionsDespawn);
-        // printPositions(parsedPositions);
+        // // Receive updated positions from the server
+        // zmq::message_t replyDespawn;
+        // receiver.recv(replyDespawn, zmq::recv_flags::none);
+        // // Parse and update positions of other entities based on received data
+        // string updatedPositionsDespawn(replyDespawn.to_string());
+        // vector<string> peerAddressesDespawn;
+        // auto parsedPositionsDespawn = parseUpdatedPositions(updatedPositionsDespawn);
+        // // printPositions(parsedPositions);
 
-        for (const auto& position : parsedPositionsDespawn) {
-            std::string clientId = position["clientId"]; // Get the clientId from the JSON object
-            int x = position["position"]["x"]; // Get the x coordinate from the nested "position" object
-            int y = position["position"]["y"]; // Get the y coordinate from the nested "position" object
+        // for (const auto& position : parsedPositionsDespawn) {
+        //     std::string clientId = position["clientId"]; // Get the clientId from the JSON object
+        //     int x = position["position"]["x"]; // Get the x coordinate from the nested "position" object
+        //     int y = position["position"]["y"]; // Get the y coordinate from the nested "position" object
 
-            // Update despawn's position based on the server data for the controlling client
+        //     // Update despawn's position based on the server data for the controlling client
 
-                concepts.despawn->setPosition(x, y); // Implement setPosition method in Entity class
+        //         concepts.despawn->setPosition(x, y); // Implement setPosition method in Entity class
             
-        }
+        // }
 
         nlohmann::json controllableEntityDetails = {
             {"clientId", clientId},
