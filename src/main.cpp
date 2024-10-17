@@ -545,9 +545,10 @@ int main(int argc, char* argv[]) {
 
             // Senses other shapes for collision.
             if (hasIntersection(&cRect, &boundOne) == true) {
-                // If there was an intersection on the top of the terrain rectangle,
-                // the controllable rectangle lands on the terrain rectangle.
-                if (intersect(&cRect, &boundOne) == 2 || intersect(&cRect, &boundOne) == 4) {
+                // If there was an intersection against the rectangle,
+                // the controllable rectangle intersects the rectangle.
+                if (intersect(&cRect, &boundTwo) == 1 || intersect(&cRect, &boundTwo) == 2 ||
+                    intersect(&cRect, &boundTwo) == 3 || intersect(&cRect, &boundTwo) == 4) {
                     // If this is map 1, reset the map to map 2.
                     if (map == 1) {
                         map = 2;
@@ -588,17 +589,19 @@ int main(int argc, char* argv[]) {
                             }
                         }
                     }
+
                     // Respawns the player.
-                    concepts.c->setPosition(540, 200);
+                    concepts.c->setPosition(74, 450);
                 }
                 // More sides will be added in the future.
             }
 
             // Senses other shapes for collision.
             if (hasIntersection(&cRect, &boundTwo) == true) {
-                // If there was an intersection on the top of the terrain rectangle,
-                // the controllable rectangle lands on the terrain rectangle.
-                if (intersect(&cRect, &boundTwo) == 2 || intersect(&cRect, &boundTwo) == 4) {
+                // If there was an intersection against the rectangle,
+                // the controllable rectangle intersects the rectangle.
+                if (intersect(&cRect, &boundTwo) == 1 || intersect(&cRect, &boundTwo) == 2 ||
+                    intersect(&cRect, &boundTwo) == 3 || intersect(&cRect, &boundTwo) == 4) {
                     // If this is map 1, reset the map to map 2.
                     if (map == 1) {
                         map = 2;
@@ -639,8 +642,9 @@ int main(int argc, char* argv[]) {
                             }
                         }
                     }
+
                     // Respawns the player.
-                    concepts.c->setPosition(540, 200);
+                    concepts.c->setPosition(1846, 450);
                 }
                 // More sides will be added in the future.
             }
