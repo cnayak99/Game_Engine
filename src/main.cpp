@@ -349,7 +349,7 @@ int main(int argc, char* argv[]) {
     concepts.despawn = &despawnEntity;
 
     // Creates the first bound shape.
-    Entity boundEntityOne(0, 0, 64, 1080,{0,0,255,255}, false, 3); // Invisible.
+    Entity boundEntityOne(64, 0, 64, 1080,{0,0,255,255}, false, 3); // Invisible.
 
     // Creates the second bound shape.
     Entity boundEntityTwo(1856, 0, 64, 1080,{0,0,255,255}, false, 3); // Invisible.
@@ -547,8 +547,8 @@ int main(int argc, char* argv[]) {
             if (hasIntersection(&cRect, &boundOne) == true) {
                 // If there was an intersection against the rectangle,
                 // the controllable rectangle intersects the rectangle.
-                if (intersect(&cRect, &boundTwo) == 1 || intersect(&cRect, &boundTwo) == 2 ||
-                    intersect(&cRect, &boundTwo) == 3 || intersect(&cRect, &boundTwo) == 4) {
+                if (intersect(&cRect, &boundOne) == 1 || intersect(&cRect, &boundOne) == 2 ||
+                    intersect(&cRect, &boundOne) == 3 || intersect(&cRect, &boundOne) == 4) {
                     // If this is map 1, reset the map to map 2.
                     if (map == 1) {
                         map = 2;
@@ -591,7 +591,9 @@ int main(int argc, char* argv[]) {
                     }
 
                     // Respawns the player.
-                    concepts.c->setPosition(74, 450);
+                    //concepts.c->setPosition(74, 450);
+                    // Respawns the player.
+                    concepts.c->setPosition(540, 200);
                 }
                 // More sides will be added in the future.
             }
@@ -644,7 +646,9 @@ int main(int argc, char* argv[]) {
                     }
 
                     // Respawns the player.
-                    concepts.c->setPosition(1846, 450);
+                    //concepts.c->setPosition(1846, 450);
+                    // Respawns the player.
+                    concepts.c->setPosition(540, 200);
                 }
                 // More sides will be added in the future.
             }
