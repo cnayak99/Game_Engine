@@ -363,6 +363,7 @@ int main(int argc, char* argv[]) {
     concepts.speed = 5; // Speed of the Entity.
     concepts.verticalVel = 0.0f;
     concepts.thrust = -9.8f;
+    bool latch = false; // Boolean used in scrolling mechanism
 
     // Stores the variable that determines whether or not the game is paused.
     concepts.a = &anchor;
@@ -544,7 +545,8 @@ int main(int argc, char* argv[]) {
             }
 
             // Senses other shapes for collision.
-            if (hasIntersection(&cRect, &boundOne) == true) {
+            if (hasIntersection(&cRect, &boundOne) == true && !latch) {
+                latch = true;
                 // If there was an intersection against the rectangle,
                 // the controllable rectangle intersects the rectangle.
                 if (intersect(&cRect, &boundOne) == 1 || intersect(&cRect, &boundOne) == 2 ||
@@ -568,6 +570,8 @@ int main(int argc, char* argv[]) {
                                 }
                             }
                         }
+                        // Respawns the player.
+                        concepts.c->setPosition(SCREEN_WIDTH - concepts.c->getRect().x, concepts.c->getRect().y);
                     }
                     // If this is map 2, reset the map to map 1.
                     else if (map == 2) {
@@ -588,18 +592,15 @@ int main(int argc, char* argv[]) {
                                 }
                             }
                         }
+                        concepts.c->setPosition(SCREEN_WIDTH - concepts.c->getRect().x, concepts.c->getRect().y);
                     }
-
-                    // Respawns the player.
-                    //concepts.c->setPosition(74, 450);
-                    // Respawns the player.
-                    concepts.c->setPosition(540, 200);
                 }
                 // More sides will be added in the future.
             }
 
             // Senses other shapes for collision.
-            if (hasIntersection(&cRect, &boundTwo) == true) {
+            else if (hasIntersection(&cRect, &boundTwo) == true && !latch) {
+                latch = true;
                 // If there was an intersection against the rectangle,
                 // the controllable rectangle intersects the rectangle.
                 if (intersect(&cRect, &boundTwo) == 1 || intersect(&cRect, &boundTwo) == 2 ||
@@ -623,6 +624,8 @@ int main(int argc, char* argv[]) {
                                 }
                             }
                         }
+                        // Respawns the player.
+                        concepts.c->setPosition(SCREEN_WIDTH - concepts.c->getRect().x, concepts.c->getRect().y);
                     }
                     // If this is map 2, reset the map to map 1.
                     else if (map == 2) {
@@ -643,14 +646,13 @@ int main(int argc, char* argv[]) {
                                 }
                             }
                         }
+                        concepts.c->setPosition(SCREEN_WIDTH - concepts.c->getRect().x, concepts.c->getRect().y);
                     }
-
-                    // Respawns the player.
-                    //concepts.c->setPosition(1846, 450);
-                    // Respawns the player.
-                    concepts.c->setPosition(540, 200);
                 }
                 // More sides will be added in the future.
+            }
+            else {
+                latch = false;
             }
 
         }
