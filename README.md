@@ -4,6 +4,8 @@ Lillie Sharpe Robbie Martin Chinmay Nayak
 
 These are the instructions including the startup process for our base game engine application and the controls for the controllable rectangle in it. We will begin by explaining the controls because they will be important for Step 13 of the base game engine application startup.
 
+Important Note: From Project 3 onward, our team only continued to update the first, initially uncommented main function in main.cpp. Please only use that function to play the game, as it is the only one with full functionality.
+
 **Controls**
 
 C = Changes the method by which the window can be resized.
@@ -40,7 +42,7 @@ Step 4.) In a VSCode terminal, change directories to the folder containing the g
 
 Step 5.) Ensure that the zmq library is installed by running the following command in a system terminal: sudo apt install libzmq3-dev
 
-Step 6.) If you would like to access *Section 6* functionality (and where our team has implemented Timelines more correctly so far), leave the first main function in main.cpp uncommented. If you would like to access *Section 2 and 3* functionality, comment the first main function and uncomment the second main function.
+Step 6.) If you would like to access *Section 6* functionality, leave the first main function in main.cpp uncommented. If you would like to access *Section 2 and 3* functionality, comment the first main function and uncomment the second main function. (Important Note: As of Project 3, the second main function is no longer being updated.)
 
 Note: The individual demo was built in the first main method. It should compile as needed without commenting out code.
 
