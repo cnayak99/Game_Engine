@@ -341,7 +341,7 @@ int main(int argc, char* argv[]) {
     concepts.m = &movingEntity;
 
     // Creates the moving purple shape and connects its address to concepts.
-    Entity movingVertEntity(200, 200, 64, 64,{255,0,255,255}, false, 0); // Purple moving shape.
+    Entity movingVertEntity(1000, 200, 64, 64,{255,0,255,255}, false, 0); // Purple moving shape.
     concepts.v = &movingVertEntity;
 
     // Creates the despawn shape and connects its address to concepts.
