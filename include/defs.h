@@ -12,7 +12,7 @@
 // Pixel size of tiles
 #define TILE_SIZE    64
 // Width and height of the tile map in tiles
-#define MAP_WIDTH    40
+#define MAP_WIDTH    30
 #define MAP_HEIGHT   20
 
 #endif // DEFS_H
