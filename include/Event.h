@@ -7,6 +7,12 @@
 /**
  * Creates an Event.
  * 
+ * References resources and tutorials provided by Professor Card through
+ * the Events and Events 2 lecture slides in the "CSC 481/581 (001) 
+ * Fall 2024 Game Engine Foundations" course Moodle page. 
+ * These resources can be found in the
+ * https://wiki.libsdl.org/SDL2/FrontPage website.
+ * 
  * Events have two fields:
  * - an Entity pointer dictating the cause of the event
  * - an integer describing the event's type, representing what occurred.
@@ -33,15 +39,20 @@ private:
 /**
  * Creates an EventHandler.
  * 
- * Events have one field: an Entity pointer the handler will use to respond to events it hears. 
- * The source in the event and the handler may be different, depending on the event.
+ * Event handlers have five (as of writing) fields: 
+ * - the first is an Entity pointer the handler will affect in response to events it hears. 
+ * - the remaining fields are booleans to determine what the handler should be listening for.
  */
 class EventHandler {
 public:
-    EventHandler(Entity* source);
+    EventHandler(Entity* source, bool listenCollide, bool listenDestroy, bool listenSpawn, bool listenInput);
     void onEvent(Event e);
 private:
     Entity* source;
+    bool listenCollide;
+    bool listenDestroy;
+    bool listenSpawn;
+    bool listenInput;
 };
 
 class EventManager {
