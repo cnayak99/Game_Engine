@@ -45,14 +45,10 @@ private:
  */
 class EventHandler {
 public:
-    EventHandler(Entity* source, bool listenCollide, bool listenDestroy, bool listenSpawn, bool listenInput);
-    void onEvent(Event e);
+    EventHandler(Entity* source);
+    virtual void onEvent(Event e) = 0;
 private:
     Entity* source;
-    bool listenCollide;
-    bool listenDestroy;
-    bool listenSpawn;
-    bool listenInput;
 };
 
 class EventManager {

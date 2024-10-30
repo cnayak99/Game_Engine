@@ -1,32 +1,26 @@
 #include "Event.h"
 
-EventHandler::EventHandler(Entity* source, bool listenCollide, bool listenDestroy, bool listenSpawn, bool listenInput) 
-: source(source), listenCollide(listenCollide), listenDestroy(listenDestroy), listenSpawn(listenSpawn), listenInput(listenInput) {
+class PlayerHandler : EventHandler {
+    public:
+        void onEvent(Event e);
+    private:
+        Entity* player;
+};
 
-}
-
-void EventHandler::onEvent(Event e) {
+void PlayerHandler:: onEvent(Event e) {
     switch (e.getType())
     {
     case 1:
-        if (listenCollide) {
-            
-        }
+        // Collision Event
         break;
     case 2:
-        if (listenDestroy) {
-
-        }
+        // Death Event
         break;
     case 3:
-        if (listenSpawn) {
-
-        }
+        // Spawn Event
         break;
     case 4:
-        if (listenInput) {
-
-        }
+        // Input Event
         break;
     default:
         break;

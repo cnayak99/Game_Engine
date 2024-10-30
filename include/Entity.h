@@ -2,6 +2,7 @@
 #define ENTITY_H
 
 #include <SDL2/SDL.h>
+#include "Event.h"
 
 /**
  * Creates an entity struct.
