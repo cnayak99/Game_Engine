@@ -47,8 +47,14 @@ class EventHandler {
 public:
     EventHandler(Entity* source);
     virtual void onEvent(Event e) = 0;
-private:
     Entity* source;
+};
+
+class PlayerHandler : public EventHandler {
+    public:
+        using EventHandler::EventHandler;
+        void onEvent(Event e);
+        Entity* getSource();
 };
 
 class EventManager {

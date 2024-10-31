@@ -1,11 +1,8 @@
 #include "Event.h"
 
-class PlayerHandler : EventHandler {
-    public:
-        void onEvent(Event e);
-    private:
-        Entity* player;
-};
+EventHandler::EventHandler(Entity* source) : source(source) {
+    
+}
 
 void PlayerHandler:: onEvent(Event e) {
     switch (e.getType())
@@ -25,4 +22,8 @@ void PlayerHandler:: onEvent(Event e) {
     default:
         break;
     }
+}
+
+Entity* PlayerHandler:: getSource() {
+    return source;
 }

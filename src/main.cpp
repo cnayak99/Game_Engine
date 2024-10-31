@@ -13,6 +13,7 @@
 #include "json.hpp" // Use relative path to the include directory
 #include <thread>
 #include "Threads.h"
+#include "Event.h"
 
 using namespace std; 
 using json = nlohmann::json;
@@ -174,6 +175,7 @@ void handleIncomingMessages(zmq::socket_t& routerSocket, std::unordered_map<std:
         }
     }
 }
+
 /**
  * Runs the game.
  * 
@@ -258,7 +260,7 @@ int main(int argc, char* argv[]) {
     // Construct the anchor timeline.
     Timeline anchor(nullptr, 1);
 
-    int map01[MAP_HEIGHT][MAP_WIDTH] = 
+    int terrain01[MAP_HEIGHT][MAP_WIDTH] = 
     {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -280,7 +282,7 @@ int main(int argc, char* argv[]) {
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1},
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1}};
 
-    int map02[MAP_HEIGHT][MAP_WIDTH] = 
+    int terrain02[MAP_HEIGHT][MAP_WIDTH] = 
     {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -309,17 +311,19 @@ int main(int argc, char* argv[]) {
 
     for (int j = 0; j < MAP_HEIGHT; j++) {
         for (int i = 0; i < MAP_WIDTH; i++) {
-            if (map01[j][i] == 0) {
+            switch (terrain01[j][i])
+            {
+            case 0:
                 tileMap[i][j] = nullptr;
-            }
-            else if (map01[j][i] == 1) {
+                break;
+            case 1:
                 tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
-            }
-            else if (map01[j][i] == 2) {
+                break;
+            case 2:
                 tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{200,150,100,255}, false, 0);
-            }
-            else if (map01[j][i] == 3) {
-                tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{150,0,255,255}, false, 0);
+                break;
+            default:
+                break;
             }
         }
     }
@@ -335,6 +339,7 @@ int main(int argc, char* argv[]) {
     // Creates the controllable green shape and connects its address to concepts.
     Entity controllableEntity(concepts.spawn->getRect().x, concepts.spawn->getRect().y, 64, 64,{0,255,0,255}, true, 0); // Controllable green shape.
     concepts.c = &controllableEntity;
+    PlayerHandler* playerEvents = new PlayerHandler(&controllableEntity);
 
     // Creates the moving black shape and connects its address to concepts.
     Entity movingEntity(100, 400, 64, 64,{0,0,0,255}, false, 0); // Black moving shape.
@@ -458,14 +463,19 @@ int main(int argc, char* argv[]) {
             // Keeps track of the despawn rectangle.
             SDL_Rect boundTwo = boundEntityTwo.getRect();
 
+            // The top left corner's map coordinates
+            int mapPlayerTL[2] = {floor(cRect.x / TILE_SIZE), floor(cRect.y / TILE_SIZE)};
+            // The top right corner's map coordinates
+            int mapPlayerTR[2] = {floor((cRect.x + cRect.w) / TILE_SIZE), floor(cRect.y / TILE_SIZE)};
+            // The bottom left corner's map coordinates
+            int mapPlayerBL[2] = {floor(cRect.x / TILE_SIZE), floor((cRect.y + cRect.h) / TILE_SIZE)};
+            // The bottom right corner's map coordinates
+            int mapPlayerBR[2] = {floor((cRect.x + cRect.w) / TILE_SIZE), floor((cRect.y + cRect.h) / TILE_SIZE)};
+            // Rectangle of the entity (if any) at the bottom-left corner
+
             // Get the coordinates of the bottom corners relative to the size of the map in tiles (if the player is within the game bounds)
             if (cRect.x + cRect.w >= 0 && cRect.x < SCREEN_WIDTH && cRect.y + cRect.h >= 0 && cRect.y < SCREEN_HEIGHT) {
-                // The bottom left corner's map coordinates
-                int mapPlayerBL[2] = {floor(cRect.x / TILE_SIZE), floor((cRect.y + cRect.h) / TILE_SIZE)};
-                // The bottom right corner's map coordinates
-                int mapPlayerBR[2] = {floor((cRect.x + cRect.w) / TILE_SIZE), floor((cRect.y + cRect.h) / TILE_SIZE)};
-                // Rectangle of the entity (if any) at the bottom-left corner
-                //If the entity exists at the coordinates...
+                // If the entity exists at the coordinates...
                 if (cRect.x >= 0 && tileMap[mapPlayerBL[0]][mapPlayerBL[1]] != nullptr) {
                     // Store the rectangle of the captured entity
                     SDL_Rect hitBL = tileMap[mapPlayerBL[0]][mapPlayerBL[1]]->getRect();
@@ -556,16 +566,16 @@ int main(int argc, char* argv[]) {
                         map = 2;
                         for (int j = 0; j < MAP_HEIGHT; j++) {
                             for (int i = 0; i < MAP_WIDTH; i++) {
-                                if (map02[j][i] == 0) {
+                                if (terrain02[j][i] == 0) {
                                     tileMap[i][j] = nullptr;
                                 }
-                                else if (map02[j][i] == 1) {
+                                else if (terrain02[j][i] == 1) {
                                     tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
                                 }
-                                else if (map02[j][i] == 2) {
+                                else if (terrain02[j][i] == 2) {
                                     tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{200,150,100,255}, false, 0);
                                 }
-                                else if (map02[j][i] == 3) {
+                                else if (terrain02[j][i] == 3) {
                                     tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{150,0,255,255}, false, 0);
                                 }
                             }
@@ -578,16 +588,16 @@ int main(int argc, char* argv[]) {
                         map = 1;
                         for (int j = 0; j < MAP_HEIGHT; j++) {
                             for (int i = 0; i < MAP_WIDTH; i++) {
-                                if (map01[j][i] == 0) {
+                                if (terrain01[j][i] == 0) {
                                     tileMap[i][j] = nullptr;
                                 }
-                                else if (map01[j][i] == 1) {
+                                else if (terrain01[j][i] == 1) {
                                     tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
                                 }
-                                else if (map01[j][i] == 2) {
+                                else if (terrain01[j][i] == 2) {
                                     tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{200,150,100,255}, false, 0);
                                 }
-                                else if (map01[j][i] == 3) {
+                                else if (terrain01[j][i] == 3) {
                                     tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{150,0,255,255}, false, 0);
                                 }
                             }
@@ -610,16 +620,16 @@ int main(int argc, char* argv[]) {
                         map = 2;
                         for (int j = 0; j < MAP_HEIGHT; j++) {
                             for (int i = 0; i < MAP_WIDTH; i++) {
-                                if (map02[j][i] == 0) {
+                                if (terrain02[j][i] == 0) {
                                     tileMap[i][j] = nullptr;
                                 }
-                                else if (map02[j][i] == 1) {
+                                else if (terrain02[j][i] == 1) {
                                     tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
                                 }
-                                else if (map02[j][i] == 2) {
+                                else if (terrain02[j][i] == 2) {
                                     tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{200,150,100,255}, false, 0);
                                 }
-                                else if (map02[j][i] == 3) {
+                                else if (terrain02[j][i] == 3) {
                                     tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{150,0,255,255}, false, 0);
                                 }
                             }
@@ -632,16 +642,16 @@ int main(int argc, char* argv[]) {
                         map = 1;
                         for (int j = 0; j < MAP_HEIGHT; j++) {
                             for (int i = 0; i < MAP_WIDTH; i++) {
-                                if (map01[j][i] == 0) {
+                                if (terrain01[j][i] == 0) {
                                     tileMap[i][j] = nullptr;
                                 }
-                                else if (map01[j][i] == 1) {
+                                else if (terrain01[j][i] == 1) {
                                     tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
                                 }
-                                else if (map01[j][i] == 2) {
+                                else if (terrain01[j][i] == 2) {
                                     tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{200,150,100,255}, false, 0);
                                 }
-                                else if (map01[j][i] == 3) {
+                                else if (terrain01[j][i] == 3) {
                                     tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{150,0,255,255}, false, 0);
                                 }
                             }
