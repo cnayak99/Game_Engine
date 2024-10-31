@@ -3,6 +3,10 @@
 
 #include "Entity.h"
 #include <SDL2/SDL.h>
+#include <map>
+#include <list>
+#include <vector>
+#include <mutex>
 
 /**
  * Creates an Event.
@@ -60,8 +64,13 @@ class PlayerHandler : public EventHandler {
 class EventManager {
 public:
     EventManager();
+    void handlerRegister(std::list<int> types, EventHandler* h);
+    void handlerDeregister(std::list<int> types, EventHandler* h);
+    void raise(Event e);
 private:
-    
+	std::map<int,std::list<EventHandler *>> handlers;
+    std::vector<Event> raisedEvents;
+    std::mutex mutex_event;
 };
 
 #endif // EVENT_H
