@@ -14,6 +14,10 @@
 #include <thread>
 #include "Threads.h"
 #include "Event.h"
+#include "InputHandler.h"
+#include "QuitHandler.h"
+#include "EventManager.h"
+#include "EventHandler.h"  // Include EventHandler first
 
 using namespace std; 
 using json = nlohmann::json;
@@ -202,6 +206,8 @@ int main(int argc, char* argv[]) {
     int clientPort = 5560 + randomNum; // Unique port based on client ID
     std::string clientAddress = "tcp://127.0.0.1:" + std::to_string(clientPort);
     
+    EventManager eventManager;
+
     // Create the Game object.
     Game game;
     // Set the window up.
@@ -254,6 +260,11 @@ int main(int argc, char* argv[]) {
     // Initialize quit to false.
     concepts.quit = false;
 
+    InputHandler inputHandler(&concepts, &game);
+    eventManager.registerListener("input", &inputHandler);
+
+    QuitHandler quitHandler(&concepts, &receiver, clientId);
+    eventManager.registerListener("quit", &quitHandler);
     // Create an event object.
     SDL_Event e;
 
@@ -339,7 +350,7 @@ int main(int argc, char* argv[]) {
     // Creates the controllable green shape and connects its address to concepts.
     Entity controllableEntity(concepts.spawn->getRect().x, concepts.spawn->getRect().y, 64, 64,{0,255,0,255}, true, 0); // Controllable green shape.
     concepts.c = &controllableEntity;
-    PlayerHandler* playerEvents = new PlayerHandler(&controllableEntity);
+    // PlayerHandler* playerEvents = new PlayerHandler(&controllableEntity);
 
     // Creates the moving black shape and connects its address to concepts.
     Entity movingEntity(100, 400, 64, 64,{0,0,0,255}, false, 0); // Black moving shape.
@@ -442,7 +453,7 @@ int main(int argc, char* argv[]) {
         if (!concepts.a->isPaused) {
 
             // Run threads.
-            startThreads(&timeThreads, &concepts, &game, receiver, clientId);
+            startThreads(&timeThreads, &concepts, &game, receiver, clientId, eventManager);
 
             // Keeps track of the controllable rectangle.
             SDL_Rect cRect = concepts.c->getRect();
@@ -746,9 +757,9 @@ int main(int argc, char* argv[]) {
                 SDL_RenderFillRect(game.renderer, &rect);
             }
         }
+        eventManager.dispatchEvents();
         // Present the rendered content
         SDL_RenderPresent(game.renderer);
-
         // Puts a delay on the game. (Can be changed!)
         SDL_Delay(16);
         // Sets the last time to the current time.

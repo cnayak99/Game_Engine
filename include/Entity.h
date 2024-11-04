@@ -3,7 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include "Event.h"
-
+#include "structs.h"
 /**
  * Creates an entity struct.
  * 

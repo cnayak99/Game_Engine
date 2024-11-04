@@ -3,7 +3,7 @@
 #include <iostream>
 #include "sdl_setup.h"
 #include "draw.h"
-
+#include "structs.h"
 void prepScene(Game *game) {
         // Set the background color to blue and clear the screen
         SDL_SetRenderDrawColor(game->renderer, 96, 128, 255, 255);

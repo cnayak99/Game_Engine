@@ -5,6 +5,8 @@
 #include "Entity.h"
 #include "Timeline.h"
 
+class Entity;
+
 typedef struct {
     SDL_Renderer *renderer;
     SDL_Window *window;
@@ -32,7 +34,7 @@ typedef struct {
 
     Entity *spawn;
     Entity *despawn;
-
+    Entity* getSource;
     Timeline *a;
 
     bool quit;

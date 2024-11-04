@@ -11,7 +11,12 @@
 #include "Intersect.h"
 #include "structs.h"
 #include "Threads.h"
+#include "Event.h"
 #include "json.hpp" // Use relative path to the include directory
+#include "InputHandler.h"
+#include "QuitHandler.h"
+#include "EventManager.h"
+#include "EventHandler.h" 
 using namespace std; 
 using json = nlohmann::json;
 std::mutex *_mutex; // The object for mutual exclusion of execution.
@@ -35,11 +40,23 @@ zmq::socket_t* receiverPtr = nullptr;
  * the "Homework 2" subtitle on the "CSC 481/581 (001) Fall 2024
  * Game Engine Foundations" course Moodle page.
  */
-void runThread(int id) {
+// void runThread(int id) {
+//     if (id == 0) {
+//         runPhysics();
+//     } else {
+//         runInput();
+//     }
+// }
+
+void runPhysics();
+void runInput(EventManager& eventManager);
+void runThread(int id, EventManager& eventManager);
+
+void runThread(int id, EventManager& eventManager) {
     if (id == 0) {
         runPhysics();
     } else {
-        runInput();
+        runInput(eventManager);
     }
 }
 
@@ -113,7 +130,7 @@ void runPhysics() {
  * the "Homework 2" subtitle on the "CSC 481/581 (001) Fall 2024
  * Game Engine Foundations" course Moodle page.
  */
-void runInput() {
+void runInput(EventManager& eventManager) {
     // Thread 2 tries to manage player input for this tic.
     try 
     {
@@ -124,32 +141,61 @@ void runInput() {
 
             // If the player is pressing up.
             if(concepts->state[SDL_SCANCODE_UP]){ // Move up.
-                concepts->verticalVel = concepts->thrust;
+                Event inputEvent;
+                inputEvent.type = "input";
+
+                Variant keyCode;
+                keyCode.type = Variant::TYPE_INT;
+                keyCode.asInt = SDL_SCANCODE_UP;
+
+                inputEvent.parameters["keyCode"] = keyCode;
+                cout<<"UP pressed"<<endl;
+                eventManager.raiseEvent(inputEvent);
+                // concepts->verticalVel = concepts->thrust;
             }
 
             // If the player is pressing left.
             if(concepts->state[SDL_SCANCODE_LEFT]){ // Move left.
-                concepts->c->move(-concepts->moveSpeed,0);
+                Event inputEvent;
+                inputEvent.type = "input";
+
+                Variant keyCode;
+                keyCode.type = Variant::TYPE_INT;
+                keyCode.asInt = SDL_SCANCODE_LEFT;
+
+                inputEvent.parameters["keyCode"] = keyCode;
+                cout<<"LEFT pressed"<<endl;
+                eventManager.raiseEvent(inputEvent);
+                // concepts->c->move(-concepts->moveSpeed,0);
             }
 
             // If the player is pressing right.
             if(concepts->state[SDL_SCANCODE_RIGHT]){// Move right.
-                concepts->c->move(concepts->moveSpeed, 0);
+                Event inputEvent;
+                inputEvent.type = "input";
+
+                Variant keyCode;
+                keyCode.type = Variant::TYPE_INT;
+                keyCode.asInt = SDL_SCANCODE_RIGHT;
+
+                inputEvent.parameters["keyCode"] = keyCode;
+                cout<<"RIGHT pressed"<<endl;
+                eventManager.raiseEvent(inputEvent);
+                // concepts->c->move(concepts->moveSpeed, 0);
             }
         
             // If the player is pressing 'C'.
             if (concepts->state[SDL_SCANCODE_C]) { // Change window size.
-                if (!concepts->held) {
-                    concepts->held = true;
-                    if (!concepts->scaling) {
-                        SDL_RenderSetLogicalSize(game->renderer, 1920, 1080);
-                        concepts->scaling = true;
-                    }
-                    else {
-                        SDL_RenderSetLogicalSize(game->renderer, 0, 0);
-                        concepts->scaling = false;
-                    }
-                }
+                Event inputEvent;
+                inputEvent.type = "input";
+
+                Variant keyCode;
+                keyCode.type = Variant::TYPE_INT;
+                keyCode.asInt = SDL_SCANCODE_C;
+
+                inputEvent.parameters["keyCode"] = keyCode;
+                cout<<"C pressed"<<endl;
+                eventManager.raiseEvent(inputEvent);
             }
             else {
                 concepts->held = false;
@@ -158,22 +204,26 @@ void runInput() {
 
         // If the player is pressing 'ESC'.
         if (concepts->state[SDL_SCANCODE_ESCAPE]) { // Exit the game.
-            concepts->quit = true;
+            // concepts->quit = true;
 
-            // Send disconnect message
-            json disconnectMessage = {
-                {"clientId", clientId1},
-                {"disconnect", true}
-            };
-            std::string messageString = disconnectMessage.dump();
-            zmq::message_t message(messageString.size());
-            memcpy(message.data(), messageString.c_str(), messageString.size());
+            // // Send disconnect message
+            // json disconnectMessage = {
+            //     {"clientId", clientId1},
+            //     {"disconnect", true}
+            // };
+            // std::string messageString = disconnectMessage.dump();
+            // zmq::message_t message(messageString.size());
+            // memcpy(message.data(), messageString.c_str(), messageString.size());
 
-            if (receiverPtr) {
-                receiverPtr->send(message, zmq::send_flags::none);
-            }
+            // if (receiverPtr) {
+            //     receiverPtr->send(message, zmq::send_flags::none);
+            // }
 
-            return; // Exit the function after sending the disconnect message
+            // return; // Exit the function after sending the disconnect message
+            Event quitEvent;
+            quitEvent.type = "quit";
+
+            eventManager.raiseEvent(quitEvent);
         }
 
         // Notifies Thread 1.
@@ -215,33 +265,28 @@ void runInput() {
  * which included studying the concept of temporary entities
  * (like our std::threads) within the same webpage.
  */
-int startThreads(Timeline* t, Concepts* c, Game* g, zmq::socket_t& receiver, std::string& clientId) {
-    // Mutex to handle locking, condition variables to handle notifications between threads.
+int startThreads(Timeline* t, Concepts* c, Game* g, zmq::socket_t& receiver, std::string& clientId, EventManager &eventManager) {
     std::mutex m;
     _mutex = &m;
     std::condition_variable cv_c;
     _cv_c = &cv_c;
 
-    // Creates a vector with both threads stored inside.
     std::vector<std::thread> both;
-
-    // Initialize the three fields.
     time_Threads = t;
     concepts = c;
     game = g;
     clientId1 = clientId;
-        // Assign receiver pointer for use in runInput
     receiverPtr = &receiver;
-    // Initializes a list of two threads and runs them.
+
     for (int i = 0; i < 2; i++) {
-        both.push_back(std::thread(runThread, i));
+        both.push_back(std::thread([i, &eventManager]() {
+            runThread(i, eventManager);
+        }));
     }
 
-    // Joins both threads as they finish.
-    for (auto& th : both){
+    for (auto& th : both) {
         th.join();
     }
 
-    // Exit successfully.
     return 0;
 }

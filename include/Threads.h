@@ -13,7 +13,8 @@
 #include "Rectangle.h"
 #include "Intersect.h"
 #include "structs.h"
-
+#include "EventManager.h"
+#include "EventHandler.h"
 /**
  * Runs both initialized threads through different functions.
  * 
@@ -92,6 +93,6 @@ void runInput();
  * which included studying the concept of temporary entities
  * (like our std::threads) within the same webpage.
  */
-int startThreads(Timeline* t, Concepts* c, Game* g, zmq::socket_t& receiver, std::string& clientId);
+int startThreads(Timeline* t, Concepts* c, Game* g, zmq::socket_t& receiver, std::string& clientId,EventManager &eventManager);
 
 #endif
