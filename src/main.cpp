@@ -260,6 +260,7 @@ int main(int argc, char* argv[]) {
     // Initialize quit to false.
     concepts.quit = false;
 
+    //Register Events here
     InputHandler inputHandler(&concepts, &game);
     eventManager.registerListener("input", &inputHandler);
 

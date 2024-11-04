@@ -40,13 +40,7 @@ zmq::socket_t* receiverPtr = nullptr;
  * the "Homework 2" subtitle on the "CSC 481/581 (001) Fall 2024
  * Game Engine Foundations" course Moodle page.
  */
-// void runThread(int id) {
-//     if (id == 0) {
-//         runPhysics();
-//     } else {
-//         runInput();
-//     }
-// }
+
 
 void runPhysics();
 void runInput(EventManager& eventManager);
@@ -134,95 +128,76 @@ void runInput(EventManager& eventManager) {
     // Thread 2 tries to manage player input for this tic.
     try 
     {
-        // Sets up the mutex lock.
+            // Sets up the mutex lock.
         std::unique_lock<std::mutex> cv_lock(*_mutex);
+        if (concepts->state[SDL_SCANCODE_UP]) {  // Move up
+            int64_t currentTimestamp = time_Threads->getTimeline();  // Get current time from Timeline
 
-        //if (!concepts->a->isPaused) {
+            Event inputEvent("input", currentTimestamp);  // Create an event with a timestamp
 
-            // If the player is pressing up.
-            if(concepts->state[SDL_SCANCODE_UP]){ // Move up.
-                Event inputEvent;
-                inputEvent.type = "input";
+            Variant keyCode;
+            keyCode.type = Variant::TYPE_INT;
+            keyCode.asInt = SDL_SCANCODE_UP;
+            inputEvent.parameters["keyCode"] = keyCode;
 
-                Variant keyCode;
-                keyCode.type = Variant::TYPE_INT;
-                keyCode.asInt = SDL_SCANCODE_UP;
+            std::cout << "UP pressed" << std::endl;
+            eventManager.raiseEvent(inputEvent);  // Raise the event with timestamp
+        }
 
-                inputEvent.parameters["keyCode"] = keyCode;
-                cout<<"UP pressed"<<endl;
-                eventManager.raiseEvent(inputEvent);
-                // concepts->verticalVel = concepts->thrust;
-            }
+        if (concepts->state[SDL_SCANCODE_LEFT]) {  // Move left
+            //Create and Raise Events
+            int64_t currentTimestamp = time_Threads->getTimeline();  // Get current time from Timeline
 
-            // If the player is pressing left.
-            if(concepts->state[SDL_SCANCODE_LEFT]){ // Move left.
-                Event inputEvent;
-                inputEvent.type = "input";
+            Event inputEvent("input", currentTimestamp);
 
-                Variant keyCode;
-                keyCode.type = Variant::TYPE_INT;
-                keyCode.asInt = SDL_SCANCODE_LEFT;
+            Variant keyCode;
+            keyCode.type = Variant::TYPE_INT;
+            keyCode.asInt = SDL_SCANCODE_LEFT;
+            inputEvent.parameters["keyCode"] = keyCode;
 
-                inputEvent.parameters["keyCode"] = keyCode;
-                cout<<"LEFT pressed"<<endl;
-                eventManager.raiseEvent(inputEvent);
-                // concepts->c->move(-concepts->moveSpeed,0);
-            }
+            std::cout << "LEFT pressed" << std::endl;
+            eventManager.raiseEvent(inputEvent);
+        }
 
-            // If the player is pressing right.
-            if(concepts->state[SDL_SCANCODE_RIGHT]){// Move right.
-                Event inputEvent;
-                inputEvent.type = "input";
+        if (concepts->state[SDL_SCANCODE_RIGHT]) {  // Move right
+            //Create and Raise Events
+            int64_t currentTimestamp = time_Threads->getTimeline();  // Get current time from Timeline
 
-                Variant keyCode;
-                keyCode.type = Variant::TYPE_INT;
-                keyCode.asInt = SDL_SCANCODE_RIGHT;
+            Event inputEvent("input", currentTimestamp);
 
-                inputEvent.parameters["keyCode"] = keyCode;
-                cout<<"RIGHT pressed"<<endl;
-                eventManager.raiseEvent(inputEvent);
-                // concepts->c->move(concepts->moveSpeed, 0);
-            }
-        
-            // If the player is pressing 'C'.
-            if (concepts->state[SDL_SCANCODE_C]) { // Change window size.
-                Event inputEvent;
-                inputEvent.type = "input";
+            Variant keyCode;
+            keyCode.type = Variant::TYPE_INT;
+            keyCode.asInt = SDL_SCANCODE_RIGHT;
+            inputEvent.parameters["keyCode"] = keyCode;
 
-                Variant keyCode;
-                keyCode.type = Variant::TYPE_INT;
-                keyCode.asInt = SDL_SCANCODE_C;
+            std::cout << "RIGHT pressed" << std::endl;
+            eventManager.raiseEvent(inputEvent);
+        }
+    
+        // If the player is pressing 'C'.
+        if (concepts->state[SDL_SCANCODE_C]) { // Change window size.
+            //Create and Raise Events
+            int64_t currentTimestamp = time_Threads->getTimeline();  // Get current time from Timeline
 
-                inputEvent.parameters["keyCode"] = keyCode;
-                cout<<"C pressed"<<endl;
-                eventManager.raiseEvent(inputEvent);
-            }
-            else {
-                concepts->held = false;
-            }
-        //}
+            Event inputEvent("input", currentTimestamp);
+
+            Variant keyCode;
+            keyCode.type = Variant::TYPE_INT;
+            keyCode.asInt = SDL_SCANCODE_C;
+            inputEvent.parameters["keyCode"] = keyCode;
+
+            std::cout << "RIGHT pressed" << std::endl;
+            eventManager.raiseEvent(inputEvent);
+        }
+        else {
+            concepts->held = false;
+        }
 
         // If the player is pressing 'ESC'.
         if (concepts->state[SDL_SCANCODE_ESCAPE]) { // Exit the game.
-            // concepts->quit = true;
-
-            // // Send disconnect message
-            // json disconnectMessage = {
-            //     {"clientId", clientId1},
-            //     {"disconnect", true}
-            // };
-            // std::string messageString = disconnectMessage.dump();
-            // zmq::message_t message(messageString.size());
-            // memcpy(message.data(), messageString.c_str(), messageString.size());
-
-            // if (receiverPtr) {
-            //     receiverPtr->send(message, zmq::send_flags::none);
-            // }
-
-            // return; // Exit the function after sending the disconnect message
-            Event quitEvent;
-            quitEvent.type = "quit";
-
+            //Create and Raise Events
+            int64_t currentTimestamp = time_Threads->getTimeline();  // Get current time from Timeline
+            Event quitEvent("quit", currentTimestamp);
             eventManager.raiseEvent(quitEvent);
         }
 
