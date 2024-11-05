@@ -15,6 +15,7 @@
 #include "Threads.h"
 #include "Event.h"
 #include "InputHandler.h"
+#include "SpawnHandler.h"
 #include "QuitHandler.h"
 #include "EventManager.h"
 #include "EventHandler.h"  // Include EventHandler first
@@ -264,6 +265,11 @@ int main(int argc, char* argv[]) {
     InputHandler inputHandler(&concepts, &game);
     eventManager.registerListener("input", &inputHandler);
 
+    // Initializes the spawn event handler.
+    SpawnHandler spawnHandler(&concepts, &game);
+    // Registers the spawn event handler with the event manager.
+    eventManager.registerListener("spawn", &spawnHandler);
+
     QuitHandler quitHandler(&concepts, &receiver, clientId);
     eventManager.registerListener("quit", &quitHandler);
     // Create an event object.
@@ -305,10 +311,10 @@ int main(int argc, char* argv[]) {
     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
     {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2},
+    {0,0,0,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2},
+    {2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2},
     {2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2},
     {2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2},
     {2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2},
@@ -362,7 +368,7 @@ int main(int argc, char* argv[]) {
     concepts.v = &movingVertEntity;
 
     // Creates the despawn shape and connects its address to concepts.
-    Entity despawnEntity(0, SCREEN_HEIGHT - TILE_SIZE, 1920, 64,{0,0,255,255}, false, 2); // Invisible.
+    Entity despawnEntity(0, 32, 1920, 64,{0,0,255,255}, false, 2); // Invisible.
     concepts.despawn = &despawnEntity;
 
     // Creates the first bound shape.
@@ -559,9 +565,25 @@ int main(int argc, char* argv[]) {
             if (hasIntersection(&cRect, &despawnRect) == true) {
                 // If there was an intersection on the top of the terrain rectangle,
                 // the controllable rectangle lands on the terrain rectangle.
-                if (intersect(&cRect, &despawnRect) == 2 || intersect(&cRect, &despawnRect) == 4) {
-                    // Respawns the player.
-                    concepts.c->setPosition(concepts.spawn->getRect().x, concepts.spawn->getRect().y);
+                if (intersect(&cRect, &despawnRect) == 1 || intersect(&cRect, &despawnRect) == 2 ||
+                    intersect(&cRect, &despawnRect) == 3 || intersect(&cRect, &despawnRect) == 4) {
+                    // Create the current timestamp.
+                    int64_t currentTimestamp = timeThreads.getTimeline();
+
+                    // Create the spawn event.
+                    Event spawnEvent("spawn", currentTimestamp);
+
+                    // Creates a spawn code for the death zone collision scenario.
+                    Variant spawnCode;
+                    spawnCode.type = Variant::TYPE_INT;
+                    spawnCode.asInt = 5;
+                    spawnEvent.parameters["spawnCode"] = spawnCode;
+
+                    // Reports that a respawn event has been initialized.
+                    std::cout << "RESPAWN INITIALIZED" << std::endl;
+
+                    // Raises the respawn event to the event manager.
+                    eventManager.raiseEvent(spawnEvent);
                 }
                 // More sides will be added in the future.
             }
@@ -592,8 +614,23 @@ int main(int argc, char* argv[]) {
                                 }
                             }
                         }
-                        // Respawns the player.
-                        concepts.c->setPosition(SCREEN_WIDTH - concepts.c->getRect().x, concepts.c->getRect().y);
+                        // Create the current timestamp.
+                        int64_t currentTimestamp = timeThreads.getTimeline();
+
+                        // Create the spawn event.
+                        Event spawnEvent("spawn", currentTimestamp);
+
+                        // Creates a spawn code for the bound one map 1 collision scenario.
+                        Variant spawnCode;
+                        spawnCode.type = Variant::TYPE_INT;
+                        spawnCode.asInt = 1;
+                        spawnEvent.parameters["spawnCode"] = spawnCode;
+
+                        // Reports that a respawn event has been initialized.
+                        std::cout << "BOUND ONE (MAP 1) SPAWN INITIALIZED" << std::endl;
+
+                        // Raises the respawn event to the event manager.
+                        eventManager.raiseEvent(spawnEvent);
                     }
                     // If this is map 2, reset the map to map 1.
                     else if (map == 2) {
@@ -614,7 +651,23 @@ int main(int argc, char* argv[]) {
                                 }
                             }
                         }
-                        concepts.c->setPosition(SCREEN_WIDTH - concepts.c->getRect().x, concepts.c->getRect().y);
+                        // Create the current timestamp.
+                        int64_t currentTimestamp = timeThreads.getTimeline();
+
+                        // Create the spawn event.
+                        Event spawnEvent("spawn", currentTimestamp);
+
+                        // Creates a spawn code for the bound one map 2 collision scenario.
+                        Variant spawnCode;
+                        spawnCode.type = Variant::TYPE_INT;
+                        spawnCode.asInt = 2;
+                        spawnEvent.parameters["spawnCode"] = spawnCode;
+
+                        // Reports that a respawn event has been initialized.
+                        std::cout << "BOUND ONE (MAP 2) SPAWN INITIALIZED" << std::endl;
+
+                        // Raises the respawn event to the event manager.
+                        eventManager.raiseEvent(spawnEvent);
                     }
                 }
                 // More sides will be added in the future.
@@ -646,8 +699,23 @@ int main(int argc, char* argv[]) {
                                 }
                             }
                         }
-                        // Respawns the player.
-                        concepts.c->setPosition(SCREEN_WIDTH - concepts.c->getRect().x, concepts.c->getRect().y);
+                        // Create the current timestamp.
+                        int64_t currentTimestamp = timeThreads.getTimeline();
+
+                        // Create the spawn event.
+                        Event spawnEvent("spawn", currentTimestamp);
+
+                        // Creates a spawn code for the bound two map 1 collision scenario.
+                        Variant spawnCode;
+                        spawnCode.type = Variant::TYPE_INT;
+                        spawnCode.asInt = 3;
+                        spawnEvent.parameters["spawnCode"] = spawnCode;
+
+                        // Reports that a respawn event has been initialized.
+                        std::cout << "BOUND TWO (MAP 1) SPAWN INITIALIZED" << std::endl;
+
+                        // Raises the respawn event to the event manager.
+                        eventManager.raiseEvent(spawnEvent);
                     }
                     // If this is map 2, reset the map to map 1.
                     else if (map == 2) {
@@ -668,7 +736,23 @@ int main(int argc, char* argv[]) {
                                 }
                             }
                         }
-                        concepts.c->setPosition(SCREEN_WIDTH - concepts.c->getRect().x, concepts.c->getRect().y);
+                        // Create the current timestamp.
+                        int64_t currentTimestamp = timeThreads.getTimeline();
+
+                        // Create the spawn event.
+                        Event spawnEvent("spawn", currentTimestamp);
+
+                        // Creates a spawn code for the bound two map 2 collision scenario.
+                        Variant spawnCode;
+                        spawnCode.type = Variant::TYPE_INT;
+                        spawnCode.asInt = 4;
+                        spawnEvent.parameters["spawnCode"] = spawnCode;
+
+                        // Reports that a respawn event has been initialized.
+                        std::cout << "BOUND TWO (MAP 2) SPAWN INITIALIZED" << std::endl;
+
+                        // Raises the respawn event to the event manager.
+                        eventManager.raiseEvent(spawnEvent);
                     }
                 }
                 // More sides will be added in the future.
@@ -758,6 +842,7 @@ int main(int argc, char* argv[]) {
                 SDL_RenderFillRect(game.renderer, &rect);
             }
         }
+        // Dispatch events.
         eventManager.dispatchEvents();
         // Present the rendered content
         SDL_RenderPresent(game.renderer);

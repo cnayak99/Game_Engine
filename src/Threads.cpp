@@ -140,7 +140,7 @@ void runInput(EventManager& eventManager) {
             keyCode.asInt = SDL_SCANCODE_UP;
             inputEvent.parameters["keyCode"] = keyCode;
 
-            std::cout << "UP pressed" << std::endl;
+            // std::cout << "UP pressed" << std::endl;
             eventManager.raiseEvent(inputEvent);  // Raise the event with timestamp
         }
 
@@ -155,7 +155,7 @@ void runInput(EventManager& eventManager) {
             keyCode.asInt = SDL_SCANCODE_LEFT;
             inputEvent.parameters["keyCode"] = keyCode;
 
-            std::cout << "LEFT pressed" << std::endl;
+            // std::cout << "LEFT pressed" << std::endl;
             eventManager.raiseEvent(inputEvent);
         }
 
@@ -170,7 +170,7 @@ void runInput(EventManager& eventManager) {
             keyCode.asInt = SDL_SCANCODE_RIGHT;
             inputEvent.parameters["keyCode"] = keyCode;
 
-            std::cout << "RIGHT pressed" << std::endl;
+            // std::cout << "RIGHT pressed" << std::endl;
             eventManager.raiseEvent(inputEvent);
         }
     
@@ -186,7 +186,7 @@ void runInput(EventManager& eventManager) {
             keyCode.asInt = SDL_SCANCODE_C;
             inputEvent.parameters["keyCode"] = keyCode;
 
-            std::cout << "RIGHT pressed" << std::endl;
+            // std::cout << "C pressed" << std::endl;
             eventManager.raiseEvent(inputEvent);
         }
         else {
