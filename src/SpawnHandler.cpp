@@ -24,16 +24,28 @@ void SpawnHandler::onEvent(const Event& e) {
             concepts->c->setPosition(concepts->spawn->getRect().x, concepts->spawn->getRect().y);
         } else if (spawnCode == 1) { // Spawn code 1, respawn due to bound one map 1 collision.
             // Respawns the player.
-            concepts->c->setPosition(SCREEN_WIDTH - concepts->c->getRect().x, concepts->c->getRect().y);
+            concepts->c->setPosition(SCREEN_WIDTH - concepts->c->getRect().x - TILE_SIZE, concepts->c->getRect().y);
+            if (concepts->c->getRect().x < 0) {
+                concepts->c->setPosition(0, concepts->c->getRect().y);
+            }
         } else if (spawnCode == 2) { // Spawn code 2, respawn due to bound one map 2 collision.
             // Respawns the player.
-            concepts->c->setPosition(SCREEN_WIDTH - concepts->c->getRect().x, concepts->c->getRect().y);
+            concepts->c->setPosition(SCREEN_WIDTH - concepts->c->getRect().x - TILE_SIZE, concepts->c->getRect().y);
+            if (concepts->c->getRect().x > 1856) {
+                concepts->c->setPosition(1856, concepts->c->getRect().y);
+            }
         } else if (spawnCode == 3) { // Spawn code 3, respawn due to bound two map 1 collision.
             // Respawns the player.
-            concepts->c->setPosition(SCREEN_WIDTH - concepts->c->getRect().x, concepts->c->getRect().y);
+            concepts->c->setPosition(SCREEN_WIDTH - concepts->c->getRect().x - TILE_SIZE, concepts->c->getRect().y);
+            if (concepts->c->getRect().x < 0) {
+                concepts->c->setPosition(0, concepts->c->getRect().y);
+            }
         } else if (spawnCode == 4) { // Spawn code 4, respawn due to bound two map 2 collision.
             // Respawns the player.
-            concepts->c->setPosition(SCREEN_WIDTH - concepts->c->getRect().x, concepts->c->getRect().y);
+            concepts->c->setPosition(SCREEN_WIDTH - concepts->c->getRect().x - TILE_SIZE, concepts->c->getRect().y);
+            if (concepts->c->getRect().x > 1856) {
+                concepts->c->setPosition(1856, concepts->c->getRect().y);
+            }
         }
 
         // Gives a system statement confirming that the event was completed.

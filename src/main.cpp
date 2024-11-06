@@ -372,10 +372,10 @@ int main(int argc, char* argv[]) {
     concepts.despawn = &despawnEntity;
 
     // Creates the first bound shape.
-    Entity boundEntityOne(0, 0, 64, 1080,{0,0,255,255}, false, 3); // Invisible.
+    Entity boundEntityOne(-64, 0, 64, 1080,{0,0,255,0}, false, 3); // Invisible.
 
     // Creates the second bound shape.
-    Entity boundEntityTwo(1856, 0, 64, 1080,{0,0,255,255}, false, 3); // Invisible.
+    Entity boundEntityTwo(1920, 0, 64, 1080,{0,0,255,0}, false, 3); // Invisible.
 
     // Initializes scaling and held through concepts.
     concepts.scaling = false;
@@ -387,6 +387,7 @@ int main(int argc, char* argv[]) {
     concepts.verticalVel = 0.0f;
     concepts.thrust = -9.8f;
     bool latch = false; // Boolean used in scrolling mechanism
+    bool swap = false; // Boolean used in changing the scrolling mechanism
 
     // Stores the variable that determines whether or not the game is paused.
     concepts.a = &anchor;
@@ -672,7 +673,6 @@ int main(int argc, char* argv[]) {
                 }
                 // More sides will be added in the future.
             }
-
             // Senses other shapes for collision.
             else if (hasIntersection(&cRect, &boundTwo) == true && !latch) {
                 latch = true;
@@ -757,10 +757,9 @@ int main(int argc, char* argv[]) {
                 }
                 // More sides will be added in the future.
             }
-            else {
+            else if (!(hasIntersection(&cRect, &boundOne) || hasIntersection(&cRect, &boundTwo))) {
                 latch = false;
             }
-
         }
         json jsonString = {
             {"clientId", clientId},
