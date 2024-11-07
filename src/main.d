@@ -5,7 +5,8 @@ src/main.o: src/main.cpp include/sdl_setup.h include/defs.h \
  include/json.hpp include/Threads.h include/Rectangle.h \
  include/Intersect.h include/EventManager.h include/EventHandler.h \
  include/Event.h include/InputHandler.h include/SpawnHandler.h \
- include/QuitHandler.h include/EventManager.h include/EventHandler.h
+ include/CollisionHandler.h include/QuitHandler.h include/EventManager.h \
+ include/EventHandler.h
 include/sdl_setup.h:
 include/defs.h:
 include/Entity.h:
@@ -28,6 +29,7 @@ include/EventHandler.h:
 include/Event.h:
 include/InputHandler.h:
 include/SpawnHandler.h:
+include/CollisionHandler.h:
 include/QuitHandler.h:
 include/EventManager.h:
 include/EventHandler.h:

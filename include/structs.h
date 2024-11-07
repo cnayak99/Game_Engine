@@ -37,6 +37,9 @@ typedef struct {
     Entity* getSource;
     Timeline *a;
 
+    SDL_Rect hitBL;
+    SDL_Rect hitBR;
+
     bool quit;
 } Concepts;
 
