@@ -23,12 +23,14 @@ class Entity {
 public:
     Entity(int x, int y, int width, int height, SDL_Color color, bool weighted, int special);
 
+    SDL_Color color;
     bool weighted;
     int special;
     void render(SDL_Renderer* renderer);
     void move(int dx, int dy);
     void setVelocity(float vx, float vy);
     void setWeight(bool w);
+    void setColor(SDL_Color color);
     void setPosition(int x, int y);
     SDL_Rect getRect() const;
     SDL_Color getColor() const;
@@ -42,7 +44,6 @@ public:
 
 private:
     SDL_Rect rect;
-    SDL_Color color;
 };
 
 #endif // ENTITY_H

@@ -7,6 +7,12 @@ void InputHandler::onEvent(const Event& e) {
     if (e.type == "input") {
         int keyCode = e.parameters.at("keyCode").asInt;
         // std::cout << "Input event received: Key code " << keyCode << std::endl;
+        if (keyCode == SDL_SCANCODE_DOWN) {
+            concepts->c->setColor({255, 255, 0, 0});
+        }
+        else {
+            concepts->c->setColor({0, 255, 0, 0});
+        }
         if (keyCode == SDL_SCANCODE_UP) {
             concepts->verticalVel = concepts->thrust;
         } else if (keyCode == SDL_SCANCODE_LEFT) {

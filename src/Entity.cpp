@@ -29,6 +29,10 @@ void Entity::setPosition(int x, int y) {
     rect.y = y;  
 }
 
+void Entity::setColor(SDL_Color color) {
+    this->color = color;
+}
+
 void Entity::setWeight(bool w) {
     weighted = w;
 }

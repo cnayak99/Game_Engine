@@ -128,7 +128,7 @@ void runInput(EventManager& eventManager) {
     // Thread 2 tries to manage player input for this tic.
     try 
     {
-            // Sets up the mutex lock.
+        // Sets up the mutex lock.
         std::unique_lock<std::mutex> cv_lock(*_mutex);
         if (concepts->state[SDL_SCANCODE_UP]) {  // Move up
             int64_t currentTimestamp = time_Threads->getTimeline();  // Get current time from Timeline
@@ -144,7 +144,22 @@ void runInput(EventManager& eventManager) {
             eventManager.raiseEvent(inputEvent);  // Raise the event with timestamp
         }
 
-        if (concepts->state[SDL_SCANCODE_LEFT]) {  // Move left
+        if (concepts->state[SDL_SCANCODE_DOWN]) {  // Crouch
+            //Create and Raise Events
+            int64_t currentTimestamp = time_Threads->getTimeline();  // Get current time from Timeline
+
+            Event inputEvent("input", currentTimestamp);
+
+            Variant keyCode;
+            keyCode.type = Variant::TYPE_INT;
+            keyCode.asInt = SDL_SCANCODE_DOWN;
+            inputEvent.parameters["keyCode"] = keyCode;
+
+            // std::cout << "LEFT pressed" << std::endl;
+            eventManager.raiseEvent(inputEvent);
+        }
+
+        if (concepts->state[SDL_SCANCODE_LEFT] && !concepts->state[SDL_SCANCODE_DOWN]) {  // Move left
             //Create and Raise Events
             int64_t currentTimestamp = time_Threads->getTimeline();  // Get current time from Timeline
 
@@ -159,7 +174,7 @@ void runInput(EventManager& eventManager) {
             eventManager.raiseEvent(inputEvent);
         }
 
-        if (concepts->state[SDL_SCANCODE_RIGHT]) {  // Move right
+        if (concepts->state[SDL_SCANCODE_RIGHT] && !concepts->state[SDL_SCANCODE_DOWN]) {  // Move right
             //Create and Raise Events
             int64_t currentTimestamp = time_Threads->getTimeline();  // Get current time from Timeline
 
