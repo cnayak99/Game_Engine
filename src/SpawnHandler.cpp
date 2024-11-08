@@ -16,7 +16,7 @@ void SpawnHandler::onEvent(const Event& e) {
         int spawnCode = e.parameters.at("spawnCode").asInt;
 
         // Gives a system statement confirming that the event was received.
-        std::cout << "Spawn Event Received: Despawn and Respawn."<< std::endl;
+        // std::cout << "Spawn Event Received: Despawn and Respawn."<< std::endl;
 
         // If the spawn code is 5, the player must despawn and respawn due to a death zone.
         if (spawnCode == 5) {
@@ -49,6 +49,6 @@ void SpawnHandler::onEvent(const Event& e) {
         }
 
         // Gives a system statement confirming that the event was completed.
-        std::cout << "Spawn Event Completed: Despawn and Respawn."<< std::endl;
+        // std::cout << "Spawn Event Completed: Despawn and Respawn."<< std::endl;
     }
 }

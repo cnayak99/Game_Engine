@@ -16,6 +16,7 @@
 #include "Event.h"
 #include "InputHandler.h"
 #include "SpawnHandler.h"
+#include "CollisionHandler.h"
 #include "QuitHandler.h"
 #include "EventManager.h"
 #include "EventHandler.h"  // Include EventHandler first
@@ -270,6 +271,11 @@ int main(int argc, char* argv[]) {
     // Registers the spawn event handler with the event manager.
     eventManager.registerListener("spawn", &spawnHandler);
 
+    // Initializes the collision event handler.
+    CollisionHandler collisionHandler(&concepts, &game);
+    // Registers the collision event handler with the event manager.
+    eventManager.registerListener("collision", &collisionHandler);
+
     QuitHandler quitHandler(&concepts, &receiver, clientId);
     eventManager.registerListener("quit", &quitHandler);
     // Create an event object.
@@ -498,12 +504,26 @@ int main(int argc, char* argv[]) {
                 if (cRect.x >= 0 && tileMap[mapPlayerBL[0]][mapPlayerBL[1]] != nullptr) {
                     // Store the rectangle of the captured entity
                     SDL_Rect hitBL = tileMap[mapPlayerBL[0]][mapPlayerBL[1]]->getRect();
+                    concepts.hitBL = hitBL;
                     // Check if the target is intersecting
                     if (hasIntersection(&cRect, &hitBL) == true) {
-                        // Set vertical collision and push player out of the entity.
-                        concepts.delta = 0;
-                        concepts.verticalVel = 0;
-                        concepts.c->move(0, -(concepts.c->getRect().y + concepts.c->getRect().h - hitBL.y));
+                        // Create the current timestamp.
+                        int64_t currentTimestamp = timeThreads.getTimeline();
+
+                        // Create the collision event.
+                        Event collisionEvent("collision", currentTimestamp);
+
+                        // Creates a code for the collision scenario.
+                        Variant collisionCode;
+                        collisionCode.type = Variant::TYPE_INT;
+                        collisionCode.asInt = 1;
+                        collisionEvent.parameters["collisionCode"] = collisionCode;
+
+                        // Reports that a collision event has been initialized.
+                        std::cout << "COLLISION INITIALIZED" << std::endl;
+
+                        // Raises the collision event to the event manager.
+                        eventManager.raiseEvent(collisionEvent);
                     }
                 }
                 // Rectangle of the entity (if any) at the bottom-right corner
@@ -511,12 +531,26 @@ int main(int argc, char* argv[]) {
                 if (cRect.x + cRect.w < SCREEN_WIDTH && tileMap[mapPlayerBR[0]][mapPlayerBR[1]] != nullptr) {
                     // Store the rectangle of the captured entity
                     SDL_Rect hitBR = tileMap[mapPlayerBR[0]][mapPlayerBR[1]]->getRect();
+                    concepts.hitBR = hitBR;
                     // Check if the target is intersecting
                     if (hasIntersection(&cRect, &hitBR) == true) {
-                        // Set vertical collision and push player out of the entity.
-                        concepts.delta = 0;
-                        concepts.verticalVel = 0;
-                        concepts.c->move(0, -(concepts.c->getRect().y + concepts.c->getRect().h - hitBR.y));
+                        // Create the current timestamp.
+                        int64_t currentTimestamp = timeThreads.getTimeline();
+
+                        // Create the collision event.
+                        Event collisionEvent("collision", currentTimestamp);
+
+                        // Creates a code for the collision scenario.
+                        Variant collisionCode;
+                        collisionCode.type = Variant::TYPE_INT;
+                        collisionCode.asInt = 2;
+                        collisionEvent.parameters["collisionCode"] = collisionCode;
+
+                        // Reports that a collision event has been initialized.
+                        std::cout << "COLLISION INITIALIZED" << std::endl;
+
+                        // Raises the collision event to the event manager.
+                        eventManager.raiseEvent(collisionEvent);
                     }
                 }
             }
@@ -526,10 +560,23 @@ int main(int argc, char* argv[]) {
                 // If there was an intersection on the top of the terrain rectangle,
                 // the controllable rectangle lands on the terrain rectangle.
                 if (intersect(&cRect, &sRect) == 2 || intersect(&cRect, &sRect) == 4) {
-                    // Causes vertical collision.
-                    concepts.delta = 0;
-                    concepts.verticalVel = 0;
-                    concepts.c->move(0, -(concepts.c->getRect().y + concepts.c->getRect().h - concepts.s->getRect().y));
+                    // Create the current timestamp.
+                    int64_t currentTimestamp = timeThreads.getTimeline();
+
+                    // Create the collision event.
+                    Event collisionEvent("collision", currentTimestamp);
+
+                    // Creates a code for the collision scenario.
+                    Variant collisionCode;
+                    collisionCode.type = Variant::TYPE_INT;
+                    collisionCode.asInt = 3;
+                    collisionEvent.parameters["collisionCode"] = collisionCode;
+
+                    // Reports that a collision event has been initialized.
+                    std::cout << "COLLISION INITIALIZED" << std::endl;
+
+                    // Raises the collision event to the event manager.
+                    eventManager.raiseEvent(collisionEvent);
                 }
                 // More sides will be added in the future.
             }
@@ -539,11 +586,23 @@ int main(int argc, char* argv[]) {
                 // If there was an intersection on the top of the terrain rectangle,
                 // the controllable rectangle lands on the terrain rectangle.
                 if (intersect(&cRect, &mRect) == 2 || intersect(&cRect, &mRect) == 4) {
-                    // Causes vertical collision.
-                    concepts.delta = 0;
-                    concepts.verticalVel = 0;
-                    // Enables player movement mimicking the moving entity.
-                    concepts.c->move(0, - (concepts.c->getRect().y + concepts.c->getRect().h - concepts.m->getRect().y));
+                    // Create the current timestamp.
+                    int64_t currentTimestamp = timeThreads.getTimeline();
+
+                    // Create the collision event.
+                    Event collisionEvent("collision", currentTimestamp);
+
+                    // Creates a code for the collision scenario.
+                    Variant collisionCode;
+                    collisionCode.type = Variant::TYPE_INT;
+                    collisionCode.asInt = 4;
+                    collisionEvent.parameters["collisionCode"] = collisionCode;
+
+                    // Reports that a collision event has been initialized.
+                    std::cout << "COLLISION INITIALIZED" << std::endl;
+
+                    // Raises the collision event to the event manager.
+                    eventManager.raiseEvent(collisionEvent);
                 }
                 // More sides may be added in the future.
             }
@@ -553,11 +612,23 @@ int main(int argc, char* argv[]) {
                 // If there was an intersection on the top of the terrain rectangle,
                 // the controllable rectangle lands on the terrain rectangle.
                 if (intersect(&cRect, &vRect) == 2 || intersect(&cRect, &vRect) == 4) {
-                    // Causes vertical collision.
-                    concepts.delta = 0;
-                    concepts.verticalVel = 0;
-                    // Enables player movement mimicking the moving entity.
-                    concepts.c->move(0, - (concepts.c->getRect().y + concepts.c->getRect().h - concepts.v->getRect().y));
+                    // Create the current timestamp.
+                    int64_t currentTimestamp = timeThreads.getTimeline();
+
+                    // Create the collision event.
+                    Event collisionEvent("collision", currentTimestamp);
+
+                    // Creates a code for the collision scenario.
+                    Variant collisionCode;
+                    collisionCode.type = Variant::TYPE_INT;
+                    collisionCode.asInt = 5;
+                    collisionEvent.parameters["collisionCode"] = collisionCode;
+
+                    // Reports that a collision event has been initialized.
+                    std::cout << "COLLISION INITIALIZED" << std::endl;
+
+                    // Raises the collision event to the event manager.
+                    eventManager.raiseEvent(collisionEvent);
                 }
                 // More sides may be added in the future.
             }
