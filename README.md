@@ -10,11 +10,13 @@ Important Note: From Project 3 onward, our team only continued to update the fir
 
 C = Changes the method by which the window can be resized.
 
-Space = Propels the controllable rectangle upwards, similar to a jump. Can be pressed endlessly, resulting in the rectangle continuing to move upwards in a fashion similar to jumping.
+Up Arrow Key = Propels the controllable rectangle upwards, similar to a jump. Can be pressed endlessly, resulting in the rectangle continuing to move upwards in a fashion similar to jumping.
 
 Left Arrow Key = Moves the controllable rectangle left at a constant speed.
 
 Right Arrow Key = Moves the controllable rectangle right at a constant speed.
+
+Down Arrow Key = Causes the player to crouch. The player cannot move horizontally while crouching.
 
 O = Pauses the game.
 
