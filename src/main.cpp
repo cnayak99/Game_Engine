@@ -460,11 +460,11 @@ int main(int argc, char* argv[]) {
     // PlayerHandler* playerEvents = new PlayerHandler(&controllableEntity);
 
     // Creates the moving black shape and connects its address to concepts.
-    Entity movingEntity(100, 400, 64, 64,{0,0,0,255}, false, 0); // Black moving shape.
+    Entity movingEntity(1000, 400, 64, 64,{128, 128, 128, 255}, false, 0); // Black moving shape.
     concepts.m = &movingEntity;
 
     // Creates the moving purple shape and connects its address to concepts.
-    Entity movingVertEntity(200, 200, 64, 64,{255,0,255,255}, false, 0); // Purple moving shape.
+    Entity movingVertEntity(1100, 200, 64, 64,{173, 216, 230, 255}, false, 0); // Purple moving shape.
     concepts.v = &movingVertEntity;
 
     // Creates the despawn shape and connects its address to concepts.
