@@ -33,7 +33,18 @@ int main() {
         json jsonData;
         try {
             jsonData = json::parse(clientDataString);
+            if (jsonData.contains("eventType")) {
+                // Handle input event notification
+                // json eventNotification = {{"spawnNotificationId", "spawn"}};
+                std::string eventMessage = jsonData.dump();
+                zmq::message_t eventNotifications(eventMessage.size());
+                memcpy(eventNotifications.data(), eventMessage.c_str(), eventMessage.size());
+                broadcaster.send(eventNotifications, zmq::send_flags::none);
 
+                // Send an empty reply to maintain REQ/REP pattern
+                receiver.send(zmq::message_t(0), zmq::send_flags::none);
+                continue;
+            }
             if (jsonData.contains("disconnect") && jsonData["disconnect"]) {
                 if (!jsonData.contains("clientId")) {
                     std::cerr << "Disconnect message missing clientId: " << clientDataString << std::endl;

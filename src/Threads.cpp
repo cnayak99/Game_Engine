@@ -141,6 +141,21 @@ void runInput(EventManager& eventManager) {
             inputEvent.parameters["keyCode"] = keyCode;
 
             // std::cout << "UP pressed" << std::endl;
+            // json eventMessage = {
+            //     {"eventType", "input"},
+            //     {"timestamp", "currentTimestamp"},
+            //     {"parameters", {
+            //         {"keyCode", SDL_SCANCODE_UP}
+            //     }},
+            //     {"clientId", clientId1},
+            // };
+            // std::string messageString = eventMessage.dump();
+            // zmq::message_t message(messageString.size());
+            // memcpy(message.data(), messageString.c_str(), messageString.size());
+
+            // if (receiverPtr) {
+            //     receiverPtr->send(message, zmq::send_flags::none);
+            // }
             eventManager.raiseEvent(inputEvent);  // Raise the event with timestamp
         }
 

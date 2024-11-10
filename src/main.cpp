@@ -10,7 +10,7 @@
 #include "Timeline.h"    
 #include "structs.h"     
 #include <zmq.hpp>
-#include "json.hpp" // Use relative path to the include directory
+#include "json.hpp" 
 #include <thread>
 #include "Threads.h"
 #include "Event.h"
@@ -19,13 +19,82 @@
 #include "CollisionHandler.h"
 #include "QuitHandler.h"
 #include "EventManager.h"
-#include "EventHandler.h"  // Include EventHandler first
+#include "EventHandler.h"
 
 using namespace std; 
 using json = nlohmann::json;
 
 json parseUpdatedPositions(const std::string& updatedPositions) {
     return json::parse(updatedPositions); // Parse the JSON string into a JSON object
+}
+
+json variantToJson(const Variant& variant) {
+    json j;
+    switch (variant.type) {
+        case Variant::TYPE_INT:
+            j["type"] = "int";
+            j["value"] = variant.asInt;
+            break;
+        case Variant::TYPE_FLOAT:
+            j["type"] = "float";
+            j["value"] = variant.asFloat;
+            break;
+        case Variant::TYPE_STRING:
+            j["type"] = "string";
+            j["value"] = variant.asString;
+            break;
+    }
+    return j;
+}
+
+// Helper function to convert Event to JSON
+json eventToJson(const Event& event) {
+    json j;
+    j["type"] = event.type;
+    j["timestamp"] = event.timestamp;
+
+    // Convert each parameter in the event's parameters map
+    for (const auto& param : event.parameters) {
+        j["parameters"][param.first] = variantToJson(param.second);
+    }
+    return j;
+}
+
+Variant jsonToVariant(const json& j) {
+    Variant v;
+    
+    std::string typeStr = j["type"];
+    
+    if (typeStr == "int") {
+        v.type = Variant::TYPE_INT;
+        v.asInt = j["value"];
+        
+    } else if (typeStr == "float") {
+        v.type = Variant::TYPE_FLOAT;
+        v.asFloat = j["value"];
+        
+    } else if (typeStr == "string") {
+        v.type = Variant::TYPE_STRING;
+        v.asString = j["value"].get<std::string>().c_str();
+        
+    }
+    
+    return v;
+}
+
+// Helper function to convert JSON back into an Event
+Event jsonToEvent(const json& j) {
+    
+    int64_t timestamp = j["timestamp"];
+    
+    Event event(j["type"], timestamp);
+    
+    for (const auto& param : j["parameters"].items()) {
+        event.parameters[param.key()] = jsonToVariant(param.value());
+        
+    }
+    
+   return event; 
 }
 
 void printPositions(const json& positions) {
@@ -67,7 +136,7 @@ Links:
 */
 
 // Function to listen for updates and establish connections
-void listenForUpdates(zmq::socket_t& subscriberSocket, std::unordered_map<std::string, zmq::socket_t>& dealerSockets, zmq::context_t& context, const std::string& clientAddress, std::unordered_map<std::string, SDL_Rect>& entityPositions, std::mutex& positionMutex) {
+void listenForUpdates(zmq::socket_t& subscriberSocket, std::unordered_map<std::string, zmq::socket_t>& dealerSockets, zmq::context_t& context, const std::string& clientAddress, std::unordered_map<std::string, SDL_Rect>& entityPositions, std::mutex& positionMutex, EventManager& eventManager, std::string& clientId) {
     while (true) {
         zmq::message_t update;
         subscriberSocket.recv(update, zmq::recv_flags::none);
@@ -75,7 +144,30 @@ void listenForUpdates(zmq::socket_t& subscriberSocket, std::unordered_map<std::s
 
         try {
             auto jsonData = json::parse(updateStr);
+            // Check for disconnect notification
+            if (jsonData.contains("eventType")&& jsonData.contains("clientId")) {
+                std::string receivedClientId = jsonData["clientId"];
+                if(receivedClientId == clientId){
+                Event receivedEvent = jsonToEvent(jsonData);
+                   
+                std::cout << "Received Event: " << receivedEvent.type 
+                            << ", Timestamp: " << receivedEvent.timestamp 
+                            << ", Spawn Code: " << receivedEvent.parameters["spawnCode"].asInt << std::endl;
 
+                int64_t currentTimestamp = receivedEvent.timestamp;
+                // Create the spawn event.
+                Event spawnEvent("spawn", currentTimestamp);
+                // Creates a spawn code for the death zone collision scenario.
+                Variant spawnCode;
+                spawnCode.type = Variant::TYPE_INT;
+                spawnCode.asInt = receivedEvent.parameters["spawnCode"].asInt;
+                spawnEvent.parameters["spawnCode"] = spawnCode;
+
+                eventManager.raiseEvent(spawnEvent);
+                cout<<"Spawn Event is Raised in the listen function"<<endl;
+                continue;
+            }else continue;
+            }   
             // Check for disconnect notification
             if (jsonData.contains("disconnectedClientId")) {
                 std::string disconnectedClientId = jsonData["disconnectedClientId"];
@@ -248,7 +340,9 @@ int main(int argc, char* argv[]) {
         std::ref(context),
         std::cref(clientAddress),
         std::ref(entityPositions), // Pass by reference
-        std::ref(positionMutex)    // Pass by reference
+        std::ref(positionMutex),    // Pass by reference
+        std::ref(eventManager),
+        std::ref(clientId)
     );
     updateListener.detach();
 
@@ -520,7 +614,7 @@ int main(int argc, char* argv[]) {
                         collisionEvent.parameters["collisionCode"] = collisionCode;
 
                         // Reports that a collision event has been initialized.
-                        std::cout << "COLLISION INITIALIZED" << std::endl;
+                        // std::cout << "COLLISION INITIALIZED" << std::endl;
 
                         // Raises the collision event to the event manager.
                         eventManager.raiseEvent(collisionEvent);
@@ -547,7 +641,7 @@ int main(int argc, char* argv[]) {
                         collisionEvent.parameters["collisionCode"] = collisionCode;
 
                         // Reports that a collision event has been initialized.
-                        std::cout << "COLLISION INITIALIZED" << std::endl;
+                        // std::cout << "COLLISION INITIALIZED" << std::endl;
 
                         // Raises the collision event to the event manager.
                         eventManager.raiseEvent(collisionEvent);
@@ -573,7 +667,7 @@ int main(int argc, char* argv[]) {
                     collisionEvent.parameters["collisionCode"] = collisionCode;
 
                     // Reports that a collision event has been initialized.
-                    std::cout << "COLLISION INITIALIZED" << std::endl;
+                    // std::cout << "COLLISION INITIALIZED" << std::endl;
 
                     // Raises the collision event to the event manager.
                     eventManager.raiseEvent(collisionEvent);
@@ -599,7 +693,7 @@ int main(int argc, char* argv[]) {
                     collisionEvent.parameters["collisionCode"] = collisionCode;
 
                     // Reports that a collision event has been initialized.
-                    std::cout << "COLLISION INITIALIZED" << std::endl;
+                    // std::cout << "COLLISION INITIALIZED" << std::endl;
 
                     // Raises the collision event to the event manager.
                     eventManager.raiseEvent(collisionEvent);
@@ -625,7 +719,7 @@ int main(int argc, char* argv[]) {
                     collisionEvent.parameters["collisionCode"] = collisionCode;
 
                     // Reports that a collision event has been initialized.
-                    std::cout << "COLLISION INITIALIZED" << std::endl;
+                    // std::cout << "COLLISION INITIALIZED" << std::endl;
 
                     // Raises the collision event to the event manager.
                     eventManager.raiseEvent(collisionEvent);
@@ -652,10 +746,28 @@ int main(int argc, char* argv[]) {
                     spawnEvent.parameters["spawnCode"] = spawnCode;
 
                     // Reports that a respawn event has been initialized.
-                    std::cout << "RESPAWN INITIALIZED" << std::endl;
+                    std::cout << "RESPAWN INITIALIZED 6" << std::endl;
+                    // json spawnMessage = {
+                    //     {"eventType", "spawn"},
+                    //     {"timestamp", currentTimestamp},
+                    //     {"parameters", {
+                    //         {"keyCode", SDL_SCANCODE_UP}
+                    //     }},
+                    //     {"clientId", clientId},
+                    // };
+                    json spawnMessage = eventToJson(spawnEvent);
+                    spawnMessage["clientId"] = clientId;
+                    spawnMessage["eventType"] = true;
+                    std::string messageString = spawnMessage.dump();
+                    zmq::message_t message(messageString.size());
+                    memcpy(message.data(), messageString.c_str(), messageString.size());
+                    receiver.send(message, zmq::send_flags::none);
+                    
 
                     // Raises the respawn event to the event manager.
-                    eventManager.raiseEvent(spawnEvent);
+                    // eventManager.raiseEvent(spawnEvent);
+                    zmq::message_t reply;
+                    receiver.recv(reply, zmq::recv_flags::none);
                 }
                 // More sides will be added in the future.
             }
@@ -700,9 +812,23 @@ int main(int argc, char* argv[]) {
 
                         // Reports that a respawn event has been initialized.
                         std::cout << "BOUND ONE (MAP 1) SPAWN INITIALIZED" << std::endl;
+                        std::cout << "RESPAWN INITIALIZED 7" << std::endl;
 
                         // Raises the respawn event to the event manager.
-                        eventManager.raiseEvent(spawnEvent);
+                        // eventManager.raiseEvent(spawnEvent);
+                        json spawnMessage = eventToJson(spawnEvent);
+                        spawnMessage["clientId"] = clientId;
+                        spawnMessage["eventType"] = true;
+                        std::string messageString = spawnMessage.dump();
+                        zmq::message_t message(messageString.size());
+                        memcpy(message.data(), messageString.c_str(), messageString.size());
+                        receiver.send(message, zmq::send_flags::none);
+                        
+
+                        // Raises the respawn event to the event manager.
+                        // eventManager.raiseEvent(spawnEvent);
+                        zmq::message_t reply;
+                        receiver.recv(reply, zmq::recv_flags::none);
                     }
                     // If this is map 2, reset the map to map 1.
                     else if (map == 2) {
@@ -737,9 +863,23 @@ int main(int argc, char* argv[]) {
 
                         // Reports that a respawn event has been initialized.
                         std::cout << "BOUND ONE (MAP 2) SPAWN INITIALIZED" << std::endl;
+                        std::cout << "RESPAWN INITIALIZED 8" << std::endl;
 
                         // Raises the respawn event to the event manager.
-                        eventManager.raiseEvent(spawnEvent);
+                        // eventManager.raiseEvent(spawnEvent);
+                        json spawnMessage = eventToJson(spawnEvent);
+                        spawnMessage["clientId"] = clientId;
+                        spawnMessage["eventType"] = true;
+                        std::string messageString = spawnMessage.dump();
+                        zmq::message_t message(messageString.size());
+                        memcpy(message.data(), messageString.c_str(), messageString.size());
+                        receiver.send(message, zmq::send_flags::none);
+                        
+
+                        // Raises the respawn event to the event manager.
+                        // eventManager.raiseEvent(spawnEvent);
+                        zmq::message_t reply;
+                        receiver.recv(reply, zmq::recv_flags::none);
                     }
                 }
                 // More sides will be added in the future.
@@ -784,9 +924,23 @@ int main(int argc, char* argv[]) {
 
                         // Reports that a respawn event has been initialized.
                         std::cout << "BOUND TWO (MAP 1) SPAWN INITIALIZED" << std::endl;
+                        std::cout << "RESPAWN INITIALIZED 9" << std::endl;
 
                         // Raises the respawn event to the event manager.
-                        eventManager.raiseEvent(spawnEvent);
+                        // eventManager.raiseEvent(spawnEvent);
+                        json spawnMessage = eventToJson(spawnEvent);
+                        spawnMessage["clientId"] = clientId;
+                        spawnMessage["eventType"] = true;
+                        std::string messageString = spawnMessage.dump();
+                        zmq::message_t message(messageString.size());
+                        memcpy(message.data(), messageString.c_str(), messageString.size());
+                        receiver.send(message, zmq::send_flags::none);
+                        
+
+                        // Raises the respawn event to the event manager.
+                        // eventManager.raiseEvent(spawnEvent);
+                        zmq::message_t reply;
+                        receiver.recv(reply, zmq::recv_flags::none);
                     }
                     // If this is map 2, reset the map to map 1.
                     else if (map == 2) {
@@ -821,9 +975,23 @@ int main(int argc, char* argv[]) {
 
                         // Reports that a respawn event has been initialized.
                         std::cout << "BOUND TWO (MAP 2) SPAWN INITIALIZED" << std::endl;
+                        std::cout << "RESPAWN INITIALIZED 10" << std::endl;
 
                         // Raises the respawn event to the event manager.
-                        eventManager.raiseEvent(spawnEvent);
+                        // eventManager.raiseEvent(spawnEvent);
+                        json spawnMessage = eventToJson(spawnEvent);
+                        spawnMessage["clientId"] = clientId;
+                        spawnMessage["eventType"] = true;
+                        std::string messageString = spawnMessage.dump();
+                        zmq::message_t message(messageString.size());
+                        memcpy(message.data(), messageString.c_str(), messageString.size());
+                        receiver.send(message, zmq::send_flags::none);
+                        
+
+                        // Raises the respawn event to the event manager.
+                        // eventManager.raiseEvent(spawnEvent);
+                        zmq::message_t reply;
+                        receiver.recv(reply, zmq::recv_flags::none);
                     }
                 }
                 // More sides will be added in the future.

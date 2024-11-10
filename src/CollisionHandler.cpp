@@ -16,7 +16,7 @@ void CollisionHandler::onEvent(const Event& e) {
         int collisionCode = e.parameters.at("collisionCode").asInt;
 
         // Gives a system statement confirming that the event was received.
-        std::cout << "Collision Event Received."<< std::endl;
+        // std::cout << "Collision Event Received."<< std::endl;
 
         // Checks the collision code for the correct scenario.
         if (collisionCode == 1) { // If the collision code is 1.
@@ -49,6 +49,6 @@ void CollisionHandler::onEvent(const Event& e) {
         }
 
         // Gives a system statement confirming that the event was completed.
-        std::cout << "Collision Event Completed."<< std::endl;
+        // std::cout << "Collision Event Completed."<< std::endl;
     }
 }
