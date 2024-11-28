@@ -352,12 +352,13 @@ int main(int argc, char* argv[]) {
 
     // Create the Concepts object.
     Concepts concepts;
+    ReplayManager replayManager(&concepts);  // Create an instance of ReplayManager
 
     // Initialize quit to false.
     concepts.quit = false;
 
     //Register Events here
-    InputHandler inputHandler(&concepts, &game);
+    InputHandler inputHandler(&concepts, &game, &eventManager, &replayManager, game.renderer);
     eventManager.registerListener("input", &inputHandler);
 
     // Initializes the spawn event handler.
@@ -432,13 +433,13 @@ int main(int argc, char* argv[]) {
             switch (terrain01[j][i])
             {
             case 0:
-                tileMap[i][j] = nullptr;
+                concepts.tileMap[i][j] = nullptr;
                 break;
             case 1:
-                tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
+                concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
                 break;
             case 2:
-                tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{200,150,100,255}, false, 0);
+                concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{200,150,100,255}, false, 0);
                 break;
             default:
                 break;
@@ -595,9 +596,9 @@ int main(int argc, char* argv[]) {
             // Get the coordinates of the bottom corners relative to the size of the map in tiles (if the player is within the game bounds)
             if (cRect.x + cRect.w >= 0 && cRect.x < SCREEN_WIDTH && cRect.y + cRect.h >= 0 && cRect.y < SCREEN_HEIGHT) {
                 // If the entity exists at the coordinates...
-                if (cRect.x >= 0 && tileMap[mapPlayerBL[0]][mapPlayerBL[1]] != nullptr) {
+                if (cRect.x >= 0 && concepts.tileMap[mapPlayerBL[0]][mapPlayerBL[1]] != nullptr) {
                     // Store the rectangle of the captured entity
-                    SDL_Rect hitBL = tileMap[mapPlayerBL[0]][mapPlayerBL[1]]->getRect();
+                    SDL_Rect hitBL = concepts.tileMap[mapPlayerBL[0]][mapPlayerBL[1]]->getRect();
                     concepts.hitBL = hitBL;
                     // Check if the target is intersecting
                     if (hasIntersection(&cRect, &hitBL) == true) {
@@ -622,9 +623,9 @@ int main(int argc, char* argv[]) {
                 }
                 // Rectangle of the entity (if any) at the bottom-right corner
                 //If the entity exists at the coordinates...
-                if (cRect.x + cRect.w < SCREEN_WIDTH && tileMap[mapPlayerBR[0]][mapPlayerBR[1]] != nullptr) {
+                if (cRect.x + cRect.w < SCREEN_WIDTH && concepts.tileMap[mapPlayerBR[0]][mapPlayerBR[1]] != nullptr) {
                     // Store the rectangle of the captured entity
-                    SDL_Rect hitBR = tileMap[mapPlayerBR[0]][mapPlayerBR[1]]->getRect();
+                    SDL_Rect hitBR = concepts.tileMap[mapPlayerBR[0]][mapPlayerBR[1]]->getRect();
                     concepts.hitBR = hitBR;
                     // Check if the target is intersecting
                     if (hasIntersection(&cRect, &hitBR) == true) {
@@ -785,16 +786,16 @@ int main(int argc, char* argv[]) {
                         for (int j = 0; j < MAP_HEIGHT; j++) {
                             for (int i = 0; i < MAP_WIDTH; i++) {
                                 if (terrain02[j][i] == 0) {
-                                    tileMap[i][j] = nullptr;
+                                    concepts.tileMap[i][j] = nullptr;
                                 }
                                 else if (terrain02[j][i] == 1) {
-                                    tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
+                                    concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
                                 }
                                 else if (terrain02[j][i] == 2) {
-                                    tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{200,150,100,255}, false, 0);
+                                    concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{200,150,100,255}, false, 0);
                                 }
                                 else if (terrain02[j][i] == 3) {
-                                    tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{150,0,255,255}, false, 0);
+                                    concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{150,0,255,255}, false, 0);
                                 }
                             }
                         }
@@ -836,16 +837,16 @@ int main(int argc, char* argv[]) {
                         for (int j = 0; j < MAP_HEIGHT; j++) {
                             for (int i = 0; i < MAP_WIDTH; i++) {
                                 if (terrain01[j][i] == 0) {
-                                    tileMap[i][j] = nullptr;
+                                    concepts.tileMap[i][j] = nullptr;
                                 }
                                 else if (terrain01[j][i] == 1) {
-                                    tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
+                                    concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
                                 }
                                 else if (terrain01[j][i] == 2) {
-                                    tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{200,150,100,255}, false, 0);
+                                    concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{200,150,100,255}, false, 0);
                                 }
                                 else if (terrain01[j][i] == 3) {
-                                    tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{150,0,255,255}, false, 0);
+                                    concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{150,0,255,255}, false, 0);
                                 }
                             }
                         }
@@ -897,16 +898,16 @@ int main(int argc, char* argv[]) {
                         for (int j = 0; j < MAP_HEIGHT; j++) {
                             for (int i = 0; i < MAP_WIDTH; i++) {
                                 if (terrain02[j][i] == 0) {
-                                    tileMap[i][j] = nullptr;
+                                    concepts.tileMap[i][j] = nullptr;
                                 }
                                 else if (terrain02[j][i] == 1) {
-                                    tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
+                                    concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
                                 }
                                 else if (terrain02[j][i] == 2) {
-                                    tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{200,150,100,255}, false, 0);
+                                    concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{200,150,100,255}, false, 0);
                                 }
                                 else if (terrain02[j][i] == 3) {
-                                    tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{150,0,255,255}, false, 0);
+                                    concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{150,0,255,255}, false, 0);
                                 }
                             }
                         }
@@ -948,16 +949,16 @@ int main(int argc, char* argv[]) {
                         for (int j = 0; j < MAP_HEIGHT; j++) {
                             for (int i = 0; i < MAP_WIDTH; i++) {
                                 if (terrain01[j][i] == 0) {
-                                    tileMap[i][j] = nullptr;
+                                    concepts.tileMap[i][j] = nullptr;
                                 }
                                 else if (terrain01[j][i] == 1) {
-                                    tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
+                                    concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
                                 }
                                 else if (terrain01[j][i] == 2) {
-                                    tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{200,150,100,255}, false, 0);
+                                    concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{200,150,100,255}, false, 0);
                                 }
                                 else if (terrain01[j][i] == 3) {
-                                    tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{150,0,255,255}, false, 0);
+                                    concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{150,0,255,255}, false, 0);
                                 }
                             }
                         }
@@ -1053,32 +1054,53 @@ int main(int argc, char* argv[]) {
         SDL_RenderClear(game.renderer);
 
         // Render the shapes
+        if (!replayManager.isReplaying) {
+
         concepts.s->render(game.renderer);
         for (int j = 0; j < MAP_HEIGHT; j++) {
             for (int i = 0; i < MAP_WIDTH; i++) {
-                if (tileMap[i][j] != nullptr) {
-                    tileMap[i][j]->render(game.renderer);
+                if (concepts.tileMap[i][j] != nullptr) {
+                    concepts.tileMap[i][j]->render(game.renderer);
                 }
             }
         }
 
         concepts.m->render(game.renderer);
-        concepts.v->render(game.renderer);
+        // cout<<"The X coor of moving object is: "<<concepts.m->getRect().x<< "Thee Y coor is: "<<concepts.m->getRect().y<<endl;
+        if (replayManager.isRecording) {  // Record moving object
+            // replayManager.recordEntity(concepts.m, SDL_GetTicks64());
+            // replayManager.recordEntity(concepts.v, SDL_GetTicks64());
+            // replayManager.recordEntity(concepts.c, SDL_GetTicks64());
+            replayManager.recordEntity(concepts.m, SDL_GetTicks64(), 'M');
+            replayManager.recordEntity(concepts.v, SDL_GetTicks64(), 'V');
+            replayManager.recordEntity(concepts.c, SDL_GetTicks64(), 'C');
+        }
 
+        concepts.v->render(game.renderer);
         concepts.spawn->render(game.renderer);
         concepts.despawn->render(game.renderer);
-
         boundEntityOne.render(game.renderer);
         boundEntityTwo.render(game.renderer);
-
         concepts.c->render(game.renderer);
+  
 
         {
             std::lock_guard<std::mutex> lock(positionMutex);
             for (const auto& [clientId, rect] : entityPositions) {
                 SDL_SetRenderDrawColor(game.renderer, 0, 255, 0, 255); // Green color for entities
                 SDL_RenderFillRect(game.renderer, &rect);
+                // cout<<"[Render loop]The client id is: "<<clientId<< "The X coor is: "<<rect.x<< "Thee Y coor is: "<<rect.y<<endl;
+                if (replayManager.isRecording) {  // Record server-rendered entities
+                    Entity serverEntity(rect.x, rect.y, rect.w, rect.h, {0, 255, 0}, false, 0);
+                    replayManager.recordEntity(&serverEntity, SDL_GetTicks64(),'S');
+                }
             }
+        }
+    } else {
+        // Replay rendering
+            concepts.a->pause();
+            replayManager.playReplay(game.renderer);
+            concepts.a->unpause();
         }
         // Dispatch events.
         eventManager.dispatchEvents();

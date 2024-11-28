@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include "Entity.h"
 #include "Timeline.h"
+#include "defs.h"
 
 class Entity;
 
@@ -39,6 +40,7 @@ typedef struct {
 
     SDL_Rect hitBL;
     SDL_Rect hitBR;
+    Entity* tileMap[MAP_WIDTH][MAP_HEIGHT];
 
     bool quit;
 } Concepts;

@@ -7,6 +7,17 @@ void InputHandler::onEvent(const Event& e) {
     if (e.type == "input") {
         int keyCode = e.parameters.at("keyCode").asInt;
         // std::cout << "Input event received: Key code " << keyCode << std::endl;
+        if (keyCode == SDL_SCANCODE_R) {
+            replayManager->startRecording();
+        } else if (keyCode == SDL_SCANCODE_S) {
+            replayManager->stopRecording();
+        } else if (keyCode == SDL_SCANCODE_K) {
+            if (!replayManager->isReplaying) {
+                replayManager->startReplay();
+            } else {
+                replayManager->stopReplay();
+            }
+        }
         if (keyCode == SDL_SCANCODE_DOWN) {
             concepts->c->setColor({255, 255, 0, 0});
         }

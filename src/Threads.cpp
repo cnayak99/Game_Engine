@@ -203,6 +203,39 @@ void runInput(EventManager& eventManager) {
             // std::cout << "C pressed" << std::endl;
             eventManager.raiseEvent(inputEvent);
         }
+        // **Record Button (R)**
+        if (concepts->state[SDL_SCANCODE_R]) {
+            int64_t currentTimestamp = time_Threads->getTimeline();
+            Event recordEvent("input", currentTimestamp);
+            Variant keyCode;
+            keyCode.type = Variant::TYPE_INT;
+            keyCode.asInt = SDL_SCANCODE_R;  // Key for Record
+            recordEvent.parameters["keyCode"] = keyCode;
+            eventManager.raiseEvent(recordEvent);  // Raise Record Event
+        }
+
+        // **Stop Button (S)**
+        if (concepts->state[SDL_SCANCODE_S]) {
+            int64_t currentTimestamp = time_Threads->getTimeline();
+            Event stopEvent("input", currentTimestamp);
+            Variant keyCode;
+            keyCode.type = Variant::TYPE_INT;
+            keyCode.asInt = SDL_SCANCODE_S;  // Key for Stop
+            stopEvent.parameters["keyCode"] = keyCode;
+            eventManager.raiseEvent(stopEvent);  // Raise Stop Event
+        }
+
+        // **Replay Button (K)**
+        if (concepts->state[SDL_SCANCODE_K]) {
+            int64_t currentTimestamp = time_Threads->getTimeline();
+            Event replayEvent("input", currentTimestamp);
+            Variant keyCode;
+            keyCode.type = Variant::TYPE_INT;
+            keyCode.asInt = SDL_SCANCODE_K;  // Key for Replay
+            replayEvent.parameters["keyCode"] = keyCode;
+            eventManager.raiseEvent(replayEvent);  // Raise Replay Event
+        }
+
         else {
             concepts->held = false;
         }

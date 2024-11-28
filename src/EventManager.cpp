@@ -8,13 +8,19 @@ void EventManager::registerListener(const std::string& eventType, EventHandler* 
     // std::cout<<"Registering Event: "<< eventType<<std::endl;
     listeners[eventType].push_back(handler);
 }
+std::vector<EventHandler*> wildcardListeners;
+void registerWildcardListener(EventHandler* handler) {
+    wildcardListeners.push_back(handler);
+}
 
 void EventManager::raiseEvent(const Event& event) {
     std::lock_guard<std::mutex> lock(queueMutex);  // Lock the mutex for thread-safe access
 
     // Add the event to the priority queue
     eventQueue.push(event);
-
+    for (auto& handler : wildcardListeners) {
+        handler->onEvent(event);
+    }
     // Debug statement
     // std::cout << "Raising Event: " << event.type << ". Queue size: " << eventQueue.size() << std::endl;
 }
@@ -33,6 +39,10 @@ void EventManager::dispatchEvents() {
                 // std::cout << "Event dispatched to handler" << std::endl;
             }
         }
+        // Notify wildcard listeners
+        // for (auto& handler : wildcardListeners) {
+        //     handler->onEvent(e);
+        // }
     }
 }
 
