@@ -380,48 +380,21 @@ int main(int argc, char* argv[]) {
     Timeline anchor(nullptr, 1);
 
     int terrain01[MAP_HEIGHT][MAP_WIDTH] = 
-    {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0},
-    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1},
-    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1},
-    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1},
-    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1},
-    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1},
-    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1}};
+    {
+    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+    };
 
-    int terrain02[MAP_HEIGHT][MAP_WIDTH] = 
-    {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-    {2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2},
-    {2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2},
-    {2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2},
-    {2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2},
-    {2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2},
-    {2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2},
-    {2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2},
-    {2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2}};
+   
 
     Entity * tileMap[MAP_WIDTH][MAP_HEIGHT];
 
@@ -484,9 +457,11 @@ int main(int argc, char* argv[]) {
 
     // Initializes physics variables.
     concepts.gravity = 9.8f;
+    // concepts.gravity = 0;
     concepts.speed = 5; // Speed of the Entity.
-    concepts.verticalVel = 0.0f;
+    // concepts.verticalVel = 0.0f;
     concepts.thrust = -9.8f;
+    // concepts.thrust=0;
     bool latch = false; // Boolean used in scrolling mechanism
     bool swap = false; // Boolean used in changing the scrolling mechanism
 
@@ -579,9 +554,9 @@ int main(int argc, char* argv[]) {
             SDL_Rect despawnRect = concepts.despawn->getRect();
 
             // Keeps track of the spawn rectangle.
-            SDL_Rect boundOne = boundEntityOne.getRect();
-            // Keeps track of the despawn rectangle.
-            SDL_Rect boundTwo = boundEntityTwo.getRect();
+            // SDL_Rect boundOne = boundEntityOne.getRect();
+            // // Keeps track of the despawn rectangle.
+            // SDL_Rect boundTwo = boundEntityTwo.getRect();
 
             // The top left corner's map coordinates
             int mapPlayerTL[2] = {floor(cRect.x / TILE_SIZE), floor(cRect.y / TILE_SIZE)};
@@ -621,6 +596,41 @@ int main(int argc, char* argv[]) {
                         eventManager.raiseEvent(collisionEvent);
                     }
                 }
+                // Top-Left Corner Collision
+                if (cRect.y >= 0 && concepts.tileMap[mapPlayerTL[0]][mapPlayerTL[1]] != nullptr) {
+                    SDL_Rect hitTL = concepts.tileMap[mapPlayerTL[0]][mapPlayerTL[1]]->getRect();
+                    concepts.hitTL = hitTL;
+
+                    if (hasIntersection(&cRect, &hitTL)) {
+                        int64_t currentTimestamp = timeThreads.getTimeline();
+                        Event collisionEvent("collision", currentTimestamp);
+
+                        Variant collisionCode;
+                        collisionCode.type = Variant::TYPE_INT;
+                        collisionCode.asInt = 3; // Collision code for top-left corner.
+                        collisionEvent.parameters["collisionCode"] = collisionCode;
+
+                        eventManager.raiseEvent(collisionEvent);
+                    }
+                }
+                // Top-Right Corner Collision
+                if (cRect.x + cRect.w < SCREEN_WIDTH && concepts.tileMap[mapPlayerTR[0]][mapPlayerTR[1]] != nullptr) {
+                    SDL_Rect hitTR = concepts.tileMap[mapPlayerTR[0]][mapPlayerTR[1]]->getRect();
+                    concepts.hitTR = hitTR;
+
+                    if (hasIntersection(&cRect, &hitTR)) {
+                        int64_t currentTimestamp = timeThreads.getTimeline();
+                        Event collisionEvent("collision", currentTimestamp);
+
+                        Variant collisionCode;
+                        collisionCode.type = Variant::TYPE_INT;
+                        collisionCode.asInt = 4; // Collision code for top-right corner.
+                        collisionEvent.parameters["collisionCode"] = collisionCode;
+
+                        eventManager.raiseEvent(collisionEvent);
+                    }
+                }
+
                 // Rectangle of the entity (if any) at the bottom-right corner
                 //If the entity exists at the coordinates...
                 if (cRect.x + cRect.w < SCREEN_WIDTH && concepts.tileMap[mapPlayerBR[0]][mapPlayerBR[1]] != nullptr) {
@@ -727,279 +737,6 @@ int main(int argc, char* argv[]) {
                 }
                 // More sides may be added in the future.
             }
-
-            // Senses other shapes for collision.
-            if (hasIntersection(&cRect, &despawnRect) == true) {
-                // If there was an intersection on the top of the terrain rectangle,
-                // the controllable rectangle lands on the terrain rectangle.
-                if (intersect(&cRect, &despawnRect) == 1 || intersect(&cRect, &despawnRect) == 2 ||
-                    intersect(&cRect, &despawnRect) == 3 || intersect(&cRect, &despawnRect) == 4) {
-                    // Create the current timestamp.
-                    int64_t currentTimestamp = timeThreads.getTimeline();
-
-                    // Create the spawn event.
-                    Event spawnEvent("spawn", currentTimestamp);
-
-                    // Creates a spawn code for the death zone collision scenario.
-                    Variant spawnCode;
-                    spawnCode.type = Variant::TYPE_INT;
-                    spawnCode.asInt = 5;
-                    spawnEvent.parameters["spawnCode"] = spawnCode;
-
-                    // Reports that a respawn event has been initialized.
-                    std::cout << "RESPAWN INITIALIZED 6" << std::endl;
-                    // json spawnMessage = {
-                    //     {"eventType", "spawn"},
-                    //     {"timestamp", currentTimestamp},
-                    //     {"parameters", {
-                    //         {"keyCode", SDL_SCANCODE_UP}
-                    //     }},
-                    //     {"clientId", clientId},
-                    // };
-                    json spawnMessage = eventToJson(spawnEvent);
-                    spawnMessage["clientId"] = clientId;
-                    spawnMessage["eventType"] = true;
-                    std::string messageString = spawnMessage.dump();
-                    zmq::message_t message(messageString.size());
-                    memcpy(message.data(), messageString.c_str(), messageString.size());
-                    receiver.send(message, zmq::send_flags::none);
-                    
-
-                    // Raises the respawn event to the event manager.
-                    // eventManager.raiseEvent(spawnEvent);
-                    zmq::message_t reply;
-                    receiver.recv(reply, zmq::recv_flags::none);
-                }
-                // More sides will be added in the future.
-            }
-
-            // Senses other shapes for collision.
-            if (hasIntersection(&cRect, &boundOne) == true && !latch) {
-                latch = true;
-                // If there was an intersection against the rectangle,
-                // the controllable rectangle intersects the rectangle.
-                if (intersect(&cRect, &boundOne) == 1 || intersect(&cRect, &boundOne) == 2 ||
-                    intersect(&cRect, &boundOne) == 3 || intersect(&cRect, &boundOne) == 4) {
-                    // If this is map 1, reset the map to map 2.
-                    if (map == 1) {
-                        map = 2;
-                        for (int j = 0; j < MAP_HEIGHT; j++) {
-                            for (int i = 0; i < MAP_WIDTH; i++) {
-                                if (terrain02[j][i] == 0) {
-                                    concepts.tileMap[i][j] = nullptr;
-                                }
-                                else if (terrain02[j][i] == 1) {
-                                    concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
-                                }
-                                else if (terrain02[j][i] == 2) {
-                                    concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{200,150,100,255}, false, 0);
-                                }
-                                else if (terrain02[j][i] == 3) {
-                                    concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{150,0,255,255}, false, 0);
-                                }
-                            }
-                        }
-                        // Create the current timestamp.
-                        int64_t currentTimestamp = timeThreads.getTimeline();
-
-                        // Create the spawn event.
-                        Event spawnEvent("spawn", currentTimestamp);
-
-                        // Creates a spawn code for the bound one map 1 collision scenario.
-                        Variant spawnCode;
-                        spawnCode.type = Variant::TYPE_INT;
-                        spawnCode.asInt = 1;
-                        spawnEvent.parameters["spawnCode"] = spawnCode;
-
-                        // Reports that a respawn event has been initialized.
-                        std::cout << "BOUND ONE (MAP 1) SPAWN INITIALIZED" << std::endl;
-                        std::cout << "RESPAWN INITIALIZED 7" << std::endl;
-
-                        // Raises the respawn event to the event manager.
-                        // eventManager.raiseEvent(spawnEvent);
-                        json spawnMessage = eventToJson(spawnEvent);
-                        spawnMessage["clientId"] = clientId;
-                        spawnMessage["eventType"] = true;
-                        std::string messageString = spawnMessage.dump();
-                        zmq::message_t message(messageString.size());
-                        memcpy(message.data(), messageString.c_str(), messageString.size());
-                        receiver.send(message, zmq::send_flags::none);
-                        
-
-                        // Raises the respawn event to the event manager.
-                        // eventManager.raiseEvent(spawnEvent);
-                        zmq::message_t reply;
-                        receiver.recv(reply, zmq::recv_flags::none);
-                    }
-                    // If this is map 2, reset the map to map 1.
-                    else if (map == 2) {
-                        map = 1;
-                        for (int j = 0; j < MAP_HEIGHT; j++) {
-                            for (int i = 0; i < MAP_WIDTH; i++) {
-                                if (terrain01[j][i] == 0) {
-                                    concepts.tileMap[i][j] = nullptr;
-                                }
-                                else if (terrain01[j][i] == 1) {
-                                    concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
-                                }
-                                else if (terrain01[j][i] == 2) {
-                                    concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{200,150,100,255}, false, 0);
-                                }
-                                else if (terrain01[j][i] == 3) {
-                                    concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{150,0,255,255}, false, 0);
-                                }
-                            }
-                        }
-                        // Create the current timestamp.
-                        int64_t currentTimestamp = timeThreads.getTimeline();
-
-                        // Create the spawn event.
-                        Event spawnEvent("spawn", currentTimestamp);
-
-                        // Creates a spawn code for the bound one map 2 collision scenario.
-                        Variant spawnCode;
-                        spawnCode.type = Variant::TYPE_INT;
-                        spawnCode.asInt = 2;
-                        spawnEvent.parameters["spawnCode"] = spawnCode;
-
-                        // Reports that a respawn event has been initialized.
-                        std::cout << "BOUND ONE (MAP 2) SPAWN INITIALIZED" << std::endl;
-                        std::cout << "RESPAWN INITIALIZED 8" << std::endl;
-
-                        // Raises the respawn event to the event manager.
-                        // eventManager.raiseEvent(spawnEvent);
-                        json spawnMessage = eventToJson(spawnEvent);
-                        spawnMessage["clientId"] = clientId;
-                        spawnMessage["eventType"] = true;
-                        std::string messageString = spawnMessage.dump();
-                        zmq::message_t message(messageString.size());
-                        memcpy(message.data(), messageString.c_str(), messageString.size());
-                        receiver.send(message, zmq::send_flags::none);
-                        
-
-                        // Raises the respawn event to the event manager.
-                        // eventManager.raiseEvent(spawnEvent);
-                        zmq::message_t reply;
-                        receiver.recv(reply, zmq::recv_flags::none);
-                    }
-                }
-                // More sides will be added in the future.
-            }
-            // Senses other shapes for collision.
-            else if (hasIntersection(&cRect, &boundTwo) == true && !latch) {
-                latch = true;
-                // If there was an intersection against the rectangle,
-                // the controllable rectangle intersects the rectangle.
-                if (intersect(&cRect, &boundTwo) == 1 || intersect(&cRect, &boundTwo) == 2 ||
-                    intersect(&cRect, &boundTwo) == 3 || intersect(&cRect, &boundTwo) == 4) {
-                    // If this is map 1, reset the map to map 2.
-                    if (map == 1) {
-                        map = 2;
-                        for (int j = 0; j < MAP_HEIGHT; j++) {
-                            for (int i = 0; i < MAP_WIDTH; i++) {
-                                if (terrain02[j][i] == 0) {
-                                    concepts.tileMap[i][j] = nullptr;
-                                }
-                                else if (terrain02[j][i] == 1) {
-                                    concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
-                                }
-                                else if (terrain02[j][i] == 2) {
-                                    concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{200,150,100,255}, false, 0);
-                                }
-                                else if (terrain02[j][i] == 3) {
-                                    concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{150,0,255,255}, false, 0);
-                                }
-                            }
-                        }
-                        // Create the current timestamp.
-                        int64_t currentTimestamp = timeThreads.getTimeline();
-
-                        // Create the spawn event.
-                        Event spawnEvent("spawn", currentTimestamp);
-
-                        // Creates a spawn code for the bound two map 1 collision scenario.
-                        Variant spawnCode;
-                        spawnCode.type = Variant::TYPE_INT;
-                        spawnCode.asInt = 3;
-                        spawnEvent.parameters["spawnCode"] = spawnCode;
-
-                        // Reports that a respawn event has been initialized.
-                        std::cout << "BOUND TWO (MAP 1) SPAWN INITIALIZED" << std::endl;
-                        std::cout << "RESPAWN INITIALIZED 9" << std::endl;
-
-                        // Raises the respawn event to the event manager.
-                        // eventManager.raiseEvent(spawnEvent);
-                        json spawnMessage = eventToJson(spawnEvent);
-                        spawnMessage["clientId"] = clientId;
-                        spawnMessage["eventType"] = true;
-                        std::string messageString = spawnMessage.dump();
-                        zmq::message_t message(messageString.size());
-                        memcpy(message.data(), messageString.c_str(), messageString.size());
-                        receiver.send(message, zmq::send_flags::none);
-                        
-
-                        // Raises the respawn event to the event manager.
-                        // eventManager.raiseEvent(spawnEvent);
-                        zmq::message_t reply;
-                        receiver.recv(reply, zmq::recv_flags::none);
-                    }
-                    // If this is map 2, reset the map to map 1.
-                    else if (map == 2) {
-                        map = 1;
-                        for (int j = 0; j < MAP_HEIGHT; j++) {
-                            for (int i = 0; i < MAP_WIDTH; i++) {
-                                if (terrain01[j][i] == 0) {
-                                    concepts.tileMap[i][j] = nullptr;
-                                }
-                                else if (terrain01[j][i] == 1) {
-                                    concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
-                                }
-                                else if (terrain01[j][i] == 2) {
-                                    concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{200,150,100,255}, false, 0);
-                                }
-                                else if (terrain01[j][i] == 3) {
-                                    concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{150,0,255,255}, false, 0);
-                                }
-                            }
-                        }
-                        // Create the current timestamp.
-                        int64_t currentTimestamp = timeThreads.getTimeline();
-
-                        // Create the spawn event.
-                        Event spawnEvent("spawn", currentTimestamp);
-
-                        // Creates a spawn code for the bound two map 2 collision scenario.
-                        Variant spawnCode;
-                        spawnCode.type = Variant::TYPE_INT;
-                        spawnCode.asInt = 4;
-                        spawnEvent.parameters["spawnCode"] = spawnCode;
-
-                        // Reports that a respawn event has been initialized.
-                        std::cout << "BOUND TWO (MAP 2) SPAWN INITIALIZED" << std::endl;
-                        std::cout << "RESPAWN INITIALIZED 10" << std::endl;
-
-                        // Raises the respawn event to the event manager.
-                        // eventManager.raiseEvent(spawnEvent);
-                        json spawnMessage = eventToJson(spawnEvent);
-                        spawnMessage["clientId"] = clientId;
-                        spawnMessage["eventType"] = true;
-                        std::string messageString = spawnMessage.dump();
-                        zmq::message_t message(messageString.size());
-                        memcpy(message.data(), messageString.c_str(), messageString.size());
-                        receiver.send(message, zmq::send_flags::none);
-                        
-
-                        // Raises the respawn event to the event manager.
-                        // eventManager.raiseEvent(spawnEvent);
-                        zmq::message_t reply;
-                        receiver.recv(reply, zmq::recv_flags::none);
-                    }
-                }
-                // More sides will be added in the future.
-            }
-            else if (!(hasIntersection(&cRect, &boundOne) || hasIntersection(&cRect, &boundTwo))) {
-                latch = false;
-            }
         }
         json jsonString = {
             {"clientId", clientId},
@@ -1056,7 +793,7 @@ int main(int argc, char* argv[]) {
         // Render the shapes
         if (!replayManager.isReplaying) {
 
-        concepts.s->render(game.renderer);
+        // concepts.s->render(game.renderer);
         for (int j = 0; j < MAP_HEIGHT; j++) {
             for (int i = 0; i < MAP_WIDTH; i++) {
                 if (concepts.tileMap[i][j] != nullptr) {
@@ -1065,22 +802,22 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        concepts.m->render(game.renderer);
+        // concepts.m->render(game.renderer);
         // cout<<"The X coor of moving object is: "<<concepts.m->getRect().x<< "Thee Y coor is: "<<concepts.m->getRect().y<<endl;
         if (replayManager.isRecording) {  // Record moving object
             // replayManager.recordEntity(concepts.m, SDL_GetTicks64());
             // replayManager.recordEntity(concepts.v, SDL_GetTicks64());
             // replayManager.recordEntity(concepts.c, SDL_GetTicks64());
-            replayManager.recordEntity(concepts.m, SDL_GetTicks64(), 'M');
-            replayManager.recordEntity(concepts.v, SDL_GetTicks64(), 'V');
+            // replayManager.recordEntity(concepts.m, SDL_GetTicks64(), 'M');
+            // replayManager.recordEntity(concepts.v, SDL_GetTicks64(), 'V');
             replayManager.recordEntity(concepts.c, SDL_GetTicks64(), 'C');
         }
 
-        concepts.v->render(game.renderer);
-        concepts.spawn->render(game.renderer);
-        concepts.despawn->render(game.renderer);
-        boundEntityOne.render(game.renderer);
-        boundEntityTwo.render(game.renderer);
+        // concepts.v->render(game.renderer);
+        // concepts.spawn->render(game.renderer);
+        // concepts.despawn->render(game.renderer);
+        // boundEntityOne.render(game.renderer);
+        // boundEntityTwo.render(game.renderer);
         concepts.c->render(game.renderer);
   
 

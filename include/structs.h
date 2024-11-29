@@ -40,6 +40,8 @@ typedef struct {
 
     SDL_Rect hitBL;
     SDL_Rect hitBR;
+    SDL_Rect hitTR;
+    SDL_Rect hitTL;
     Entity* tileMap[MAP_WIDTH][MAP_HEIGHT];
 
     bool quit;

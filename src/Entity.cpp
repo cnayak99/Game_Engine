@@ -37,8 +37,12 @@ void Entity::setWeight(bool w) {
     weighted = w;
 }
 
-SDL_Rect Entity::getRect() const {
-    return rect;
+SDL_Rect& Entity::getRect() {
+    return rect; // Allows modification of rect
+}
+
+const SDL_Rect& Entity::getRect() const {
+    return rect; // Read-only access
 }
 
 SDL_Color Entity::getColor() const {

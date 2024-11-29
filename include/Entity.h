@@ -32,8 +32,8 @@ public:
     void setWeight(bool w);
     void setColor(SDL_Color color);
     void setPosition(int x, int y);
-    SDL_Rect getRect() const;
-    SDL_Color getColor() const;
+SDL_Rect& getRect();             // Allows modification of rect
+    const SDL_Rect& getRect() const;    SDL_Color getColor() const;
     bool getWeight() const;
     int getSpecial() const;
 
