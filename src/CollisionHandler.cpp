@@ -58,16 +58,16 @@ void CollisionHandler::onEvent(const Event& e) {
         int collisionCode = e.parameters.at("collisionCode").asInt;
 
         // Access and modify the player's rect directly
-        SDL_Rect& playerRect = concepts->c->getRect();
+        // SDL_Rect& playerRect = concepts->c->getRect();
 
-        if (collisionCode == 1) { // Bottom-left collision
-            playerRect.y = concepts->hitBL.y - playerRect.h;
-        } else if (collisionCode == 2) { // Bottom-right collision
-            playerRect.y = concepts->hitBR.y - playerRect.h;
-        } else if (collisionCode == 3) { // Top-left collision
-            playerRect.y = concepts->hitTL.y + TILE_SIZE; // Example adjustment
-        } else if (collisionCode == 4) { // Top-right collision
-            playerRect.y = concepts->hitTR.y + TILE_SIZE; // Example adjustment
-        }
+        // if (collisionCode == 1) { // Bottom-left collision
+        //     playerRect.y = concepts->hitBL.y - playerRect.h;
+        // } else if (collisionCode == 2) { // Bottom-right collision
+        //     playerRect.y = concepts->hitBR.y - playerRect.h;
+        // } else if (collisionCode == 3) { // Top-left collision
+        //     playerRect.y = concepts->hitTL.y + TILE_SIZE; // Example adjustment
+        // } else if (collisionCode == 4) { // Top-right collision
+        //     playerRect.y = concepts->hitTR.y + TILE_SIZE; // Example adjustment
+        // }
     }
 }

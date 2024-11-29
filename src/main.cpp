@@ -20,6 +20,7 @@
 #include "QuitHandler.h"
 #include "EventManager.h"
 #include "EventHandler.h"
+#include <SDL2/SDL_ttf.h>
 
 using namespace std; 
 using json = nlohmann::json;
@@ -293,13 +294,217 @@ void handleIncomingMessages(zmq::socket_t& routerSocket, std::unordered_map<std:
  * @author Chinmay Nayak
  * @author Robbie Martin
  */
+
+
+
+
+
+void renderPlayer(SDL_Renderer* renderer, SDL_Rect player, int x, int y, int scale, vector<int> tailX, vector<int> tailY, int tailLength) {
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+	player.w = scale;
+	player.h = scale;
+
+	// Gets x and y of all tail blocks and renders them
+	for (int i = 0; i < tailLength; i++) {
+		player.x = tailX[i];
+		player.y = tailY[i];
+		SDL_RenderFillRect(renderer, &player);
+	}
+
+	player.x = x;
+	player.y = y;
+
+	SDL_RenderFillRect(renderer, &player);
+}
+
+void renderFood(SDL_Renderer* renderer, SDL_Rect food) {
+	SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+	SDL_RenderFillRect(renderer, &food);
+}
+
+void renderScore(SDL_Renderer* renderer, int tailLength, int scale, int wScale) {
+	SDL_Color Black = { 0, 0, 0 };
+
+	// Get the font used for displaying text
+	TTF_Font* font = TTF_OpenFont((char*)"/usr/share/fonts/truetype/msttcorefonts/arial.ttf", 10);
+	if (font == NULL) {
+		cout << "Font loading error" << endl;
+		return;
+	}
+
+	SDL_Surface* score = TTF_RenderText_Solid(font, (string("Score: ") + to_string(tailLength * 10)).c_str(), Black);
+	SDL_Texture* scoreMessage = SDL_CreateTextureFromSurface(renderer, score);
+	SDL_Rect scoreRect;
+	scoreRect.w = 100;
+	scoreRect.h = 30;
+	scoreRect.x = ((scale*wScale) / 2) - (scoreRect.w / 2);
+	scoreRect.y = 0;
+	SDL_RenderCopy(renderer, scoreMessage, NULL, &scoreRect);
+
+	TTF_CloseFont(font);
+}
+
+bool checkCollision(int foodx, int foody, int playerx, int playery) {
+
+	if (playerx == foodx && playery == foody){
+		return true;
+	}
+
+	return false;
+}
+
+// Get a valid spawn for the food which is not on top of a tail or player block
+pair<int, int> getFoodSpawn(vector<int> tailX, vector<int> tailY, int playerX, int playerY, int scale, int wScale, int tailLength) {
+	bool valid = false;
+	int x = 0;
+	int y = 0;
+	srand(time(0));
+	x = scale * (rand() % wScale);
+	y = scale * (rand() % wScale);
+	valid = true;
+
+	// Check all tail blocks and player block
+	for (int i = 0; i < tailLength; i++) {
+
+		if ((x == tailX[i] && y == tailY[i]) || (x == playerX && y == playerY)) {
+			valid = false;
+		}
+
+	}
+
+	if (!valid) {
+		pair<int, int> foodLoc;
+		foodLoc = make_pair(-100, -100);
+		return foodLoc;
+	}
+
+	pair<int, int> foodLoc;
+	foodLoc = make_pair(x, y);
+
+	return foodLoc;
+}
+
+void gameOver(SDL_Renderer* renderer, SDL_Event event, int scale, int wScale, int tailLength) {
+	SDL_Color Red = { 255, 0, 0 };
+	SDL_Color White = { 255, 255, 255 };
+	SDL_Color Black = { 0, 0, 0 };
+
+	// Get the font used for displaying text
+	TTF_Font* font = TTF_OpenFont((char*)"/usr/share/fonts/truetype/msttcorefonts/arial.ttf", 10);
+	if (font == NULL) {
+		cout << "Font loading error" << endl;
+		return;
+	}
+
+	SDL_Surface* gameover = TTF_RenderText_Solid(font, "Game Over", Red);
+	SDL_Surface* retry = TTF_RenderText_Solid(font, "Press Enter to retry", White);
+	SDL_Surface* score = TTF_RenderText_Solid(font, (string("Score: ") + to_string(tailLength * 10)).c_str(), Black);
+	SDL_Texture* gameoverMessage = SDL_CreateTextureFromSurface(renderer, gameover);
+	SDL_Texture* retryMessage = SDL_CreateTextureFromSurface(renderer, retry);
+	SDL_Texture* scoreMessage = SDL_CreateTextureFromSurface(renderer, score);
+	SDL_Rect gameoverRect;
+	SDL_Rect retryRect;
+	SDL_Rect scoreRect;
+	gameoverRect.w = 200;
+	gameoverRect.h = 100;
+	gameoverRect.x = ((scale*wScale) / 2)-(gameoverRect.w/2);
+	gameoverRect.y = ((scale*wScale) / 2)-(gameoverRect.h/2)-50;
+	retryRect.w = 300;
+	retryRect.h = 50;
+	retryRect.x = ((scale*wScale) / 2) - ((retryRect.w / 2));
+	retryRect.y = (((scale*wScale) / 2) - ((retryRect.h / 2))+150);
+	scoreRect.w = 100;
+	scoreRect.h = 30;
+	scoreRect.x = ((scale*wScale) / 2) - (scoreRect.w / 2);
+	scoreRect.y = 0;
+	SDL_RenderCopy(renderer, gameoverMessage, NULL, &gameoverRect);
+	SDL_RenderCopy(renderer, retryMessage, NULL, &retryRect);
+	SDL_RenderCopy(renderer, scoreMessage, NULL, &scoreRect);
+
+	TTF_CloseFont(font);
+
+	// Show game over screen while space has not been pressed
+	while (true) {
+		SDL_RenderPresent(renderer);
+
+		if (SDL_PollEvent(&event)) {
+
+			if (event.type == SDL_QUIT) {
+				exit(0);
+			}
+
+			if (event.key.keysym.scancode == SDL_SCANCODE_RETURN) {
+				return;
+			}
+
+		}
+
+	}
+
+}
+
+void youWin(SDL_Renderer* renderer, SDL_Event event, int scale, int wScale, int tailLength) {
+	SDL_Color Red = { 255, 0, 0 };
+	SDL_Color White = { 255, 255, 255 };
+	SDL_Color Black = { 0, 0, 0 };
+	SDL_Color Yellow = { 255, 255, 0 };
+
+	// Get the font used for displaying text
+	TTF_Font* font = TTF_OpenFont((char*)"/usr/share/fonts/truetype/msttcorefonts/arial.ttf", 10);
+	if (font == NULL) {
+		cout << "Font loading error" << endl;
+		return;
+	}
+
+	SDL_Surface* gameover = TTF_RenderText_Solid(font, "You won!", Yellow);
+	SDL_Surface* retry = TTF_RenderText_Solid(font, "Press Enter to play again", White);
+	SDL_Surface* score = TTF_RenderText_Solid(font, (string("Score: ") + to_string(tailLength * 10)).c_str(), Black);
+	SDL_Texture* gameoverMessage = SDL_CreateTextureFromSurface(renderer, gameover);
+	SDL_Texture* retryMessage = SDL_CreateTextureFromSurface(renderer, retry);
+	SDL_Texture* scoreMessage = SDL_CreateTextureFromSurface(renderer, score);
+	SDL_Rect gameoverRect;
+	SDL_Rect retryRect;
+	SDL_Rect scoreRect;
+	gameoverRect.w = 200;
+	gameoverRect.h = 100;
+	gameoverRect.x = ((scale*wScale) / 2) - (gameoverRect.w / 2);
+	gameoverRect.y = ((scale*wScale) / 2) - (gameoverRect.h / 2) - 50;
+	retryRect.w = 300;
+	retryRect.h = 50;
+	retryRect.x = ((scale*wScale) / 2) - ((retryRect.w / 2));
+	retryRect.y = (((scale*wScale) / 2) - ((retryRect.h / 2)) + 150);
+	scoreRect.w = 100;
+	scoreRect.h = 30;
+	scoreRect.x = ((scale*wScale) / 2) - (scoreRect.w / 2);
+	scoreRect.y = 0;
+	SDL_RenderCopy(renderer, gameoverMessage, NULL, &gameoverRect);
+	SDL_RenderCopy(renderer, retryMessage, NULL, &retryRect);
+	SDL_RenderCopy(renderer, scoreMessage, NULL, &scoreRect);
+
+	TTF_CloseFont(font);
+
+	// Show victory screen while space has not been pressed
+	while (true) {
+		SDL_RenderPresent(renderer);
+
+		if (SDL_PollEvent(&event)) {
+
+			if (event.type == SDL_QUIT) {
+				exit(0);
+			}
+
+			if (event.key.keysym.scancode == SDL_SCANCODE_RETURN) {
+				return;
+			}
+
+		}
+
+	}
+
+}
+
 int main(int argc, char* argv[]) {
-    srand(static_cast<unsigned int>(time(0)));
-    int randomNum = rand() % 10000; // Generate a random number between 0 and 9999
-    std::string clientId = "client" + std::to_string(randomNum);  // Random client ID
-    int clientPort = 5560 + randomNum; // Unique port based on client ID
-    std::string clientAddress = "tcp://127.0.0.1:" + std::to_string(clientPort);
-    
+
     EventManager eventManager;
 
     // Create the Game object.
@@ -309,848 +514,349 @@ int main(int argc, char* argv[]) {
     // Set the renderer up.
     game.renderer = nullptr;
 
-    // Attempt to initialize the game.
-    if (!initializeSDL(&game.window, &game.renderer)) {
+    Concepts concepts;
+    concepts.quit = false;
+
+    Timeline anchor(nullptr, 1);
+	// Init everything so we have everything
+	if (!initializeSDL(&game.window, &game.renderer)) {
         return 1; // If unsuccessful, initialization failed.
     }
 
-    // Initialize ZeroMQ context and sockets
-    zmq::context_t context(1);
-    zmq::socket_t receiver(context, ZMQ_REQ);
-    receiver.connect("tcp://127.0.0.1:5555"); // For sending position updates
+	// Init TTF and check for any errors
+	if (TTF_Init() < 0) {
+		cout << "Error: " << TTF_GetError() << endl;
+	}
 
-    zmq::socket_t subscriber(context, ZMQ_SUB);
-    subscriber.connect("tcp://127.0.0.1:5556"); // For receiving position updates
-    subscriber.setsockopt(ZMQ_SUBSCRIBE, "", 0); // Subscribe to all messages
+	SDL_Event event;
 
-    zmq::socket_t routerSocket(context, ZMQ_ROUTER);
-    routerSocket.bind(clientAddress);
+	// This is the player rectangle, set all values to 0
+	SDL_Rect player;
+	player.x = 0;
+	player.y = 0;
+	player.h = 0;
+	player.w = 0;
 
-    // Map to store DEALER sockets by address
-    std::unordered_map<std::string, zmq::socket_t> dealerSockets;
+	// tailLength is incremented every time the snake eats food
+	int tailLength = 0;
 
-    // Map to track identities and their corresponding addresses
-    std::unordered_map<std::string, std::string> identityToAddressMap;
+	// Vectors for storage of tail block positions
+	vector<int> tailX;
+	vector<int> tailY;
 
-    // Start thread for listening for server updates
-    std::thread updateListener(
-        listenForUpdates,
-        std::ref(subscriber),
-        std::ref(dealerSockets),
-        std::ref(context),
-        std::cref(clientAddress),
-        std::ref(entityPositions), // Pass by reference
-        std::ref(positionMutex),    // Pass by reference
-        std::ref(eventManager),
-        std::ref(clientId)
-    );
-    updateListener.detach();
+	// Size of tiles
+	int scale = 24;
+	int wScale = 24;
 
-    // Start thread to handle incoming messages
-    std::thread incomingHandler(handleIncomingMessages,std::ref(routerSocket),std::ref(identityToAddressMap));
-    incomingHandler.detach();
+	// Player position variables
+	int x = 0;
+	int y = 0;
+	int prevX = 0;
+	int prevY = 0;
 
-    // Create the Concepts object.
-    Concepts concepts;
-    ReplayManager replayManager(&concepts);  // Create an instance of ReplayManager
+	// Movement controls
+	bool up = false;
+	bool down = false;
+	bool right = false;
+	bool left = false;
 
-    // Initialize quit to false.
-    concepts.quit = false;
+	bool inputThisFrame = false;
+	bool redo = false;
 
-    //Register Events here
-    InputHandler inputHandler(&concepts, &game, &eventManager, &replayManager, game.renderer);
-    eventManager.registerListener("input", &inputHandler);
+	// Food rectangle
+	SDL_Rect food;
+	food.w = scale;
+	food.h = scale;
+	food.x = 0;
+	food.y = 0;
+	
+	pair<int, int> foodLoc = getFoodSpawn(tailX, tailY, x, y, scale, wScale, tailLength);
+	food.x = foodLoc.first;
+	food.y = foodLoc.second;
 
-    // Initializes the spawn event handler.
-    SpawnHandler spawnHandler(&concepts, &game);
-    // Registers the spawn event handler with the event manager.
-    eventManager.registerListener("spawn", &spawnHandler);
-
-    // Initializes the collision event handler.
-    CollisionHandler collisionHandler(&concepts, &game);
-    // Registers the collision event handler with the event manager.
-    eventManager.registerListener("collision", &collisionHandler);
-
-    QuitHandler quitHandler(&concepts, &receiver, clientId);
-    eventManager.registerListener("quit", &quitHandler);
-    // Create an event object.
-    SDL_Event e;
-
-    // Construct the anchor timeline.
-    Timeline anchor(nullptr, 1);
-
-    int terrain01[MAP_HEIGHT][MAP_WIDTH] = 
-    {
-    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-    };
-
-   
-
-    Entity * tileMap[MAP_WIDTH][MAP_HEIGHT];
-
-    // Keeps track of the current map tileset.
-    int map = 1;
-
-    for (int j = 0; j < MAP_HEIGHT; j++) {
-        for (int i = 0; i < MAP_WIDTH; i++) {
-            switch (terrain01[j][i])
-            {
-            case 0:
-                concepts.tileMap[i][j] = nullptr;
-                break;
-            case 1:
-                concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{255,0,0,255}, false, 0);
-                break;
-            case 2:
-                concepts.tileMap[i][j] = new Entity(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE,{200,150,100,255}, false, 0);
-                break;
-            default:
-                break;
-            }
-        }
-    }
-
-    // Creates the spawn shape and connects its address to concepts.
-    Entity spawnEntity(635, 320, 64, 64,{0,0,255,255}, false, 1); // Invisible.
-    concepts.spawn = &spawnEntity;
-
-    // Creates the static red shape and connects its address to concepts.
-    Entity staticEntity(128, 128, 64, 64,{255,0,0,255}, false, 0); // Static red shape.
-    concepts.s = &staticEntity;
-
-    // Creates the controllable green shape and connects its address to concepts.
-    Entity controllableEntity(concepts.spawn->getRect().x, concepts.spawn->getRect().y, 64, 64,{0,255,0,255}, true, 0); // Controllable green shape.
-    concepts.c = &controllableEntity;
-    // PlayerHandler* playerEvents = new PlayerHandler(&controllableEntity);
-
-    // Creates the moving black shape and connects its address to concepts.
-    Entity movingEntity(1000, 400, 64, 64,{128, 128, 128, 255}, false, 0); // Black moving shape.
-    concepts.m = &movingEntity;
-
-    // Creates the moving purple shape and connects its address to concepts.
-    Entity movingVertEntity(1100, 200, 64, 64,{173, 216, 230, 255}, false, 0); // Purple moving shape.
-    concepts.v = &movingVertEntity;
-
-    // Creates the despawn shape and connects its address to concepts.
-    Entity despawnEntity(0, 32, 1920, 64,{0,0,255,255}, false, 2); // Invisible.
-    concepts.despawn = &despawnEntity;
-
-    // Creates the first bound shape.
-    Entity boundEntityOne(-64, 0, 64, 1080,{0,0,255,0}, false, 3); // Invisible.
-
-    // Creates the second bound shape.
-    Entity boundEntityTwo(1920, 0, 64, 1080,{0,0,255,0}, false, 3); // Invisible.
-
-    // Initializes scaling and held through concepts.
-    concepts.scaling = false;
-    concepts.held = false;
-
-    // Initializes physics variables.
-    concepts.gravity = 9.8f;
-    // concepts.gravity = 0;
-    concepts.speed = 5; // Speed of the Entity.
-    // concepts.verticalVel = 0.0f;
-    concepts.thrust = -9.8f;
-    // concepts.thrust=0;
-    bool latch = false; // Boolean used in scrolling mechanism
-    bool swap = false; // Boolean used in changing the scrolling mechanism
-
-    // Stores the variable that determines whether or not the game is paused.
     concepts.a = &anchor;
+    Timeline timeThreads(&anchor, 1);
+	// Show the window with these settings and apply a renderer to it
 
-    // Create a timeline to run threads.
-    Timeline timeThreads(&anchor, 1); // Set tic to whatever is desired.
+	float time = SDL_GetTicks() / 100;
 
-    // Sets the last time.
-    int64_t lastTime = anchor.getTimeline();
+	// Main game loop, this constantly runs and keeps everything updated
+	while (!concepts.quit) { 
 
-    // Runs the game.
-    while (!concepts.quit) {
-        // Gets the current time.
-        int64_t currentTime = anchor.getTimeline();
-        // Calculates delta time.
-        float deltaTime = 0;
-        if (timeThreads.getTicks() != 3) {
-            deltaTime = ((currentTime - lastTime) / timeThreads.getTicks()) / 1000.0f;
-        } else {
-            deltaTime = ((currentTime - lastTime) * 2) / 1000.0f;
-        }
-        // Stores delta time in concepts.
-        concepts.delta = deltaTime;
+		float newTime = SDL_GetTicks() / 75; //This value (75) is the speed at which the blocks are updated
+		float delta = newTime - time;
+		time = newTime;
 
-        // Checks if the user is quitting.
-        while (SDL_PollEvent(&e) != 0) {
-            // If the user is quitting, quit the game.
-            if (e.type == SDL_QUIT) {
-                concepts.quit = true;
+		inputThisFrame = false;
+
+		// Check win condition, tail needs to fill all tiles
+		if (tailLength >= 575) {
+			youWin(game.renderer, event, scale, wScale, tailLength);
+			x = 0;
+			y = 0;
+			up = false;
+			left = false;
+			right = false;
+			down = false;
+			tailX.clear();
+			tailY.clear();
+			tailLength = 0;
+			redo = false;
+			foodLoc = getFoodSpawn(tailX, tailY, x, y, scale, wScale, tailLength);
+
+			if (food.x == -100 && food.y == -100) {
+				redo = true;
+			}
+
+			food.x = foodLoc.first;
+			food.y = foodLoc.second;
+		}
+
+		// Controls
+        concepts.state = SDL_GetKeyboardState(nullptr);
+		if (SDL_PollEvent(&event)) {
+
+			// Simply exit the program when told to
+			if (event.type == SDL_QUIT || concepts.state[SDL_SCANCODE_ESCAPE]) {
+				concepts.quit = true;
+			}
+            if (concepts.state[SDL_SCANCODE_P]) { // Unpause game.
+                if (concepts.a->isPaused) {
+                    concepts.a->unpause();
+                }
+            }
+            if (concepts.state[SDL_SCANCODE_O]) { // Pause game.
+                if (!concepts.a->isPaused) {
+                    concepts.a->pause();
+                }
+            }
+
+			// // If a key is pressed
+			// if (event.type == SDL_KEYDOWN && inputThisFrame == false) {
+                
+
+			// 	// Then check for the key being pressed and change direction accordingly
+			// 	if (down == false && event.key.keysym.scancode == SDL_SCANCODE_UP) {
+			// 		up = true;
+			// 		left = false;
+			// 		right = false;
+			// 		down = false;
+			// 		inputThisFrame = true;
+			// 	}
+			// 	else if (right == false && event.key.keysym.scancode == SDL_SCANCODE_LEFT) {
+			// 		up = false;
+			// 		left = true;
+			// 		right = false;
+			// 		down = false;
+			// 		inputThisFrame = true;
+			// 	}
+			// 	else if (up == false && event.key.keysym.scancode == SDL_SCANCODE_DOWN) {
+			// 		up = false;
+			// 		left = false;
+			// 		right = false;
+			// 		down = true;
+			// 		inputThisFrame = true;
+			// 	}
+			// 	else if (left == false && event.key.keysym.scancode == SDL_SCANCODE_RIGHT) {
+			// 		up = false;
+			// 		left = false;
+			// 		right = true;
+			// 		down = false;
+			// 		inputThisFrame = true;
+			// 	}
+
+			// }
+
+		}
+
+        // If the player is pressing 'P'.
+        // if (concepts.state[SDL_SCANCODE_P]) { // Unpause game.
+        //     if (concepts.a->isPaused) {
+        //         concepts.a->unpause();
+        //     }else{
+        //         concepts.a->pause();
+        //     }
+        // }
+        if (!inputThisFrame) {
+            if (!down && concepts.state[SDL_SCANCODE_UP]) {
+                up = true;
+                left = false;
+                right = false;
+                down = false;
+                inputThisFrame = true;
+            }
+            else if (!right && concepts.state[SDL_SCANCODE_LEFT]) {
+                up = false;
+                left = true;
+                right = false;
+                down = false;
+                inputThisFrame = true;
+            }
+            else if (!up && concepts.state[SDL_SCANCODE_DOWN]) {
+                up = false;
+                left = false;
+                right = false;
+                down = true;
+                inputThisFrame = true;
+            }
+            else if (!left && concepts.state[SDL_SCANCODE_RIGHT]) {
+                up = false;
+                left = false;
+                right = true;
+                down = false;
+                inputThisFrame = true;
             }
         }
         
-        // Stores the keyboard state in concepts.
-        concepts.state = SDL_GetKeyboardState(nullptr);
-
-        // Stores the move speed in concepts.
-        concepts.moveSpeed = 5;
-
-        // If the player is pressing 'O'.
-        if (concepts.state[SDL_SCANCODE_O]) { // Pause game.
-            if (!concepts.a->isPaused) {
-                concepts.a->pause();
-            }
-        }
-
-        // If the player is pressing 'P'.
-        if (concepts.state[SDL_SCANCODE_P]) { // Unpause game.
-            if (concepts.a->isPaused) {
-                concepts.a->unpause();
-            }
-        }
-
-        // If the player is pressing 'B'.
-        if(concepts.state[SDL_SCANCODE_B]){ // Set tic to 0.5 (which is marked with 3).
-            timeThreads.setTicks(3);
-            printf("Tics set to 0.5.\n");
-        }
-
-        // If the player is pressing 'N'.
-        if(concepts.state[SDL_SCANCODE_N]){ // Set tic to 1.
-            timeThreads.setTicks(1);
-            printf("Tics set to 1.\n");
-        }
-
-        // If the player is pressing 'M'.
-        if(concepts.state[SDL_SCANCODE_M]){ // Set tic to 2.
-            timeThreads.setTicks(2);
-            printf("Tics set to 2.\n");
-        }
-
         if (!concepts.a->isPaused) {
 
-            // Run threads.
-            startThreads(&timeThreads, &concepts, &game, receiver, clientId, eventManager);
+		// The previous position of the player block
+		prevX = x;
+		prevY = y;
 
-            // Keeps track of the controllable rectangle.
-            SDL_Rect cRect = concepts.c->getRect();
-            // Keeps track of the static rectangle.
-            SDL_Rect sRect = concepts.s->getRect();
-            // Keeps track of the moving rectangle.
-            SDL_Rect mRect = concepts.m->getRect();
-            // Keeps track of the vertically moving rectangle.
-            SDL_Rect vRect = concepts.v->getRect();
+		if (up) {
+			y -= delta * scale;
+		}
+		else if (left) {
+			x -= delta * scale;
+		}
+		else if (right) {
+			x += delta * scale;
+		}
+		else if (down) {
+			y += delta * scale;
+		}
 
-            // Keeps track of the spawn rectangle.
-            SDL_Rect spawnRect = concepts.spawn->getRect();
-            // Keeps track of the despawn rectangle.
-            SDL_Rect despawnRect = concepts.despawn->getRect();
+		if (redo == true) {
+			redo = false;
+			foodLoc = getFoodSpawn(tailX, tailY, x, y, scale, wScale, tailLength);
+			food.x = foodLoc.first;
+			food.y = foodLoc.second;
 
-            // Keeps track of the spawn rectangle.
-            // SDL_Rect boundOne = boundEntityOne.getRect();
-            // // Keeps track of the despawn rectangle.
-            // SDL_Rect boundTwo = boundEntityTwo.getRect();
+			if (food.x == -100 && food.y == -100) {
+				redo = true;
+			}
 
-            // The top left corner's map coordinates
-            int mapPlayerTL[2] = {floor(cRect.x / TILE_SIZE), floor(cRect.y / TILE_SIZE)};
-            // The top right corner's map coordinates
-            int mapPlayerTR[2] = {floor((cRect.x + cRect.w) / TILE_SIZE), floor(cRect.y / TILE_SIZE)};
-            // The bottom left corner's map coordinates
-            int mapPlayerBL[2] = {floor(cRect.x / TILE_SIZE), floor((cRect.y + cRect.h) / TILE_SIZE)};
-            // The bottom right corner's map coordinates
-            int mapPlayerBR[2] = {floor((cRect.x + cRect.w) / TILE_SIZE), floor((cRect.y + cRect.h) / TILE_SIZE)};
-            // Rectangle of the entity (if any) at the bottom-left corner
+		}
 
-            // Get the coordinates of the bottom corners relative to the size of the map in tiles (if the player is within the game bounds)
-            if (cRect.x + cRect.w >= 0 && cRect.x < SCREEN_WIDTH && cRect.y + cRect.h >= 0 && cRect.y < SCREEN_HEIGHT) {
-                // If the entity exists at the coordinates...
-                if (cRect.x >= 0 && concepts.tileMap[mapPlayerBL[0]][mapPlayerBL[1]] != nullptr) {
-                    // Store the rectangle of the captured entity
-                    SDL_Rect hitBL = concepts.tileMap[mapPlayerBL[0]][mapPlayerBL[1]]->getRect();
-                    concepts.hitBL = hitBL;
-                    // Check if the target is intersecting
-                    if (hasIntersection(&cRect, &hitBL) == true) {
-                        // Create the current timestamp.
-                        int64_t currentTimestamp = timeThreads.getTimeline();
+		// Collision detection, has played collided with food?
+		if (checkCollision(food.x, food.y, x, y)) {
 
-                        // Create the collision event.
-                        Event collisionEvent("collision", currentTimestamp);
+			// Spawn new food after it has been eaten
+			foodLoc = getFoodSpawn(tailX, tailY, x, y, scale, wScale, tailLength);
+			food.x = foodLoc.first;
+			food.y = foodLoc.second;
 
-                        // Creates a code for the collision scenario.
-                        Variant collisionCode;
-                        collisionCode.type = Variant::TYPE_INT;
-                        collisionCode.asInt = 1;
-                        collisionEvent.parameters["collisionCode"] = collisionCode;
+			if (food.x == -100 && food.y == -100) {
+				redo = true;
+			}
 
-                        // Reports that a collision event has been initialized.
-                        // std::cout << "COLLISION INITIALIZED" << std::endl;
+			tailLength++;
+		}
 
-                        // Raises the collision event to the event manager.
-                        eventManager.raiseEvent(collisionEvent);
-                    }
-                }
-                // Top-Left Corner Collision
-                if (cRect.y >= 0 && concepts.tileMap[mapPlayerTL[0]][mapPlayerTL[1]] != nullptr) {
-                    SDL_Rect hitTL = concepts.tileMap[mapPlayerTL[0]][mapPlayerTL[1]]->getRect();
-                    concepts.hitTL = hitTL;
+		// Only runs in the frames where the player block has moved
+		if (delta * scale == 24) {
 
-                    if (hasIntersection(&cRect, &hitTL)) {
-                        int64_t currentTimestamp = timeThreads.getTimeline();
-                        Event collisionEvent("collision", currentTimestamp);
+			// Update tail size and position
+			if (tailX.size() != tailLength) {
+				tailX.push_back(prevX);
+				tailY.push_back(prevY);
+			}
 
-                        Variant collisionCode;
-                        collisionCode.type = Variant::TYPE_INT;
-                        collisionCode.asInt = 3; // Collision code for top-left corner.
-                        collisionEvent.parameters["collisionCode"] = collisionCode;
+			//Loop through every tail block, move all blocks to the nearest block in front
+			//This updates the blocks from end (farthest from player block) to the start (nearest to player block)
+			for (int i = 0; i < tailLength; i++) {
 
-                        eventManager.raiseEvent(collisionEvent);
-                    }
-                }
-                // Top-Right Corner Collision
-                if (cRect.x + cRect.w < SCREEN_WIDTH && concepts.tileMap[mapPlayerTR[0]][mapPlayerTR[1]] != nullptr) {
-                    SDL_Rect hitTR = concepts.tileMap[mapPlayerTR[0]][mapPlayerTR[1]]->getRect();
-                    concepts.hitTR = hitTR;
+				if (i > 0) {
+					tailX[i - 1] = tailX[i];
+					tailY[i - 1] = tailY[i];
+				}
 
-                    if (hasIntersection(&cRect, &hitTR)) {
-                        int64_t currentTimestamp = timeThreads.getTimeline();
-                        Event collisionEvent("collision", currentTimestamp);
+			}
 
-                        Variant collisionCode;
-                        collisionCode.type = Variant::TYPE_INT;
-                        collisionCode.asInt = 4; // Collision code for top-right corner.
-                        collisionEvent.parameters["collisionCode"] = collisionCode;
+			if (tailLength > 0) {
+				tailX[tailLength - 1] = prevX;
+				tailY[tailLength - 1] = prevY;
+			}
 
-                        eventManager.raiseEvent(collisionEvent);
-                    }
-                }
+		}
+		
+		// Game over if player has collided with a tail block, also reset everything
+		for (int i = 0; i < tailLength; i++) {
 
-                // Rectangle of the entity (if any) at the bottom-right corner
-                //If the entity exists at the coordinates...
-                if (cRect.x + cRect.w < SCREEN_WIDTH && concepts.tileMap[mapPlayerBR[0]][mapPlayerBR[1]] != nullptr) {
-                    // Store the rectangle of the captured entity
-                    SDL_Rect hitBR = concepts.tileMap[mapPlayerBR[0]][mapPlayerBR[1]]->getRect();
-                    concepts.hitBR = hitBR;
-                    // Check if the target is intersecting
-                    if (hasIntersection(&cRect, &hitBR) == true) {
-                        // Create the current timestamp.
-                        int64_t currentTimestamp = timeThreads.getTimeline();
+			if (x == tailX[i] && y == tailY[i]) {
+				gameOver(game.renderer, event, scale, wScale, tailLength);
+				x = 0;
+				y = 0;
+				up = false;
+				left = false;
+				right = false;
+				down = false;
+				tailX.clear();
+				tailY.clear();
+				tailLength = 0;
+				redo = false;
 
-                        // Create the collision event.
-                        Event collisionEvent("collision", currentTimestamp);
+				foodLoc = getFoodSpawn(tailX, tailY, x, y, scale, wScale, tailLength);
+				if (food.x == -100 && food.y == -100) {
+					redo = true;
+				}
 
-                        // Creates a code for the collision scenario.
-                        Variant collisionCode;
-                        collisionCode.type = Variant::TYPE_INT;
-                        collisionCode.asInt = 2;
-                        collisionEvent.parameters["collisionCode"] = collisionCode;
+				food.x = foodLoc.first;
+				food.y = foodLoc.second;
+			}
 
-                        // Reports that a collision event has been initialized.
-                        // std::cout << "COLLISION INITIALIZED" << std::endl;
+		}
 
-                        // Raises the collision event to the event manager.
-                        eventManager.raiseEvent(collisionEvent);
-                    }
-                }
-            }
+		// Game over if player out of bounds, also resets the game state
+		if (x < 0 || y < 0 || x > scale * wScale - scale || y > scale * wScale - scale) {
+			gameOver(game.renderer, event, scale, wScale, tailLength);
+			x = 0;
+			y = 0;
+			up = false;
+			left = false;
+			right = false;
+			down = false;
+			tailX.clear();
+			tailY.clear();
+			tailLength = 0;
+			redo = false;
+			foodLoc = getFoodSpawn(tailX, tailY, x, y, scale, wScale, tailLength);
+			food.x = foodLoc.first;
+			food.y = foodLoc.second;
 
-            // Senses other shapes for collision.
-            if (hasIntersection(&cRect, &sRect) == true) {
-                // If there was an intersection on the top of the terrain rectangle,
-                // the controllable rectangle lands on the terrain rectangle.
-                if (intersect(&cRect, &sRect) == 2 || intersect(&cRect, &sRect) == 4) {
-                    // Create the current timestamp.
-                    int64_t currentTimestamp = timeThreads.getTimeline();
+			if (food.x == -100 && food.y == -100) {
+				redo = true;
+			}
 
-                    // Create the collision event.
-                    Event collisionEvent("collision", currentTimestamp);
-
-                    // Creates a code for the collision scenario.
-                    Variant collisionCode;
-                    collisionCode.type = Variant::TYPE_INT;
-                    collisionCode.asInt = 3;
-                    collisionEvent.parameters["collisionCode"] = collisionCode;
-
-                    // Reports that a collision event has been initialized.
-                    // std::cout << "COLLISION INITIALIZED" << std::endl;
-
-                    // Raises the collision event to the event manager.
-                    eventManager.raiseEvent(collisionEvent);
-                }
-                // More sides will be added in the future.
-            }
-
-            // Senses other shapes for collision.
-            if (hasIntersection(&cRect, &mRect) == true) {
-                // If there was an intersection on the top of the terrain rectangle,
-                // the controllable rectangle lands on the terrain rectangle.
-                if (intersect(&cRect, &mRect) == 2 || intersect(&cRect, &mRect) == 4) {
-                    // Create the current timestamp.
-                    int64_t currentTimestamp = timeThreads.getTimeline();
-
-                    // Create the collision event.
-                    Event collisionEvent("collision", currentTimestamp);
-
-                    // Creates a code for the collision scenario.
-                    Variant collisionCode;
-                    collisionCode.type = Variant::TYPE_INT;
-                    collisionCode.asInt = 4;
-                    collisionEvent.parameters["collisionCode"] = collisionCode;
-
-                    // Reports that a collision event has been initialized.
-                    // std::cout << "COLLISION INITIALIZED" << std::endl;
-
-                    // Raises the collision event to the event manager.
-                    eventManager.raiseEvent(collisionEvent);
-                }
-                // More sides may be added in the future.
-            }
-
-            // Senses other shapes for collision.
-            if (hasIntersection(&cRect, &vRect) == true) {
-                // If there was an intersection on the top of the terrain rectangle,
-                // the controllable rectangle lands on the terrain rectangle.
-                if (intersect(&cRect, &vRect) == 2 || intersect(&cRect, &vRect) == 4) {
-                    // Create the current timestamp.
-                    int64_t currentTimestamp = timeThreads.getTimeline();
-
-                    // Create the collision event.
-                    Event collisionEvent("collision", currentTimestamp);
-
-                    // Creates a code for the collision scenario.
-                    Variant collisionCode;
-                    collisionCode.type = Variant::TYPE_INT;
-                    collisionCode.asInt = 5;
-                    collisionEvent.parameters["collisionCode"] = collisionCode;
-
-                    // Reports that a collision event has been initialized.
-                    // std::cout << "COLLISION INITIALIZED" << std::endl;
-
-                    // Raises the collision event to the event manager.
-                    eventManager.raiseEvent(collisionEvent);
-                }
-                // More sides may be added in the future.
-            }
-        }
-        json jsonString = {
-            {"clientId", clientId},
-            {"clientAddr", clientAddress},
-            {"entities", json::array({
-                {{"type", "horizontal"}, {"x", concepts.m->getRect().x}, {"y", concepts.m->getRect().y}},
-                {{"type", "vertical"}, {"x", concepts.v->getRect().x}, {"y", concepts.v->getRect().y}}
-            })}
-        };
-
-
-        std::string positionData = jsonString.dump();
-        zmq::message_t message(positionData.size());
-        memcpy(message.data(), positionData.c_str(), positionData.size());
-        receiver.send(message, zmq::send_flags::none);
-
-        // Receive updated positions from the server
-        zmq::message_t reply;
-        receiver.recv(reply, zmq::recv_flags::none);
-
-        std::string updatedPositions(reply.to_string());
-        auto parsedPositions = parseUpdatedPositions(updatedPositions);
-
-        // Process and update positions of entities from other clients
-        for (const auto& position : parsedPositions) {
-            std::string clientId = position["clientId"];
-            for (const auto& entity : position["entities"]) {
-                std::string type = entity["type"];
-                int x = entity["x"];
-                int y = entity["y"];
-
-                if (type == "horizontal") {
-                    concepts.m->setPosition(x, y);  // Update horizontal entity
-                } else if (type == "vertical") {
-                    concepts.v->setPosition(x, y);  // Update vertical entity
-                }
-            }
+		}
         }
 
-        nlohmann::json controllableEntityDetails = {
-            {"clientId", clientId},
-            {"clientAddr", clientAddress},
-            {"x", concepts.c->getRect().x},
-            {"y", concepts.c->getRect().y}
-        };
-        std::string controllablePositionData = controllableEntityDetails.dump();
+		// Render everything
+		renderFood(game.renderer, food);
+		renderPlayer(game.renderer, player, x, y, scale, tailX, tailY, tailLength);
+		renderScore(game.renderer, tailLength, scale, wScale);
 
-        broadcastPosition(dealerSockets, controllablePositionData);
+		SDL_RenderDrawLine(game.renderer, 0, 0, 0, 24 * 24);
+		SDL_RenderDrawLine(game.renderer, 0, 24*24, 24 * 24, 24 * 24);
+		SDL_RenderDrawLine(game.renderer, 24*24, 24 * 24, 24*24, 0);
+		SDL_RenderDrawLine(game.renderer, 24*24, 0, 0, 0);
 
-        // Set the background color to blue and clear the screen
-        SDL_SetRenderDrawColor(game.renderer, 0, 0, 255, 255);
-        SDL_RenderClear(game.renderer);
+		// Put everything on screen
+		// Nothing is actually put on screen until this is called
+		SDL_RenderPresent(game.renderer);
 
-        // Render the shapes
-        if (!replayManager.isReplaying) {
+		// Choose a color and fill the entire window with it, this resets everything before the next frame
+		// This also give us the background color
+		SDL_SetRenderDrawColor(game.renderer, 105, 105, 105, 255);
+		SDL_RenderClear(game.renderer);
+	}
 
-        // concepts.s->render(game.renderer);
-        for (int j = 0; j < MAP_HEIGHT; j++) {
-            for (int i = 0; i < MAP_WIDTH; i++) {
-                if (concepts.tileMap[i][j] != nullptr) {
-                    concepts.tileMap[i][j]->render(game.renderer);
-                }
-            }
-        }
+	SDL_DestroyWindow(game.window);
 
-        // concepts.m->render(game.renderer);
-        // cout<<"The X coor of moving object is: "<<concepts.m->getRect().x<< "Thee Y coor is: "<<concepts.m->getRect().y<<endl;
-        if (replayManager.isRecording) {  // Record moving object
-            // replayManager.recordEntity(concepts.m, SDL_GetTicks64());
-            // replayManager.recordEntity(concepts.v, SDL_GetTicks64());
-            // replayManager.recordEntity(concepts.c, SDL_GetTicks64());
-            // replayManager.recordEntity(concepts.m, SDL_GetTicks64(), 'M');
-            // replayManager.recordEntity(concepts.v, SDL_GetTicks64(), 'V');
-            replayManager.recordEntity(concepts.c, SDL_GetTicks64(), 'C');
-        }
+	TTF_Quit();
 
-        // concepts.v->render(game.renderer);
-        // concepts.spawn->render(game.renderer);
-        // concepts.despawn->render(game.renderer);
-        // boundEntityOne.render(game.renderer);
-        // boundEntityTwo.render(game.renderer);
-        concepts.c->render(game.renderer);
-  
+	SDL_Quit();
 
-        {
-            std::lock_guard<std::mutex> lock(positionMutex);
-            for (const auto& [clientId, rect] : entityPositions) {
-                SDL_SetRenderDrawColor(game.renderer, 0, 255, 0, 255); // Green color for entities
-                SDL_RenderFillRect(game.renderer, &rect);
-                // cout<<"[Render loop]The client id is: "<<clientId<< "The X coor is: "<<rect.x<< "Thee Y coor is: "<<rect.y<<endl;
-                if (replayManager.isRecording) {  // Record server-rendered entities
-                    Entity serverEntity(rect.x, rect.y, rect.w, rect.h, {0, 255, 0}, false, 0);
-                    replayManager.recordEntity(&serverEntity, SDL_GetTicks64(),'S');
-                }
-            }
-        }
-    } else {
-        // Replay rendering
-            concepts.a->pause();
-            replayManager.playReplay(game.renderer);
-            concepts.a->unpause();
-        }
-        // Dispatch events.
-        eventManager.dispatchEvents();
-        // Present the rendered content
-        SDL_RenderPresent(game.renderer);
-        // Puts a delay on the game. (Can be changed!)
-        SDL_Delay(16);
-        // Sets the last time to the current time.
-        lastTime = currentTime;
-    }
-    
-    // Clean up and shut down SDL
-    SDL_DestroyRenderer(game.renderer);
-    SDL_DestroyWindow(game.window);
-    SDL_Quit();
-
-    return 0;
+	return 0;
 }
-
-///**
-// * Runs the game.
-// * 
-// * Use this main function only for Homework 2 Sections 2 and 3.
-// * 
-// * References resources and tutorials provided by Professor Card through
-// * the "CSC 481-581 HW 1-4.pdf" located beneath the "Homework 1" title in
-// * the "CSC 481/581 (001) Fall 2024 Game Engine Foundations" course
-// * Moodle page. These resources can be found in the
-// * https://wiki.libsdl.org/SDL2/FrontPage website.
-// * 
-// * \param argc the count argument
-// * \param argv the string argument
-// * \returns int 0 if successful, else, unsuccessful
-// * 
-// * @author Lillie Sharpe
-// * @author Chinmay Nayak
-// * @author Robbie Martin
-// */
-// int main(int argc, char* argv[]) {
-//     /**
-//      * This code section is heavily inspired from the example delta time
-//      * calculation displayed by Professor Card on page 17 in the
-//      * "S24 05 Timelines.pptx" PowerPoint that is available on the
-//      * "CSC 481/581 (001) Fall 2024 Game Engine Foundations" course
-//      * Moodle page through the "Lecture Notes" link beneath the
-//      * "General Information and Discussions" subtitle.
-//      * 
-//      * Start of inspired code.
-//      */
-//     // int64_t currentT = timeline.getTime();
-//     // int64_t deltaF = currentT - lastT;
-//     // lastT = currentT;
-//     /** End of inspired code. */
-//     srand(static_cast<unsigned int>(time(0)));
-//     int randomNum = rand() % 10000; // Generate a random number between 0 and 9999
-//     std::string clientId = "client" + std::to_string(randomNum);  // Random client ID
-//     int clientPort = 5560 + randomNum; // Unique port based on client ID
-//     std::string clientAddress = "tcp://localhost:" + std::to_string(clientPort);
-
-//     // Create the Game object.
-//     Game game;
-//     // Set the window up.
-//     game.window = nullptr;
-//     // Set the renderer up.
-//     game.renderer = nullptr;
-
-//     // Attempt to initialize the game.
-//     if (!initializeSDL(&game.window, &game.renderer)) {
-//         return 1; // If unsuccessful, initialization failed.
-//     }
-
-//     // Initialize ZeroMQ context and sockets
-//     zmq::context_t context(1);
-//     zmq::socket_t receiver(context, ZMQ_REQ);
-//     receiver.connect("tcp://localhost:5555"); // For sending position updates
-
-//     zmq::socket_t subscriber(context, ZMQ_SUB);
-//     subscriber.connect("tcp://localhost:5556"); // For receiving position updates
-//     subscriber.setsockopt(ZMQ_SUBSCRIBE, "", 0); // Subscribe to all messages
-
-//     // Create the Concepts object.
-//     Concepts concepts;
-
-//     // Initialize quit to false.
-//     concepts.quit = false;
-
-//     // Create an event object.
-//     SDL_Event e;
-
-//     // Construct the anchor timeline.
-//     Timeline anchor(nullptr, 1);
-
-//     // Creates the static red shape and connects its address to concepts.
-//     Entity staticEntity(Rectangle(100,100,100,100),{255,0,0,255}, false); // Static red shape.
-//     concepts.s = &staticEntity;
-
-//     // Creates the controllable green shape and connects its address to concepts.
-//     Entity controllableEntity(Rectangle(300,300,50,50),{0,255,0,255}, true); // Controllable green shape.
-//     concepts.c = &controllableEntity;
-
-//     // Creates the moving black shape and connects its address to concepts.
-//     Entity movingEntity(Rectangle(100,100,100,100),{0,0,0,255}, false); // Black moving shape.
-//     concepts.m = &movingEntity;
-
-//     // Initializes scaling and held through concepts.
-//     concepts.scaling = false;
-//     concepts.held = false;
-
-//     // Initializes physics variables.
-//     concepts.gravity = 9.8f;
-//     concepts.speed = 5; // Speed of the Entity.
-//     concepts.verticalVel = 0.0f;
-//     concepts.thrust = -9.8f;
-
-//     // Stores the variable that determines whether or not the game is paused.
-//     concepts.a = &anchor;
-
-//     // Create a timeline to run threads.
-//     Timeline timeThreads(&anchor, 1); // Set tic to whatever is desired.
-
-//     // Sets the last time.
-//     int64_t lastTime = anchor.getTimeline();
-
-//     std::unordered_map<std::string, SDL_Rect> otherClientEntities;
-
-//     // Runs the game.
-//     while (!concepts.quit) {
-//         // Gets the current time.
-//         int64_t currentTime = anchor.getTimeline();
-//         // Calculates delta time.
-//         float deltaTime = 0;
-//         if (timeThreads.getTicks() != 3) {
-//             deltaTime = ((currentTime - lastTime) / timeThreads.getTicks()) / 1000.0f;
-//         } else {
-//             deltaTime = ((currentTime - lastTime) * 2) / 1000.0f;
-//         }
-//         // Stores delta time in concepts.
-//         concepts.delta = deltaTime;
-//
-//         while (SDL_PollEvent(&e) != 0) {
-//             if (e.type == SDL_QUIT) {
-//                 concepts.quit = true;
-//             }
-//         }
-
-//         concepts.state = SDL_GetKeyboardState(nullptr);
-//         concepts.moveSpeed = 5;
-
-//     // If the player is pressing 'O'.
-//         if (concepts.state[SDL_SCANCODE_O]) { // Pause game.
-//             if (!concepts.a->isPaused) {
-//                 concepts.a->pause();
-//             }
-//         }
-
-//         // If the player is pressing 'P'.
-//         if (concepts.state[SDL_SCANCODE_P]) { // Unpause game.
-//             if (concepts.a->isPaused) {
-//                 concepts.a->unpause();
-//             }
-//         }
-
-//         // If the player is pressing 'B'.
-//         if(concepts.state[SDL_SCANCODE_B]){ // Set tic to 0.5 (which is marked with 3).
-//             timeThreads.setTicks(3);
-//             printf("Tics set to 0.5.\n");
-//         }
-
-//         // If the player is pressing 'N'.
-//         if(concepts.state[SDL_SCANCODE_N]){ // Set tic to 1.
-//             timeThreads.setTicks(1);
-//             printf("Tics set to 1.\n");
-//         }
-
-//         // If the player is pressing 'M'.
-//         if(concepts.state[SDL_SCANCODE_M]){ // Set tic to 2.
-//             timeThreads.setTicks(2);
-//             printf("Tics set to 2.\n");
-//         }
-
-//         if (!concepts.a->isPaused) {
-
-//             // Run threads.
-//             startThreads(&timeThreads, &concepts, &game);
-
-//             // Keeps track of the controllable rectangle.
-//             Rectangle cRect = concepts.c->getRect();
-//             // Keeps track of the static rectangle.
-//             Rectangle sRect = concepts.s->getRect();
-//             // Keeps track of the moving rectangle.
-//             Rectangle mRect = concepts.m->getRect();
-
-//             // Senses other shapes for collision.
-//             if (hasIntersection(&cRect, &sRect) == true) {
-//                 // If there was an intersection on the top of the terrain rectangle,
-//                 // the controllable rectangle lands on the terrain rectangle.
-//                 if (intersect(&cRect, &sRect) == 2) {
-//                     // Causes vertical collision.
-//                     concepts.delta = 0;
-//                     concepts.verticalVel = 0;
-//                 }
-//                 // More sides will be added in the future.
-//             }
-
-//             // Senses other shapes for collision.
-//             if (hasIntersection(&cRect, &mRect) == true) {
-//                 // If there was an intersection on the top of the terrain rectangle,
-//                 // the controllable rectangle lands on the terrain rectangle.
-//                 if (intersect(&cRect, &mRect) == 2) {
-//                     // Causes vertical collision.
-//                     concepts.delta = 0;
-//                     concepts.verticalVel = 0;
-//                     // Enables player movement mimicking the moving entity.
-//                     concepts.c->move(concepts.speed, static_cast<int>(concepts.verticalVel));
-//                     if (concepts.c->getRect().x > 1820 || concepts.c->getRect().x < 100) {
-//                         concepts.speed = -concepts.speed;
-//                     }
-//                 }
-//                 // More sides may be added in the future.
-//             }
-
-//         }
-
-//         // Keeps track of the controllable rectangle.
-//         Rectangle cRect = concepts.c->getRect();
-//         // Keeps track of the static rectangle.
-//         Rectangle sRect = concepts.s->getRect();
-//         // Keeps track of the moving rectangle.
-//         Rectangle mRect = concepts.m->getRect();
-
-//         // Senses other shapes for collision.
-//         if (hasIntersection(&cRect, &sRect) == true) {
-//             // If there was an intersection on the top of the terrain rectangle,
-//             // the controllable rectangle lands on the terrain rectangle.
-//             if (intersect(&cRect, &sRect) == 2) {
-//                 // Causes vertical collision.
-//                 concepts.delta = 0;
-//                 concepts.verticalVel = 0;
-//             }
-//             // More sides will be added in the future.
-//         }
-   
-
-//         // Senses other shapes for collision.
-//         if (hasIntersection(&cRect, &mRect) == true) {
-//             // If there was an intersection on the top of the terrain rectangle,
-//             // the controllable rectangle lands on the terrain rectangle.
-//             if (intersect(&cRect, &mRect) == 2) {
-//                 // Causes vertical collision.
-//                 concepts.delta = 0;
-//                 concepts.verticalVel = 0;
-//                 // Enables player movement mimicking the moving entity.
-//                 concepts.c->move(concepts.speed, static_cast<int>(concepts.verticalVel));
-//                 if (concepts.c->getRect().x > 1820 || concepts.c->getRect().x < 100) {
-//                     concepts.speed = -concepts.speed;
-//                 }
-//             }
-//             // More sides may be added in the future.
-//         }
-
-//          json jsonString = {
-//             {"clientId", clientId},
-//             {"clientAddr", clientAddress},
-//             {"x", concepts.c->getRect().x},
-//             {"y", concepts.c->getRect().y}
-//         };
-
-//         std::string positionData = jsonString.dump();
-//         zmq::message_t message(positionData.size());
-//         memcpy(message.data(), positionData.c_str(), positionData.size());
-//         receiver.send(message, zmq::send_flags::none);
-
-//         zmq::message_t reply;
-//         receiver.recv(reply, zmq::recv_flags::none);
-
-//         std::string updatedPositions(reply.to_string());
-//         auto parsedPositions = parseUpdatedPositions(updatedPositions);
-
-//         for (const auto& position : parsedPositions) {
-//             std::string clientIdFromServer = position["clientId"];
-//             int xFromServer = position["position"]["x"];
-//             int yFromServer = position["position"]["y"];
-
-//             if (clientIdFromServer != clientId) { // Ensure not rendering own entity
-//                 otherClientEntities[clientIdFromServer] = {xFromServer, yFromServer, 50, 50};
-//             }
-//         }
-
-//         SDL_SetRenderDrawColor(game.renderer, 0, 0, 255, 255);
-//         SDL_RenderClear(game.renderer);
-
-//         concepts.s->render(game.renderer);
-//         concepts.c->render(game.renderer);
-
-//         // Render entities from other clients
-//         for (const auto& [id, rect] : otherClientEntities) {
-//             SDL_SetRenderDrawColor(game.renderer, 0, 255, 0, 255);
-//             SDL_RenderFillRect(game.renderer, &rect);
-//         }
-
-//         concepts.m->render(game.renderer);
-//         SDL_RenderPresent(game.renderer);
-
-//         // Puts a delay on the game. (Can be changed!)
-//         SDL_Delay(16);
-//         // Sets the last time to the current time.
-//         lastTime = currentTime;
-//     }
-
-//     // Clean up and shut down SDL
-//     SDL_DestroyRenderer(game.renderer);
-//     SDL_DestroyWindow(game.window);
-//     SDL_Quit();
-
-//     return 0;
-// }

@@ -287,7 +287,7 @@ void runInput(EventManager& eventManager) {
  * which included studying the concept of temporary entities
  * (like our std::threads) within the same webpage.
  */
-int startThreads(Timeline* t, Concepts* c, Game* g, zmq::socket_t& receiver, std::string& clientId, EventManager &eventManager) {
+int startThreads(Timeline* t, Concepts* c, Game* g, EventManager &eventManager) {
     std::mutex m;
     _mutex = &m;
     std::condition_variable cv_c;
@@ -297,8 +297,6 @@ int startThreads(Timeline* t, Concepts* c, Game* g, zmq::socket_t& receiver, std
     time_Threads = t;
     concepts = c;
     game = g;
-    clientId1 = clientId;
-    receiverPtr = &receiver;
 
     for (int i = 0; i < 2; i++) {
         both.push_back(std::thread([i, &eventManager]() {

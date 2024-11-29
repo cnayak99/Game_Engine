@@ -14,5 +14,7 @@
 // Width and height of the tile map in tiles
 #define MAP_WIDTH    20
 #define MAP_HEIGHT   11
+#define SCALE 24
+#define WSCALE 24
 
 #endif // DEFS_H

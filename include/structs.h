@@ -23,10 +23,29 @@ typedef struct {
     float verticalVel;
     float thrust;
     int moveSpeed;
-
+    int tailLength;
     float delta;
 
+    	// Player position variables
+	int x;
+	int y;
+	int prevX;
+	int prevY;
+
+	// Movement controls
+	bool up;
+	bool down;
+	bool right ;
+	bool left;
+
+	bool inputThisFrame;
+	bool redo;
+
     const Uint8* state;
+
+    Entity *food;
+    Entity *snake;
+    Timeline *a;
 
     Entity *s;
     Entity *c;
@@ -36,7 +55,7 @@ typedef struct {
     Entity *spawn;
     Entity *despawn;
     Entity* getSource;
-    Timeline *a;
+
 
     SDL_Rect hitBL;
     SDL_Rect hitBR;

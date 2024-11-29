@@ -1,6 +1,7 @@
 // sdl_setup.cpp
 #include "sdl_setup.h"
 #include <iostream>
+#include "defs.h"
 
 /**
  * Initializes the SDL environment.
@@ -23,7 +24,7 @@ bool initializeSDL(SDL_Window** window, SDL_Renderer** renderer) {
         return false;
     }
 
-    *window = SDL_CreateWindow("SDL2 Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 705, SDL_WINDOW_SHOWN);
+    *window = SDL_CreateWindow("SDL2 Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCALE*WSCALE+1, SCALE*WSCALE+1, SDL_WINDOW_SHOWN);
     if (*window == nullptr) {
         std::cerr << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
         SDL_Quit();
