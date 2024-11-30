@@ -554,14 +554,14 @@ int main(int argc, char* argv[]) {
 	// Player position variables
 	concepts.x = 0;
 	concepts.y = 0;
-	int prevX = 0;
-	int prevY = 0;
+	concepts.prevX = 0;
+	concepts.prevY = 0;
 
 	// Movement controls
-	bool up = false;
-	bool down = false;
-	bool right = false;
-	bool left = false;
+	concepts.up = false;
+	concepts.down = false;
+	concepts.right = false;
+	concepts.left = false;
 
 	bool inputThisFrame = false;
 	bool redo = false;
@@ -597,10 +597,10 @@ int main(int argc, char* argv[]) {
 			youWin(game.renderer, event, SCALE, WSCALE, concepts.tailLength);
 			concepts.x = 0;
 			concepts.y = 0;
-			up = false;
-			left = false;
-			right = false;
-			down = false;
+			concepts.up = false;
+			concepts.left = false;
+			concepts.right = false;
+			concepts.down = false;
 			tailX.clear();
 			tailY.clear();
 			concepts.tailLength = 0;
@@ -634,79 +634,37 @@ int main(int argc, char* argv[]) {
                 }
             }
 
-			// // If a key is pressed
-			// if (event.type == SDL_KEYDOWN && inputThisFrame == false) {
-                
-
-			// 	// Then check for the key being pressed and change direction accordingly
-			// 	if (down == false && event.key.keysym.scancode == SDL_SCANCODE_UP) {
-			// 		up = true;
-			// 		left = false;
-			// 		right = false;
-			// 		down = false;
-			// 		inputThisFrame = true;
-			// 	}
-			// 	else if (right == false && event.key.keysym.scancode == SDL_SCANCODE_LEFT) {
-			// 		up = false;
-			// 		left = true;
-			// 		right = false;
-			// 		down = false;
-			// 		inputThisFrame = true;
-			// 	}
-			// 	else if (up == false && event.key.keysym.scancode == SDL_SCANCODE_DOWN) {
-			// 		up = false;
-			// 		left = false;
-			// 		right = false;
-			// 		down = true;
-			// 		inputThisFrame = true;
-			// 	}
-			// 	else if (left == false && event.key.keysym.scancode == SDL_SCANCODE_RIGHT) {
-			// 		up = false;
-			// 		left = false;
-			// 		right = true;
-			// 		down = false;
-			// 		inputThisFrame = true;
-			// 	}
-
-			// }
+			
 
 		}
 
-        // If the player is pressing 'P'.
-        // if (concepts.state[SDL_SCANCODE_P]) { // Unpause game.
-        //     if (concepts.a->isPaused) {
-        //         concepts.a->unpause();
-        //     }else{
-        //         concepts.a->pause();
-        //     }
-        // }
         if (!inputThisFrame) {
-            if (!down && concepts.state[SDL_SCANCODE_UP]) {
-                up = true;
-                left = false;
-                right = false;
-                down = false;
+            if (!concepts.down && concepts.state[SDL_SCANCODE_UP]) {
+                concepts.up = true;
+                concepts.left = false;
+                concepts.right = false;
+                concepts.down = false;
                 inputThisFrame = true;
             }
-            else if (!right && concepts.state[SDL_SCANCODE_LEFT]) {
-                up = false;
-                left = true;
-                right = false;
-                down = false;
+            else if (!concepts.right && concepts.state[SDL_SCANCODE_LEFT]) {
+                concepts.up = false;
+                concepts.left = true;
+                concepts.right = false;
+                concepts.down = false;
                 inputThisFrame = true;
             }
-            else if (!up && concepts.state[SDL_SCANCODE_DOWN]) {
-                up = false;
-                left = false;
-                right = false;
-                down = true;
+            else if (!concepts.up && concepts.state[SDL_SCANCODE_DOWN]) {
+                concepts.up = false;
+                concepts.left = false;
+                concepts.right = false;
+                concepts.down = true;
                 inputThisFrame = true;
             }
-            else if (!left && concepts.state[SDL_SCANCODE_RIGHT]) {
-                up = false;
-                left = false;
-                right = true;
-                down = false;
+            else if (!concepts.left && concepts.state[SDL_SCANCODE_RIGHT]) {
+                concepts.up = false;
+                concepts.left = false;
+                concepts.right = true;
+                concepts.down = false;
                 inputThisFrame = true;
             }
         }
@@ -714,19 +672,19 @@ int main(int argc, char* argv[]) {
         if (!concepts.a->isPaused) {
 
 		// The previous position of the player block
-		prevX = concepts.x;
-		prevY = concepts.y;
+		concepts.prevX = concepts.x;
+		concepts.prevY = concepts.y;
 
-		if (up) {
+		if (concepts.up) {
 			concepts.y -= delta * SCALE;
 		}
-		else if (left) {
+		else if (concepts.left) {
 			concepts.x -= delta * SCALE;
 		}
-		else if (right) {
+		else if (concepts.right) {
 			concepts.x += delta * SCALE;
 		}
-		else if (down) {
+		else if (concepts.down) {
 			concepts.y += delta * SCALE;
 		}
 
@@ -762,8 +720,8 @@ int main(int argc, char* argv[]) {
 
 			// Update tail size and position
 			if (tailX.size() != concepts.tailLength) {
-				tailX.push_back(prevX);
-				tailY.push_back(prevY);
+				tailX.push_back(concepts.prevX);
+				tailY.push_back(concepts.prevY);
 			}
 
 			//Loop through every tail block, move all blocks to the nearest block in front
@@ -778,8 +736,8 @@ int main(int argc, char* argv[]) {
 			}
 
 			if (concepts.tailLength > 0) {
-				tailX[concepts.tailLength - 1] = prevX;
-				tailY[concepts.tailLength - 1] = prevY;
+				tailX[concepts.tailLength - 1] = concepts.prevX;
+				tailY[concepts.tailLength - 1] = concepts.prevY;
 			}
 
 		}
@@ -791,10 +749,10 @@ int main(int argc, char* argv[]) {
 				gameOver(game.renderer, event, SCALE, WSCALE, concepts.tailLength);
 				concepts.x = 0;
 				concepts.y = 0;
-				up = false;
-				left = false;
-				right = false;
-				down = false;
+				concepts.up = false;
+				concepts.left = false;
+				concepts.right = false;
+				concepts.down = false;
 				tailX.clear();
 				tailY.clear();
 				concepts.tailLength = 0;
@@ -816,10 +774,10 @@ int main(int argc, char* argv[]) {
 			gameOver(game.renderer, event, SCALE, WSCALE, concepts.tailLength);
 			concepts.x = 0;
 			concepts.y = 0;
-			up = false;
-			left = false;
-			right = false;
-			down = false;
+			concepts.up = false;
+			concepts.left = false;
+			concepts.right = false;
+			concepts.down = false;
 			tailX.clear();
 			tailY.clear();
 			concepts.tailLength = 0;
