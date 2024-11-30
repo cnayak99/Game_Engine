@@ -563,19 +563,21 @@ int main(int argc, char* argv[]) {
 	concepts.right = false;
 	concepts.left = false;
 
-	bool inputThisFrame = false;
-	bool redo = false;
+	concepts.inputThisFrame = false;
+	concepts.redo = false;
 
 	// Food rectangle
-	SDL_Rect food;
-	food.w = SCALE;
-	food.h = SCALE;
-	food.x = 0;
-	food.y = 0;
+	Entity food(0, 0, SCALE, SCALE,{173, 216, 230, 255}, false, 0); 
+    concepts.food = &food;
+	// SDL_Rect food;
+	// food.w = SCALE;
+	// food.h = SCALE;
+	// food.x = 0;
+	// food.y = 0;
 	
 	pair<int, int> foodLoc = getFoodSpawn(tailX, tailY, concepts.x, concepts.y, SCALE, WSCALE, concepts.tailLength);
-	food.x = foodLoc.first;
-	food.y = foodLoc.second;
+	concepts.food->getRect().x = foodLoc.first;
+	concepts.food->getRect().y = foodLoc.second;
 
     concepts.a = &anchor;
     Timeline timeThreads(&anchor, 1);
@@ -590,7 +592,7 @@ int main(int argc, char* argv[]) {
 		float delta = newTime - time;
 		time = newTime;
 
-		inputThisFrame = false;
+		concepts.inputThisFrame = false;
 
 		// Check win condition, tail needs to fill all tiles
 		if (concepts.tailLength >= 575) {
@@ -604,15 +606,15 @@ int main(int argc, char* argv[]) {
 			tailX.clear();
 			tailY.clear();
 			concepts.tailLength = 0;
-			redo = false;
+			concepts.redo = false;
 			foodLoc = getFoodSpawn(tailX, tailY, concepts.x, concepts.y, SCALE, WSCALE, concepts.tailLength);
 
-			if (food.x == -100 && food.y == -100) {
-				redo = true;
+			if (concepts.food->getRect().x == -100 && concepts.food->getRect().y == -100) {
+				concepts.redo = true;
 			}
 
-			food.x = foodLoc.first;
-			food.y = foodLoc.second;
+			concepts.food->getRect().x = foodLoc.first;
+			concepts.food->getRect().y = foodLoc.second;
 		}
 
 		// Controls
@@ -638,34 +640,34 @@ int main(int argc, char* argv[]) {
 
 		}
 
-        if (!inputThisFrame) {
+        if (!concepts.inputThisFrame) {
             if (!concepts.down && concepts.state[SDL_SCANCODE_UP]) {
                 concepts.up = true;
                 concepts.left = false;
                 concepts.right = false;
                 concepts.down = false;
-                inputThisFrame = true;
+                concepts.inputThisFrame = true;
             }
             else if (!concepts.right && concepts.state[SDL_SCANCODE_LEFT]) {
                 concepts.up = false;
                 concepts.left = true;
                 concepts.right = false;
                 concepts.down = false;
-                inputThisFrame = true;
+                concepts.inputThisFrame = true;
             }
             else if (!concepts.up && concepts.state[SDL_SCANCODE_DOWN]) {
                 concepts.up = false;
                 concepts.left = false;
                 concepts.right = false;
                 concepts.down = true;
-                inputThisFrame = true;
+               concepts.inputThisFrame = true;
             }
             else if (!concepts.left && concepts.state[SDL_SCANCODE_RIGHT]) {
                 concepts.up = false;
                 concepts.left = false;
                 concepts.right = true;
                 concepts.down = false;
-                inputThisFrame = true;
+                concepts.inputThisFrame = true;
             }
         }
         
@@ -688,28 +690,28 @@ int main(int argc, char* argv[]) {
 			concepts.y += delta * SCALE;
 		}
 
-		if (redo == true) {
-			redo = false;
+		if (concepts.redo == true) {
+			concepts.redo = false;
 			foodLoc = getFoodSpawn(tailX, tailY, concepts.x, concepts.y, SCALE, WSCALE, concepts.tailLength);
-			food.x = foodLoc.first;
-			food.y = foodLoc.second;
+			concepts.food->getRect().x = foodLoc.first;
+			concepts.food->getRect().y = foodLoc.second;
 
-			if (food.x == -100 && food.y == -100) {
-				redo = true;
+			if (concepts.food->getRect().x == -100 && concepts.food->getRect().y == -100) {
+				concepts.redo = true;
 			}
 
 		}
 
 		// Collision detection, has played collided with food?
-		if (checkCollision(food.x, food.y, concepts.x, concepts.y)) {
+		if (checkCollision(concepts.food->getRect().x, concepts.food->getRect().y, concepts.x, concepts.y)) {
 
 			// Spawn new food after it has been eaten
 			foodLoc = getFoodSpawn(tailX, tailY, concepts.x, concepts.y, SCALE, WSCALE, concepts.tailLength);
-			food.x = foodLoc.first;
-			food.y = foodLoc.second;
+			concepts.food->getRect().x = foodLoc.first;
+			concepts.food->getRect().y = foodLoc.second;
 
-			if (food.x == -100 && food.y == -100) {
-				redo = true;
+			if (concepts.food->getRect().x == -100 && concepts.food->getRect().y == -100) {
+				concepts.redo = true;
 			}
 
 			concepts.tailLength++;
@@ -756,15 +758,15 @@ int main(int argc, char* argv[]) {
 				tailX.clear();
 				tailY.clear();
 				concepts.tailLength = 0;
-				redo = false;
+				concepts.redo = false;
 
 				foodLoc = getFoodSpawn(tailX, tailY, concepts.x, concepts.y, SCALE, WSCALE, concepts.tailLength);
-				if (food.x == -100 && food.y == -100) {
-					redo = true;
+				if (concepts.food->getRect().x == -100 && concepts.food->getRect().y == -100) {
+					concepts.redo = true;
 				}
 
-				food.x = foodLoc.first;
-				food.y = foodLoc.second;
+				concepts.food->getRect().x = foodLoc.first;
+				concepts.food->getRect().y = foodLoc.second;
 			}
 
 		}
@@ -781,20 +783,20 @@ int main(int argc, char* argv[]) {
 			tailX.clear();
 			tailY.clear();
 			concepts.tailLength = 0;
-			redo = false;
+			concepts.redo = false;
 			foodLoc = getFoodSpawn(tailX, tailY, concepts.x, concepts.y, SCALE, WSCALE, concepts.tailLength);
-			food.x = foodLoc.first;
-			food.y = foodLoc.second;
+			concepts.food->getRect().x = foodLoc.first;
+			concepts.food->getRect().y = foodLoc.second;
 
-			if (food.x == -100 && food.y == -100) {
-				redo = true;
+			if (concepts.food->getRect().x == -100 && concepts.food->getRect().y == -100) {
+				concepts.redo = true;
 			}
 
 		}
         }
 
 		// Render everything
-		renderFood(game.renderer, food);
+		renderFood(game.renderer, concepts.food->getRect());
 		renderPlayer(game.renderer, player.getRect(), concepts.x, concepts.y, SCALE, tailX, tailY, concepts.tailLength);
 		renderScore(game.renderer, concepts.tailLength, SCALE, WSCALE);
 
