@@ -44,7 +44,7 @@ typedef struct {
     const Uint8* state;
 
     Entity *food;
-    Entity *snake;
+    Entity *player;
     Timeline *a;
 
     Entity *s;

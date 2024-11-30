@@ -531,26 +531,29 @@ int main(int argc, char* argv[]) {
 	SDL_Event event;
 
 	// This is the player rectangle, set all values to 0
-	SDL_Rect player;
-	player.x = 0;
-	player.y = 0;
-	player.h = 0;
-	player.w = 0;
+    Entity player(0, 0, 0, 0,{173, 216, 230, 255}, false, 0); // Purple moving shape.
+    concepts.player = &player;
+
+	// SDL_Rect player;
+	// player.x = 0;
+	// player.y = 0;
+	// player.h = 0;
+	// player.w = 0;
 
 	// tailLength is incremented every time the snake eats food
-	int tailLength = 0;
-
+	// int tailLength = 0;
+    concepts.tailLength=0;
 	// Vectors for storage of tail block positions
 	vector<int> tailX;
 	vector<int> tailY;
 
 	// Size of tiles
-	int scale = 24;
-	int wScale = 24;
+	// int scale = 24;
+	// int wScale = 24;
 
 	// Player position variables
-	int x = 0;
-	int y = 0;
+	concepts.x = 0;
+	concepts.y = 0;
 	int prevX = 0;
 	int prevY = 0;
 
@@ -565,12 +568,12 @@ int main(int argc, char* argv[]) {
 
 	// Food rectangle
 	SDL_Rect food;
-	food.w = scale;
-	food.h = scale;
+	food.w = SCALE;
+	food.h = SCALE;
 	food.x = 0;
 	food.y = 0;
 	
-	pair<int, int> foodLoc = getFoodSpawn(tailX, tailY, x, y, scale, wScale, tailLength);
+	pair<int, int> foodLoc = getFoodSpawn(tailX, tailY, concepts.x, concepts.y, SCALE, WSCALE, concepts.tailLength);
 	food.x = foodLoc.first;
 	food.y = foodLoc.second;
 
@@ -590,19 +593,19 @@ int main(int argc, char* argv[]) {
 		inputThisFrame = false;
 
 		// Check win condition, tail needs to fill all tiles
-		if (tailLength >= 575) {
-			youWin(game.renderer, event, scale, wScale, tailLength);
-			x = 0;
-			y = 0;
+		if (concepts.tailLength >= 575) {
+			youWin(game.renderer, event, SCALE, WSCALE, concepts.tailLength);
+			concepts.x = 0;
+			concepts.y = 0;
 			up = false;
 			left = false;
 			right = false;
 			down = false;
 			tailX.clear();
 			tailY.clear();
-			tailLength = 0;
+			concepts.tailLength = 0;
 			redo = false;
-			foodLoc = getFoodSpawn(tailX, tailY, x, y, scale, wScale, tailLength);
+			foodLoc = getFoodSpawn(tailX, tailY, concepts.x, concepts.y, SCALE, WSCALE, concepts.tailLength);
 
 			if (food.x == -100 && food.y == -100) {
 				redo = true;
@@ -711,25 +714,25 @@ int main(int argc, char* argv[]) {
         if (!concepts.a->isPaused) {
 
 		// The previous position of the player block
-		prevX = x;
-		prevY = y;
+		prevX = concepts.x;
+		prevY = concepts.y;
 
 		if (up) {
-			y -= delta * scale;
+			concepts.y -= delta * SCALE;
 		}
 		else if (left) {
-			x -= delta * scale;
+			concepts.x -= delta * SCALE;
 		}
 		else if (right) {
-			x += delta * scale;
+			concepts.x += delta * SCALE;
 		}
 		else if (down) {
-			y += delta * scale;
+			concepts.y += delta * SCALE;
 		}
 
 		if (redo == true) {
 			redo = false;
-			foodLoc = getFoodSpawn(tailX, tailY, x, y, scale, wScale, tailLength);
+			foodLoc = getFoodSpawn(tailX, tailY, concepts.x, concepts.y, SCALE, WSCALE, concepts.tailLength);
 			food.x = foodLoc.first;
 			food.y = foodLoc.second;
 
@@ -740,10 +743,10 @@ int main(int argc, char* argv[]) {
 		}
 
 		// Collision detection, has played collided with food?
-		if (checkCollision(food.x, food.y, x, y)) {
+		if (checkCollision(food.x, food.y, concepts.x, concepts.y)) {
 
 			// Spawn new food after it has been eaten
-			foodLoc = getFoodSpawn(tailX, tailY, x, y, scale, wScale, tailLength);
+			foodLoc = getFoodSpawn(tailX, tailY, concepts.x, concepts.y, SCALE, WSCALE, concepts.tailLength);
 			food.x = foodLoc.first;
 			food.y = foodLoc.second;
 
@@ -751,21 +754,21 @@ int main(int argc, char* argv[]) {
 				redo = true;
 			}
 
-			tailLength++;
+			concepts.tailLength++;
 		}
 
 		// Only runs in the frames where the player block has moved
-		if (delta * scale == 24) {
+		if (delta * SCALE == 24) {
 
 			// Update tail size and position
-			if (tailX.size() != tailLength) {
+			if (tailX.size() != concepts.tailLength) {
 				tailX.push_back(prevX);
 				tailY.push_back(prevY);
 			}
 
 			//Loop through every tail block, move all blocks to the nearest block in front
 			//This updates the blocks from end (farthest from player block) to the start (nearest to player block)
-			for (int i = 0; i < tailLength; i++) {
+			for (int i = 0; i < concepts.tailLength; i++) {
 
 				if (i > 0) {
 					tailX[i - 1] = tailX[i];
@@ -774,30 +777,30 @@ int main(int argc, char* argv[]) {
 
 			}
 
-			if (tailLength > 0) {
-				tailX[tailLength - 1] = prevX;
-				tailY[tailLength - 1] = prevY;
+			if (concepts.tailLength > 0) {
+				tailX[concepts.tailLength - 1] = prevX;
+				tailY[concepts.tailLength - 1] = prevY;
 			}
 
 		}
 		
 		// Game over if player has collided with a tail block, also reset everything
-		for (int i = 0; i < tailLength; i++) {
+		for (int i = 0; i < concepts.tailLength; i++) {
 
-			if (x == tailX[i] && y == tailY[i]) {
-				gameOver(game.renderer, event, scale, wScale, tailLength);
-				x = 0;
-				y = 0;
+			if (concepts.x == tailX[i] && concepts.y == tailY[i]) {
+				gameOver(game.renderer, event, SCALE, WSCALE, concepts.tailLength);
+				concepts.x = 0;
+				concepts.y = 0;
 				up = false;
 				left = false;
 				right = false;
 				down = false;
 				tailX.clear();
 				tailY.clear();
-				tailLength = 0;
+				concepts.tailLength = 0;
 				redo = false;
 
-				foodLoc = getFoodSpawn(tailX, tailY, x, y, scale, wScale, tailLength);
+				foodLoc = getFoodSpawn(tailX, tailY, concepts.x, concepts.y, SCALE, WSCALE, concepts.tailLength);
 				if (food.x == -100 && food.y == -100) {
 					redo = true;
 				}
@@ -809,19 +812,19 @@ int main(int argc, char* argv[]) {
 		}
 
 		// Game over if player out of bounds, also resets the game state
-		if (x < 0 || y < 0 || x > scale * wScale - scale || y > scale * wScale - scale) {
-			gameOver(game.renderer, event, scale, wScale, tailLength);
-			x = 0;
-			y = 0;
+		if (concepts.x < 0 || concepts.y < 0 || concepts.x > SCALE * WSCALE - SCALE || concepts.y > SCALE * WSCALE - SCALE) {
+			gameOver(game.renderer, event, SCALE, WSCALE, concepts.tailLength);
+			concepts.x = 0;
+			concepts.y = 0;
 			up = false;
 			left = false;
 			right = false;
 			down = false;
 			tailX.clear();
 			tailY.clear();
-			tailLength = 0;
+			concepts.tailLength = 0;
 			redo = false;
-			foodLoc = getFoodSpawn(tailX, tailY, x, y, scale, wScale, tailLength);
+			foodLoc = getFoodSpawn(tailX, tailY, concepts.x, concepts.y, SCALE, WSCALE, concepts.tailLength);
 			food.x = foodLoc.first;
 			food.y = foodLoc.second;
 
@@ -834,8 +837,8 @@ int main(int argc, char* argv[]) {
 
 		// Render everything
 		renderFood(game.renderer, food);
-		renderPlayer(game.renderer, player, x, y, scale, tailX, tailY, tailLength);
-		renderScore(game.renderer, tailLength, scale, wScale);
+		renderPlayer(game.renderer, player.getRect(), concepts.x, concepts.y, SCALE, tailX, tailY, concepts.tailLength);
+		renderScore(game.renderer, concepts.tailLength, SCALE, WSCALE);
 
 		SDL_RenderDrawLine(game.renderer, 0, 0, 0, 24 * 24);
 		SDL_RenderDrawLine(game.renderer, 0, 24*24, 24 * 24, 24 * 24);
