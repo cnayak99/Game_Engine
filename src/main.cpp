@@ -518,6 +518,12 @@ int main(int argc, char* argv[]) {
     concepts.quit = false;
 
     Timeline anchor(nullptr, 1);
+
+	//Register Events here
+    InputHandler inputHandler(&concepts, &game, &eventManager);
+    eventManager.registerListener("input", &inputHandler);
+
+
 	// Init everything so we have everything
 	if (!initializeSDL(&game.window, &game.renderer)) {
         return 1; // If unsuccessful, initialization failed.
@@ -534,22 +540,11 @@ int main(int argc, char* argv[]) {
     Entity player(0, 0, 0, 0,{173, 216, 230, 255}, false, 0); // Purple moving shape.
     concepts.player = &player;
 
-	// SDL_Rect player;
-	// player.x = 0;
-	// player.y = 0;
-	// player.h = 0;
-	// player.w = 0;
 
-	// tailLength is incremented every time the snake eats food
-	// int tailLength = 0;
     concepts.tailLength=0;
 	// Vectors for storage of tail block positions
 	vector<int> tailX;
 	vector<int> tailY;
-
-	// Size of tiles
-	// int scale = 24;
-	// int wScale = 24;
 
 	// Player position variables
 	concepts.x = 0;
@@ -569,11 +564,6 @@ int main(int argc, char* argv[]) {
 	// Food rectangle
 	Entity food(0, 0, SCALE, SCALE,{173, 216, 230, 255}, false, 0); 
     concepts.food = &food;
-	// SDL_Rect food;
-	// food.w = SCALE;
-	// food.h = SCALE;
-	// food.x = 0;
-	// food.y = 0;
 	
 	pair<int, int> foodLoc = getFoodSpawn(tailX, tailY, concepts.x, concepts.y, SCALE, WSCALE, concepts.tailLength);
 	concepts.food->getRect().x = foodLoc.first;
@@ -642,32 +632,40 @@ int main(int argc, char* argv[]) {
 
         if (!concepts.inputThisFrame) {
             if (!concepts.down && concepts.state[SDL_SCANCODE_UP]) {
-                concepts.up = true;
-                concepts.left = false;
-                concepts.right = false;
-                concepts.down = false;
-                concepts.inputThisFrame = true;
-            }
+				int64_t currentTimestamp = timeThreads.getTimeline();
+				Event inputEvent("input", currentTimestamp);
+				Variant keyCode;
+				keyCode.type = Variant::TYPE_INT;
+				keyCode.asInt = SDL_SCANCODE_UP;
+				inputEvent.parameters["keyCode"] = keyCode;
+				eventManager.raiseEvent(inputEvent);
+			}
             else if (!concepts.right && concepts.state[SDL_SCANCODE_LEFT]) {
-                concepts.up = false;
-                concepts.left = true;
-                concepts.right = false;
-                concepts.down = false;
-                concepts.inputThisFrame = true;
+				int64_t currentTimestamp = timeThreads.getTimeline();
+				Event inputEvent("input", currentTimestamp);
+				Variant keyCode;
+				keyCode.type = Variant::TYPE_INT;
+				keyCode.asInt = SDL_SCANCODE_LEFT;
+				inputEvent.parameters["keyCode"] = keyCode;
+				eventManager.raiseEvent(inputEvent);
             }
             else if (!concepts.up && concepts.state[SDL_SCANCODE_DOWN]) {
-                concepts.up = false;
-                concepts.left = false;
-                concepts.right = false;
-                concepts.down = true;
-               concepts.inputThisFrame = true;
+				int64_t currentTimestamp = timeThreads.getTimeline();
+				Event inputEvent("input", currentTimestamp);
+				Variant keyCode;
+				keyCode.type = Variant::TYPE_INT;
+				keyCode.asInt = SDL_SCANCODE_DOWN;
+				inputEvent.parameters["keyCode"] = keyCode;
+				eventManager.raiseEvent(inputEvent);
             }
             else if (!concepts.left && concepts.state[SDL_SCANCODE_RIGHT]) {
-                concepts.up = false;
-                concepts.left = false;
-                concepts.right = true;
-                concepts.down = false;
-                concepts.inputThisFrame = true;
+				int64_t currentTimestamp = timeThreads.getTimeline();
+				Event inputEvent("input", currentTimestamp);
+				Variant keyCode;
+				keyCode.type = Variant::TYPE_INT;
+				keyCode.asInt = SDL_SCANCODE_RIGHT;
+				inputEvent.parameters["keyCode"] = keyCode;
+				eventManager.raiseEvent(inputEvent);
             }
         }
         
@@ -793,7 +791,8 @@ int main(int argc, char* argv[]) {
 			}
 
 		}
-        }
+		eventManager.dispatchEvents();
+    }
 
 		// Render everything
 		renderFood(game.renderer, concepts.food->getRect());
