@@ -18,8 +18,8 @@ private:
     SDL_Renderer* renderer;
 
 public:
-    InputHandler(Concepts* c, Game* g, EventManager* em)
-        : concepts(c), game(g), eventManager(em){}
+InputHandler(Concepts* c, Game* g, EventManager* em, ReplayManager* rm, SDL_Renderer* r)
+        : concepts(c), game(g), eventManager(em), replayManager(rm), renderer(r) {}
     // InputHandler(Concepts* c, Game* g, EventManager* em, ReplayManager* rm, SDL_Renderer* r)
     //     : concepts(c), game(g), eventManager(em), replayManager(rm), renderer(r) {}
     

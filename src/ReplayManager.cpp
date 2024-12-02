@@ -11,10 +11,10 @@ using namespace std;
 void ReplayManager::startRecording() {
     isRecording = true;
     // recordedEntities.clear();  // Clear previous recordings
-    recordedEntitiesM.clear(); 
-    recordedEntitiesC.clear(); 
+    recordedEntitiesP.clear(); 
+    recordedEntitiesB.clear(); 
     recordedEntitiesV.clear(); 
-    recordedEntitiesS.clear();
+    // recordedEntitiesS.clear();
     std::cout << "Recording started.\n";
 }
 
@@ -24,7 +24,7 @@ void ReplayManager::stopRecording() {
 }
 
 void ReplayManager::startReplay() {
-    if (!recordedEntitiesV.empty() && !recordedEntitiesC.empty() && !recordedEntitiesM.empty()) {
+    if (!recordedEntitiesP.empty() && !recordedEntitiesB.empty()) {
         isReplaying = true;
         std::cout << "Replay started.\n";
     } else {
@@ -37,20 +37,21 @@ void ReplayManager::stopReplay() {
     std::cout << "Replay stopped.\n";
 }
 
-void ReplayManager::recordEntity(const Entity* entity, int64_t timestamp, char type) {
+void ReplayManager::recordEntity(const Entity* entity, int64_t timestamp, const std::vector<bool>& bricks, int& livesCount, char type) {
     if (isRecording) {
+
         SDL_Rect recordedPosition = entity->getRect();
-        RecordedEntity recordedEntity = {entity, recordedPosition, timestamp};
+        RecordedEntity recordedEntity = {entity, recordedPosition, timestamp, bricks,livesCount};
 
         switch (type) {
-            case 'M':
-                recordedEntitiesM.push_back(recordedEntity);
+            case 'P':
+                recordedEntitiesP.push_back(recordedEntity);
+                break;
+            case 'B':
+                recordedEntitiesB.push_back(recordedEntity);
                 break;
             case 'V':
                 recordedEntitiesV.push_back(recordedEntity);
-                break;
-            case 'C':
-                recordedEntitiesC.push_back(recordedEntity);
                 break;
             case 'S':
                 recordedEntitiesS.push_back(recordedEntity);
@@ -70,50 +71,42 @@ void ReplayManager::recordEntity(const Entity* entity, int64_t timestamp, char t
 }
 
 void ReplayManager::playReplay(SDL_Renderer* renderer) {
-    if (recordedEntitiesM.empty() && recordedEntitiesV.empty() && recordedEntitiesC.empty()) return;
+    if (recordedEntitiesP.empty()&& recordedEntitiesB.empty()&& recordedEntitiesV.empty()) return;
 
     int64_t startTime = SDL_GetTicks64();
-    size_t indexM = 0;
-    size_t indexC = 0;
+    size_t indexP = 0;
+    size_t indexB = 0;
     size_t indexV = 0;
-    size_t indexS = 0;
+    // size_t indexS = 0;
 
-    while (indexM < recordedEntitiesM.size() || indexC < recordedEntitiesC.size() || indexV < recordedEntitiesV.size() || indexS < recordedEntitiesS.size()) {
-        SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255); // Set background color (blue)
+    while (indexP < recordedEntitiesP.size()|| indexB < recordedEntitiesB.size() || indexV < recordedEntitiesV.size()) {
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Set background color (blue)
         SDL_RenderClear(renderer);
 
-        renderStaticPlatforms(renderer, concepts->tileMap);        // Process one element from recordedEntitiesC
-        if (indexC < recordedEntitiesC.size()) {
-            const auto& recordedEntity = recordedEntitiesC[indexC];
+        if (indexB < recordedEntitiesB.size()) {
+            const auto& recordedEntity = recordedEntitiesB[indexB];
             if (recordedEntity.entity != nullptr) {
                 SDL_Rect rect = recordedEntity.position;
-
-                SDL_SetRenderDrawColor(renderer,
-                                       recordedEntity.entity->getColor().r,
-                                       recordedEntity.entity->getColor().g,
-                                       recordedEntity.entity->getColor().b,
-                                       255);
-
+                SDL_SetRenderDrawColor(renderer,255,255,255,255);
                 SDL_RenderFillRect(renderer, &rect);
             }
-            ++indexC;
+            ++indexB;
         }
 
         // Process one element from recordedEntitiesM
-        if (indexM < recordedEntitiesM.size()) {
-            const auto& recordedEntity = recordedEntitiesM[indexM];
+        if (indexP < recordedEntitiesP.size()) {
+            const auto& recordedEntity = recordedEntitiesP[indexP];
             if (recordedEntity.entity != nullptr) {
                 SDL_Rect rect = recordedEntity.position;
 
-                SDL_SetRenderDrawColor(renderer,
-                                       recordedEntity.entity->getColor().r,
-                                       recordedEntity.entity->getColor().g,
-                                       recordedEntity.entity->getColor().b,
-                                       255);
+                SDL_SetRenderDrawColor(renderer,255,255,255,255);
 
                 SDL_RenderFillRect(renderer, &rect);
+                renderText(std::to_string(recordedEntity.livesCount), WIDTH/2+FONT_SIZE/2, FONT_SIZE*1.5, renderer, concepts->lives->getRect());
+
             }
-            ++indexM;
+            
+            ++indexP;
         }
 
         if (indexV < recordedEntitiesV.size()) {
@@ -121,32 +114,40 @@ void ReplayManager::playReplay(SDL_Renderer* renderer) {
             if (recordedEntity.entity != nullptr) {
                 SDL_Rect rect = recordedEntity.position;
 
-                SDL_SetRenderDrawColor(renderer,
-                                       recordedEntity.entity->getColor().r,
-                                       recordedEntity.entity->getColor().g,
-                                       recordedEntity.entity->getColor().b,
-                                       255);
+                // SDL_SetRenderDrawColor(renderer,
+                //                        recordedEntity.entity->getColor().r,
+                //                        recordedEntity.entity->getColor().g,
+                //                        recordedEntity.entity->getColor().b,
+                //                        255);
 
-                SDL_RenderFillRect(renderer, &rect);
+                // SDL_RenderFillRect(renderer, &rect);
+                for(int i=0; i<COL*ROW; i++) {
+                    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+                    if(i%2==0)SDL_SetRenderDrawColor(renderer, 0,255, 0, 255);
+                    if(recordedEntity.bricks[i]) {
+                        setBricks(i,rect);
+                        SDL_RenderFillRect(renderer, &rect);
+                    }
+                }
             }
             ++indexV;
         }
 
-        if (indexS < recordedEntitiesS.size()) {
-            const auto& recordedEntity = recordedEntitiesS[indexS];
-            if (recordedEntity.entity != nullptr) {
-                SDL_Rect rect = recordedEntity.position;
+        // if (indexS < recordedEntitiesS.size()) {
+        //     const auto& recordedEntity = recordedEntitiesS[indexS];
+        //     if (recordedEntity.entity != nullptr) {
+        //         SDL_Rect rect = recordedEntity.position;
 
-                SDL_SetRenderDrawColor(renderer,
-                                       recordedEntity.entity->getColor().r,
-                                       recordedEntity.entity->getColor().g,
-                                       recordedEntity.entity->getColor().b,
-                                       255);
+        //         SDL_SetRenderDrawColor(renderer,
+        //                                recordedEntity.entity->getColor().r,
+        //                                recordedEntity.entity->getColor().g,
+        //                                recordedEntity.entity->getColor().b,
+        //                                255);
 
-                SDL_RenderFillRect(renderer, &rect);
-            }
-            ++indexV;
-        }
+        //         SDL_RenderFillRect(renderer, &rect);
+        //     }
+        //     ++indexV;
+        // }
 
         // Present the rendered frame
         SDL_RenderPresent(renderer);
@@ -160,54 +161,24 @@ void ReplayManager::playReplay(SDL_Renderer* renderer) {
         startTime = SDL_GetTicks64();
     }
 }
-
-void ReplayManager::renderStaticPlatforms(SDL_Renderer* renderer, Entity* tileMap[MAP_WIDTH][MAP_HEIGHT]) {
-    for (int j = 0; j < MAP_HEIGHT; j++) {
-        for (int i = 0; i < MAP_WIDTH; i++) {
-            if (tileMap[i][j] != nullptr) {
-                tileMap[i][j]->render(renderer);
-            }
-        }
-    }
+void ReplayManager::setBricks(int i, SDL_Rect& brick) {
+    brick.x = (((i % COL) + 1) * SPACING) + ((i % COL) * brick.w) - (SPACING / 2);
+    brick.y = brick.h * 3 + (((i % ROW) + 1) * SPACING) + ((i % ROW) * brick.h) - (SPACING / 2);
 }
-// void ReplayManager::playReplay(SDL_Renderer* renderer) {
-//     if (recordedEntitiesM.empty() && recordedEntitiesV.empty() && recordedEntitiesC.empty()) return;
 
-//     int64_t startTime = SDL_GetTicks64();
-
-//     auto renderEntities = [&](const std::vector<RecordedEntity>& entities) {
-//         for (const auto& recordedEntity : entities) {
-//             if (recordedEntity.entity != nullptr) {
-//                 SDL_Rect rect = recordedEntity.position;
-
-//                 SDL_SetRenderDrawColor(renderer,
-//                                        recordedEntity.entity->getColor().r,
-//                                        recordedEntity.entity->getColor().g,
-//                                        recordedEntity.entity->getColor().b,
-//                                        255);
-
-//                 SDL_RenderFillRect(renderer, &rect);
-//             }
-//         }
-//     };
-
-//     while (isReplaying) {
-//         SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255); // Set background color (blue)
-//         SDL_RenderClear(renderer);
-
-//         // Render all entities in one go
-//         renderEntities(recordedEntitiesC);
-//         renderEntities(recordedEntitiesM);
-//         renderEntities(recordedEntitiesV);
-
-//         SDL_RenderPresent(renderer);
-
-//         // Add a delay to simulate timing between frames
-//         int64_t elapsedTime = SDL_GetTicks64() - startTime;
-//         if (elapsedTime < 16) {  // Assuming a frame duration of ~16ms for 60 FPS
-//             SDL_Delay(16 - elapsedTime);
-//         }
-
-//         startTime = SDL_GetTicks64();
-//     }
-// }
+void ReplayManager::renderText(std::string text, int x, int y, SDL_Renderer* renderer, SDL_Rect& lives) {
+    SDL_Surface* surface;
+    SDL_Texture* texture;
+    TTF_Font* font = TTF_OpenFont((char*)"/usr/share/fonts/truetype/msttcorefonts/arial.ttf", 25);
+    std::string fullText = "Lives Remaining: " + text;
+    const char* t = fullText.c_str(); 
+    surface = TTF_RenderText_Solid(font, t, {255,255,255});
+    texture = SDL_CreateTextureFromSurface(renderer, surface);
+    lives.w = surface->w;
+    lives.h = surface->h;
+    lives.x = x - lives.w + 100;
+    lives.y = y - lives.h;
+    SDL_FreeSurface(surface);
+    SDL_RenderCopy(renderer, texture, NULL, &lives);
+    SDL_DestroyTexture(texture);
+}

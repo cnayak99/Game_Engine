@@ -17,4 +17,14 @@
 #define SCALE 24
 #define WSCALE 24
 
+#define WIDTH 620
+#define HEIGHT 720
+#define SPEED 9
+#define FONT_SIZE 32
+#define BALL_SPEED 8
+#define BALL_SIZE 16
+#define COL 7
+#define ROW 5
+#define PI 3.14
+#define SPACING 16
 #endif // DEFS_H

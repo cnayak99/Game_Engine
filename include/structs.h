@@ -5,17 +5,20 @@
 #include "Entity.h"
 #include "Timeline.h"
 #include "defs.h"
+#include <SDL2/SDL_ttf.h>
 
 class Entity;
 
 typedef struct {
     SDL_Renderer *renderer;
     SDL_Window *window;
+    TTF_Font* font;
 } Game;
 
 /** Holds all necessary concepts. */
 typedef struct {
     bool scaling;
+    bool running;
     bool held;
 
     float gravity;
@@ -23,28 +26,21 @@ typedef struct {
     float verticalVel;
     float thrust;
     int moveSpeed;
-    int tailLength;
     float delta;
-
+    int liveCount;
+    float velY;
+    float velX;
     	// Player position variables
-	int x;
-	int y;
-	int prevX;
-	int prevY;
 
 	// Movement controls
-	bool up;
-	bool down;
-	bool right ;
-	bool left;
 
-	bool inputThisFrame;
-	bool redo;
 
     const Uint8* state;
 
-    Entity *food;
-    Entity *player;
+    Entity *ball;
+    Entity *paddle;
+    Entity *brick;
+    Entity *lives;
     Timeline *a;
 
     Entity *s;
