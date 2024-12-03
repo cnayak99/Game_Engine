@@ -1,0 +1,58 @@
+#include "Entity.h"
+
+Entity::Entity(int x, int y, int width, int height, SDL_Color color, bool weighted, int special)
+    : velocity({0, 0}), color(color), weighted(weighted), special(special){
+        rect.x = x;
+        rect.y = y;
+        rect.w = width;
+        rect.h = height;
+    }// Initialize in the same order as declared
+
+
+void Entity::render(SDL_Renderer* renderer) {
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+    SDL_RenderFillRect(renderer, &rect);
+}
+
+void Entity::move(int dx, int dy) {
+    rect.x += dx;
+    rect.y += dy;
+}
+
+void Entity::setVelocity(float vx, float vy) {
+    velocity.x = vx;
+    velocity.y = vy;
+}
+
+void Entity::setPosition(int x, int y) {
+    rect.x = x;
+    rect.y = y;  
+}
+
+void Entity::setColor(SDL_Color color) {
+    this->color = color;
+}
+
+void Entity::setWeight(bool w) {
+    weighted = w;
+}
+
+SDL_Rect& Entity::getRect() {
+    return rect; // Allows modification of rect
+}
+
+const SDL_Rect& Entity::getRect() const {
+    return rect; // Read-only access
+}
+
+SDL_Color Entity::getColor() const {
+    return color;
+}
+
+bool Entity::getWeight() const {
+    return weighted;
+}
+
+int Entity::getSpecial() const {
+    return special;
+}
