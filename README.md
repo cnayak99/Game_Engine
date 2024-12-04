@@ -8,6 +8,12 @@ Left Arrow Key = Moves the snake's head to the left.
 
 Right Arrow Key = Moves the snake's head to the right.
 
+R = Records the game.
+
+S = Stops recording the game.
+
+k = Start replaying the recorded gameplay
+
 O = Pauses the game.
 
 P = Unpauses the game.
