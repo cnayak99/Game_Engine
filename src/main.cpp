@@ -25,26 +25,256 @@
 using namespace std; 
 using json = nlohmann::json;
 
-/**
- * Runs the game.
- * 
- * Use this main function for all Homework 2 Sections except Sections 2 and 3.
- * 
- * References resources and tutorials provided by Professor Card through
- * the "CSC 481-581 HW 1-4.pdf" located beneath the "Homework 1" title in
- * the "CSC 481/581 (001) Fall 2024 Game Engine Foundations" course
- * Moodle page. These resources can be found in the
- * https://wiki.libsdl.org/SDL2/FrontPage website.
- * 
- * \param argc the count argument
- * \param argv the string argument
- * \returns int 0 if successful, else, unsuccessful
- * 
- * @author Lillie Sharpe
- * @author Chinmay Nayak
- * @author Robbie Martin
- */
 
+json parseUpdatedPositions(const std::string& updatedPositions) {
+    return json::parse(updatedPositions); // Parse the JSON string into a JSON object
+}
+
+json variantToJson(const Variant& variant) {
+    json j;
+    switch (variant.type) {
+        case Variant::TYPE_INT:
+            j["type"] = "int";
+            j["value"] = variant.asInt;
+            break;
+        case Variant::TYPE_FLOAT:
+            j["type"] = "float";
+            j["value"] = variant.asFloat;
+            break;
+        case Variant::TYPE_STRING:
+            j["type"] = "string";
+            j["value"] = variant.asString;
+            break;
+    }
+    return j;
+}
+
+// Helper function to convert Event to JSON
+json eventToJson(const Event& event) {
+    json j;
+    j["type"] = event.type;
+    j["timestamp"] = event.timestamp;
+
+    // Convert each parameter in the event's parameters map
+    for (const auto& param : event.parameters) {
+        j["parameters"][param.first] = variantToJson(param.second);
+    }
+    return j;
+}
+
+Variant jsonToVariant(const json& j) {
+    Variant v;
+    
+    std::string typeStr = j["type"];
+    
+    if (typeStr == "int") {
+        v.type = Variant::TYPE_INT;
+        v.asInt = j["value"];
+        
+    } else if (typeStr == "float") {
+        v.type = Variant::TYPE_FLOAT;
+        v.asFloat = j["value"];
+        
+    } else if (typeStr == "string") {
+        v.type = Variant::TYPE_STRING;
+        v.asString = j["value"].get<std::string>().c_str();
+        
+    }
+    
+    return v;
+}
+
+// Helper function to convert JSON back into an Event
+Event jsonToEvent(const json& j) {
+    
+    int64_t timestamp = j["timestamp"];
+    
+    Event event(j["type"], timestamp);
+    
+    for (const auto& param : j["parameters"].items()) {
+        event.parameters[param.key()] = jsonToVariant(param.value());
+        
+    }
+    
+   return event; 
+}
+
+void printPositions(const json& positions) {
+    for (const auto& position : positions) {
+        std::string clientId = position["clientId"];
+        std::string clientAddr = position["clientAddr"];
+        int x = position["position"]["x"];
+        int y = position["position"]["y"];
+        cout<< "ClientAddr: "<<clientAddr<< " X: "<< x<<" Y: "<< y<<endl;
+    }
+}
+
+
+std::mutex knownAddressesMutex;
+/*
+This code has been referred from the zeromq official wesite
+Links:
+1) https://zguide.zeromq.org/docs/chapter3/
+2) https://zguide.zeromq.org/docs/chapter5/
+3) http://wiki.zeromq.org/tutorials:dealer-and-router
+*/
+
+void broadcastPosition(std::unordered_map<std::string, zmq::socket_t>& dealerSockets, const std::string& positionData) {
+    std::lock_guard<std::mutex> lock(knownAddressesMutex); // Lock for thread safety
+    for (auto& [addr, socket] : dealerSockets) {
+        zmq::message_t msg(positionData.size());
+        memcpy(msg.data(), positionData.c_str(), positionData.size());
+
+        // Send the message
+        socket.send(std::move(msg), zmq::send_flags::none);
+    }
+}
+/*
+This code has been referred from the zeromq official wesite
+Links:
+1) https://zguide.zeromq.org/docs/chapter3/
+2) https://zguide.zeromq.org/docs/chapter5/
+3) http://wiki.zeromq.org/tutorials:dealer-and-router
+*/
+
+// Function to listen for updates and establish connections
+void listenForUpdates(zmq::socket_t& subscriberSocket, std::unordered_map<std::string, zmq::socket_t>& dealerSockets, zmq::context_t& context, const std::string& clientAddress, std::unordered_map<std::string, SDL_Rect>& entityPositions, std::mutex& positionMutex, EventManager& eventManager, std::string& clientId) {
+    while (true) {
+        zmq::message_t update;
+        subscriberSocket.recv(update, zmq::recv_flags::none);
+        std::string updateStr(static_cast<char*>(update.data()), update.size());
+
+        try {
+            auto jsonData = json::parse(updateStr);
+            // Check for disconnect notification
+            if (jsonData.contains("eventType")&& jsonData.contains("clientId")) {
+                std::string receivedClientId = jsonData["clientId"];
+                if(receivedClientId == clientId){
+                Event receivedEvent = jsonToEvent(jsonData);
+                   
+                std::cout << "Received Event: " << receivedEvent.type 
+                            << ", Timestamp: " << receivedEvent.timestamp 
+                            << ", Spawn Code: " << receivedEvent.parameters["spawnCode"].asInt << std::endl;
+
+                int64_t currentTimestamp = receivedEvent.timestamp;
+                // Create the spawn event.
+                Event spawnEvent("spawn", currentTimestamp);
+                // Creates a spawn code for the death zone collision scenario.
+                Variant spawnCode;
+                spawnCode.type = Variant::TYPE_INT;
+                spawnCode.asInt = receivedEvent.parameters["spawnCode"].asInt;
+                spawnEvent.parameters["spawnCode"] = spawnCode;
+
+                eventManager.raiseEvent(spawnEvent);
+                cout<<"Spawn Event is Raised in the listen function"<<endl;
+                continue;
+            }else continue;
+            }   
+            // Check for disconnect notification
+            if (jsonData.contains("disconnectedClientId")) {
+                std::string disconnectedClientId = jsonData["disconnectedClientId"];
+                // Remove from active clients
+                std::lock_guard<std::mutex> lock(positionMutex);
+                entityPositions.erase(disconnectedClientId);
+                continue;
+            }
+
+            std::cout << "Received updated client addresses:" << std::endl;
+            for (auto& [id, addr] : jsonData.items()) {
+                std::cout << id << ": " << addr << std::endl;
+
+                // Ensure addr is treated as a string
+                std::string addrStr = addr.get<std::string>();
+
+                if (addrStr == clientAddress) {
+                    // Skip connecting to itself
+                    continue;
+                }
+
+                std::lock_guard<std::mutex> lock(knownAddressesMutex);
+                if (dealerSockets.find(addrStr) == dealerSockets.end() && jsonData.size() > 1) {
+                    zmq::socket_t dealerSocket(context, ZMQ_DEALER);
+                    dealerSocket.setsockopt(ZMQ_IDENTITY, clientAddress.c_str(), clientAddress.size());
+                    dealerSocket.connect(addrStr);
+                    dealerSockets[addrStr] = std::move(dealerSocket);
+
+                    // Send a connect message with client address
+                    std::string connectMessage = "CONNECT:" + clientAddress;
+                    zmq::message_t connectMsg(connectMessage.size());
+                    memcpy(connectMsg.data(), connectMessage.c_str(), connectMessage.size());
+                    dealerSockets[addrStr].send(std::move(connectMsg), zmq::send_flags::none);
+
+                    // Wait for acknowledgment
+                    zmq::message_t ack;
+                    dealerSockets[addrStr].recv(ack, zmq::recv_flags::none);
+                    std::string ackStr(static_cast<char*>(ack.data()), ack.size());
+                    if (ackStr == "ACK") {
+                        std::cout << "Received acknowledgment from peer at " << addrStr << std::endl;
+                    }
+                }
+            }
+        } catch (const json::parse_error& e) {
+            std::cerr << "Parse error: " << e.what() << std::endl;
+        }
+    }
+}
+
+/*
+This code has been referred from the zeromq official wesite
+Links:
+1) https://zguide.zeromq.org/docs/chapter3/
+2) https://zguide.zeromq.org/docs/chapter5/
+3) http://wiki.zeromq.org/tutorials:dealer-and-router
+*/
+// Function to handle incoming messages from peers
+std::unordered_map<std::string, SDL_Rect> entityPositions;
+std::mutex positionMutex;
+
+void handleIncomingMessages(zmq::socket_t& routerSocket, std::unordered_map<std::string, std::string>& identityToAddressMap) {
+    while (true) {
+        zmq::message_t identity;
+        zmq::message_t message;
+
+        // Receive identity frame
+        routerSocket.recv(identity, zmq::recv_flags::none);
+        std::string identityStr(static_cast<char*>(identity.data()), identity.size());
+
+        // Receive message frame
+        routerSocket.recv(message, zmq::recv_flags::none);
+        std::string msgStr(static_cast<char*>(message.data()), message.size());
+
+        if (msgStr.rfind("CONNECT:", 0) == 0) {
+            std::string senderAddress = msgStr.substr(8);
+            identityToAddressMap[identityStr] = senderAddress;
+            std::cout << "Received connection request from " << senderAddress << ": " << msgStr << std::endl;
+
+            zmq::message_t ackMsg("ACK", 3);
+            routerSocket.send(identity, zmq::send_flags::sndmore);
+            routerSocket.send(ackMsg, zmq::send_flags::none);
+        } else {
+            auto it = identityToAddressMap.find(identityStr);
+            if (it != identityToAddressMap.end()) {
+                try {
+                    auto positionData = nlohmann::json::parse(msgStr);
+                    std::string clientId = positionData["clientId"];
+                    float x = positionData["x"];
+                    float y = positionData["y"];
+
+                    // Update entity position in a thread-safe manner
+                    std::lock_guard<std::mutex> lock(positionMutex);
+                    entityPositions[clientId] = {static_cast<int>(x), static_cast<int>(y), 50, 50}; // Assuming width and height are 50
+
+                } catch (const nlohmann::json::parse_error& e) {
+                    std::cerr << "Error parsing JSON: " << e.what() << std::endl;
+                } catch (const std::exception& e) {
+                    std::cerr << "Error accessing coordinates: " << e.what() << std::endl;
+                }
+            } else {
+                std::cout << "Received message from Unknown: " << msgStr << std::endl;
+            }
+        }
+    }
+}
 void renderPlayer(SDL_Renderer* renderer, SDL_Rect player, int x, int y, int scale, vector<int> tailX, vector<int> tailY, int tailLength) {
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 	player.w = scale;
@@ -236,6 +466,11 @@ void youWin(SDL_Renderer* renderer, SDL_Event event, int scale, int wScale, int 
 }
 
 int main(int argc, char* argv[]) {
+	srand(static_cast<unsigned int>(time(0)));
+    int randomNum = rand() % 10000; // Generate a random number between 0 and 9999
+    std::string clientId = "client" + std::to_string(randomNum);  // Random client ID
+    int clientPort = 5560 + randomNum; // Unique port based on client ID
+    std::string clientAddress = "tcp://127.0.0.1:" + std::to_string(clientPort);
 
     EventManager eventManager;
 
@@ -261,18 +496,21 @@ int main(int argc, char* argv[]) {
 	if (TTF_Init() < 0) {
 		cout << "Error: " << TTF_GetError() << endl;
 	}
+	SDL_Event event;
+    concepts.a = &anchor;
+    Timeline timeThreads(&anchor, 1);
 
 	InputHandler inputHandler(&concepts, &game, &eventManager, &replayManager, game.renderer);
     eventManager.registerListener("input", &inputHandler);
 
 	SpawnHandler spawnHandler(&concepts, &game);
-    // Registers the spawn event handler with the event manager.
     eventManager.registerListener("spawn", &spawnHandler);
+
+	CollisionHandler collisionHandler(&concepts, &game);
+    eventManager.registerListener("collision", &collisionHandler);
 
 	QuitHandler quitHandler(&concepts, &game);
     eventManager.registerListener("quit", &quitHandler);
-
-	SDL_Event event;
 
 	// This is the player rectangle, set all values to 0
     Entity player(0, 0, 0, 0,{173, 216, 230, 255}, false, 0); // Purple moving shape.
@@ -307,14 +545,25 @@ int main(int argc, char* argv[]) {
 	concepts.food->getRect().x = foodLoc.first;
 	concepts.food->getRect().y = foodLoc.second;
 
-    concepts.a = &anchor;
-    Timeline timeThreads(&anchor, 1);
 	// Show the window with these settings and apply a renderer to it
 
 	float time = SDL_GetTicks() / 100;
 
+    int64_t lastTime = anchor.getTimeline();
+
 	// Main game loop, this constantly runs and keeps everything updated
 	while (!concepts.quit) { 
+		int64_t currentTime = anchor.getTimeline();
+        // Calculates delta time.
+        float deltaTime = 0;
+        if (timeThreads.getTicks() != 3) {
+            deltaTime = ((currentTime - lastTime) / timeThreads.getTicks()) / 1000.0f;
+        } else {
+            deltaTime = ((currentTime - lastTime) * 2) / 1000.0f;
+        }
+        // Stores delta time in concepts.
+        concepts.delta = deltaTime;
+		
 		float newTime = SDL_GetTicks() / 75; //This value (75) is the speed at which the blocks are updated
 		float delta = newTime - time;
 		time = newTime;
@@ -389,40 +638,43 @@ int main(int argc, char* argv[]) {
 				printf("Tics set to 2.\n");
 			}
 			        // **Record Button (R)**
-        if (concepts.state[SDL_SCANCODE_R]) {
-            int64_t currentTimestamp = timeThreads.getTimeline();
-            Event recordEvent("input", currentTimestamp);
-            Variant keyCode;
-            keyCode.type = Variant::TYPE_INT;
-            keyCode.asInt = SDL_SCANCODE_R;  // Key for Record
-            recordEvent.parameters["keyCode"] = keyCode;
-            eventManager.raiseEvent(recordEvent);  // Raise Record Event
-        }
+			if (concepts.state[SDL_SCANCODE_R]) {
+				int64_t currentTimestamp = timeThreads.getTimeline();
+				Event recordEvent("input", currentTimestamp);
+				Variant keyCode;
+				keyCode.type = Variant::TYPE_INT;
+				keyCode.asInt = SDL_SCANCODE_R;  // Key for Record
+				recordEvent.parameters["keyCode"] = keyCode;
+				eventManager.raiseEvent(recordEvent);  // Raise Record Event
+			}
 
-        // **Stop Button (S)**
-        if (concepts.state[SDL_SCANCODE_S]) {
-            int64_t currentTimestamp = timeThreads.getTimeline();
-            Event stopEvent("input", currentTimestamp);
-            Variant keyCode;
-            keyCode.type = Variant::TYPE_INT;
-            keyCode.asInt = SDL_SCANCODE_S;  // Key for Stop
-            stopEvent.parameters["keyCode"] = keyCode;
-            eventManager.raiseEvent(stopEvent);  // Raise Stop Event
-        }
+        	// **Stop Button (S)**
+			if (concepts.state[SDL_SCANCODE_S]) {
+				int64_t currentTimestamp = timeThreads.getTimeline();
+				Event stopEvent("input", currentTimestamp);
+				Variant keyCode;
+				keyCode.type = Variant::TYPE_INT;
+				keyCode.asInt = SDL_SCANCODE_S;  // Key for Stop
+				stopEvent.parameters["keyCode"] = keyCode;
+				eventManager.raiseEvent(stopEvent);  // Raise Stop Event
+			}
 
-        // **Replay Button (K)**
-        if (concepts.state[SDL_SCANCODE_K]) {
-            int64_t currentTimestamp = timeThreads.getTimeline();
-            Event replayEvent("input", currentTimestamp);
-            Variant keyCode;
-            keyCode.type = Variant::TYPE_INT;
-            keyCode.asInt = SDL_SCANCODE_K;  // Key for Replay
-            replayEvent.parameters["keyCode"] = keyCode;
-            eventManager.raiseEvent(replayEvent);  // Raise Replay Event
-        }
+			// **Replay Button (K)**
+			if (concepts.state[SDL_SCANCODE_K]) {
+				int64_t currentTimestamp = timeThreads.getTimeline();
+				Event replayEvent("input", currentTimestamp);
+				Variant keyCode;
+				keyCode.type = Variant::TYPE_INT;
+				keyCode.asInt = SDL_SCANCODE_K;  // Key for Replay
+				replayEvent.parameters["keyCode"] = keyCode;
+				eventManager.raiseEvent(replayEvent);  // Raise Replay Event
+			}
 		}
 
-        if (!concepts.inputThisFrame) {
+        
+        
+        if (!concepts.a->isPaused) {
+			if (!concepts.inputThisFrame) {
             if (!concepts.down && concepts.state[SDL_SCANCODE_UP]) {
 				int64_t currentTimestamp = timeThreads.getTimeline();
 				Event inputEvent("input", currentTimestamp);
@@ -460,8 +712,6 @@ int main(int argc, char* argv[]) {
 				eventManager.raiseEvent(inputEvent);
             }
         }
-        
-        if (!concepts.a->isPaused) {
 
 			// The previous position of the player block
 			concepts.prevX = concepts.x;
@@ -615,20 +865,15 @@ int main(int argc, char* argv[]) {
 		// Put everything on screen
 		// Nothing is actually put on screen until this is called
 		SDL_RenderPresent(game.renderer);
-
-		// Choose a color and fill the entire window with it, this resets everything before the next frame
-		// This also give us the background color
 		SDL_SetRenderDrawColor(game.renderer, 0, 0, 0, 255);
 		SDL_RenderClear(game.renderer);
-
+		SDL_Delay(16);
+        lastTime = currentTime;
 		eventManager.dispatchEvents();
 	}
-
+	SDL_DestroyRenderer(game.renderer);
 	SDL_DestroyWindow(game.window);
-
 	TTF_Quit();
-
 	SDL_Quit();
-
 	return 0;
 }
