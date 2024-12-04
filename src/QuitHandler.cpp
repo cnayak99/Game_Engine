@@ -13,7 +13,7 @@ void QuitHandler::gameOver(SDL_Renderer* renderer, SDL_Event event, int scale, i
 	SDL_Color Black = { 0, 0, 0 };
 
 	// Get the font used for displaying text
-	TTF_Font* font = TTF_OpenFont((char*)"/usr/share/fonts/truetype/msttcorefonts/arial.ttf", 10);
+	TTF_Font* font = TTF_OpenFont((char*)"arial.ttf", 10);
 	if (font == NULL) {
 		std::cout << "Font loading error" << std::endl;
 		return;

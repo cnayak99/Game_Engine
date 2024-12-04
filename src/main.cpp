@@ -302,7 +302,7 @@ void renderScore(SDL_Renderer* renderer, int tailLength, int scale, int wScale, 
 	SDL_Color White = { 255,255,255 };
 
 	// Get the font used for displaying text
-	TTF_Font* font = TTF_OpenFont((char*)"/usr/share/fonts/truetype/msttcorefonts/arial.ttf", 10);
+	TTF_Font* font = TTF_OpenFont((char*)"arial.ttf", 10);
 	if (font == NULL) {
 		cout << "Font loading error" << endl;
 		return;
@@ -363,7 +363,7 @@ void gameOver(SDL_Renderer* renderer, SDL_Event event, int scale, int wScale, in
 	SDL_Color Black = { 0, 0, 0 };
 
 	// Get the font used for displaying text
-	TTF_Font* font = TTF_OpenFont((char*)"/usr/share/fonts/truetype/msttcorefonts/arial.ttf", 10);
+	TTF_Font* font = TTF_OpenFont((char*)"arial.ttf", 10);
 	if (font == NULL) {
 		cout << "Font loading error" << endl;
 		return;
@@ -418,7 +418,7 @@ void youWin(SDL_Renderer* renderer, SDL_Event event, int scale, int wScale, int 
 	SDL_Color Yellow = { 255, 255, 0 };
 
 	// Get the font used for displaying text
-	TTF_Font* font = TTF_OpenFont((char*)"/usr/share/fonts/truetype/msttcorefonts/arial.ttf", 10);
+	TTF_Font* font = TTF_OpenFont((char*)"arial.ttf", 10);
 	if (font == NULL) {
 		cout << "Font loading error" << endl;
 		return;
