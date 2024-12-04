@@ -313,7 +313,7 @@ void gameOver(SDL_Renderer* renderer, SDL_Event event, int scale, int wScale, Co
 	SDL_Color Black = { 0, 0, 0 };
 
 	// Get the font used for displaying text
-	TTF_Font* font = TTF_OpenFont((char*)"/usr/share/fonts/truetype/msttcorefonts/arial.ttf", 10);
+	TTF_Font* font = TTF_OpenFont((char*)"arial.ttf", 10);
 	if (font == NULL) {
 		cout << "Font loading error" << endl;
 		return;
@@ -367,7 +367,7 @@ void youWin(SDL_Renderer* renderer, SDL_Event event, int scale, int wScale, Conc
 	SDL_Color Yellow = { 255, 255, 0 };
 
 	// Get the font used for displaying text
-	TTF_Font* font = TTF_OpenFont((char*)"/usr/share/fonts/truetype/msttcorefonts/arial.ttf", 10);
+	TTF_Font* font = TTF_OpenFont((char*)"arial.ttf", 10);
 	if (font == NULL) {
 		cout << "Font loading error" << endl;
 		return;
@@ -443,7 +443,7 @@ int main(int argc, char* argv[]) {
 	if (TTF_Init() < 0) {
 		cout << "Error: " << TTF_GetError() << endl;
 	}
-	game.font = TTF_OpenFont((char*)"/usr/share/fonts/truetype/msttcorefonts/arial.ttf", 25);    
+	game.font = TTF_OpenFont((char*)"arial.ttf", 25);    
 	SDL_Event event;
 	concepts.a = &anchor;
     Timeline timeThreads(&anchor, 1);
