@@ -14,12 +14,11 @@ using json = nlohmann::json;
 class QuitHandler : public EventHandler {
 private:
     Concepts* concepts;  // Pointer to Concepts object
-    zmq::socket_t* receiverPtr;  // Pointer to ZMQ receiver socket
-    std::string clientId1;
+    Game* game;
 
 public:
-    QuitHandler(Concepts* c, zmq::socket_t* rcvPtr, const std::string& clientId)
-        : concepts(c), receiverPtr(rcvPtr), clientId1(clientId) {}
+    QuitHandler(Concepts* c, Game* g)
+        : concepts(c), game(g){}
 
     void onEvent(const Event& e) override;  // Ensure this matches the base class signature
 };

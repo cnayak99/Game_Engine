@@ -51,7 +51,9 @@ typedef struct {
     Entity *spawn;
     Entity *despawn;
     Entity* getSource;
-
+    Entity *scoreRect;
+    Entity *gameoverRect;
+    Entity *retryRect;
 
     SDL_Rect hitBL;
     SDL_Rect hitBR;
