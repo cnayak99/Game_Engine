@@ -12,7 +12,7 @@ R = Records the game.
 
 S = Stops recording the game.
 
-k = Start replaying the recorded gameplay
+K = Start replaying the recorded gameplay
 
 O = Pauses the game.
 
