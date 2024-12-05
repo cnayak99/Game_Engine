@@ -668,8 +668,8 @@ int main(int argc, char* argv[]) {
 		SDL_RenderFillRect(game.renderer, &concepts.ball->getRect());
 		write(std::to_string(concepts.liveCount), WIDTH/2+FONT_SIZE/2, FONT_SIZE*1.5, game.font, game.renderer, {255,255,255,255}, concepts.lives->getRect());
 		for(int i=0; i<COL*ROW; i++) {
-			SDL_SetRenderDrawColor(game.renderer, 155, 155, 155, 255);
-			// if(i%2==0)SDL_SetRenderDrawColor(game.renderer, 0,255, 0, 255);
+			SDL_SetRenderDrawColor(game.renderer, 255, 215, 0, 255);
+			if(i%2==0)SDL_SetRenderDrawColor(game.renderer, 0,128, 128, 255);
 			if(bricks[i]) {
 				setBricks(i,concepts.brick->getRect());
 				SDL_RenderFillRect(game.renderer, &concepts.brick->getRect());
